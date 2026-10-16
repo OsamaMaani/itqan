@@ -41,13 +41,13 @@ describe('v1 → v2 (memories, ideas, reminders)', () => {
     expect(d.memories).toEqual([])
     expect(d.ideas).toEqual([])
     expect(d.reminders).toEqual([])
-    expect(d.tasks).toEqual([{ id: 't1', projectId: null }]) // + v3's project link
+    expect(d.tasks).toEqual([{ id: 't1', projectId: null, stage: 'todo', blocked: false }]) // + v3/v4 fields
     expect(d.habitLogs).toEqual({ h1: { '2026-10-15': 1 } })
     expect(d.settings.name).toBe('Sam')
   })
   it('a v1 backup still restores', () => {
     const b = { app: 'itqan', schemaVersion: 1, exportedAt: '', data: { areas: [], tasks: [{ id: 'x' }], habits: [], goals: [] } }
-    expect(parseBackup(JSON.stringify(b)).tasks).toEqual([{ id: 'x', projectId: null }])
+    expect(parseBackup(JSON.stringify(b)).tasks).toEqual([{ id: 'x', projectId: null, stage: 'todo', blocked: false }])
   })
 })
 
@@ -59,7 +59,7 @@ describe('v2 → v3 (projects, connections)', () => {
       memories: [{ id: 'm1' }], ideas: [{ id: 'i1' }],
     }
     const d = migrate(v2, 2)
-    expect(d.tasks).toEqual([{ id: 't1', title: 'Read', goalId: 'g1', done: true, projectId: null }])
+    expect(d.tasks).toEqual([{ id: 't1', title: 'Read', goalId: 'g1', done: true, projectId: null, stage: 'todo', blocked: false }])
     expect(d.reminders).toEqual([{ id: 'r1', title: 'Mum', repeat: 'yearly', contactId: null, countYears: true }])
     expect(d.memories).toEqual([{ id: 'm1' }])
     expect(d.projects).toEqual([])
@@ -70,5 +70,25 @@ describe('v2 → v3 (projects, connections)', () => {
     const d = migrate({ tasks: [{ id: 't', projectId: 'p1' }], reminders: [{ id: 'r', contactId: 'c1', countYears: false }] }, 2)
     expect(d.tasks[0].projectId).toBe('p1')
     expect(d.reminders[0]).toMatchObject({ contactId: 'c1', countYears: false })
+  })
+})
+
+describe('v3 → v4 (project boards, manual progress, updates)', () => {
+  it('tasks start "to do", projects keep task-based progress, nothing else changes', () => {
+    const v3 = {
+      tasks: [{ id: 't1', title: 'Domain', projectId: 'p1', done: false }],
+      projects: [{ id: 'p1', title: 'Portfolio', status: 'active', links: [] }],
+      contacts: [{ id: 'c1' }],
+    }
+    const d = migrate(v3, 3)
+    expect(d.tasks).toEqual([{ id: 't1', title: 'Domain', projectId: 'p1', done: false, stage: 'todo', blocked: false }])
+    expect(d.projects).toEqual([{ id: 'p1', title: 'Portfolio', status: 'active', links: [], progressMode: 'tasks', manualProgress: 0, view: 'list', pinned: false }])
+    expect(d.projectUpdates).toEqual([])
+    expect(d.contacts).toEqual([{ id: 'c1' }])
+  })
+  it('keeps values that are already set', () => {
+    const d = migrate({ tasks: [{ id: 't', stage: 'doing', blocked: true }], projects: [{ id: 'p', progressMode: 'manual', manualProgress: 60 }] }, 3)
+    expect(d.tasks[0]).toMatchObject({ stage: 'doing', blocked: true })
+    expect(d.projects[0]).toMatchObject({ progressMode: 'manual', manualProgress: 60 })
   })
 })

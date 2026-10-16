@@ -21,6 +21,7 @@ import { upcoming } from './Reminders'
 import { whenText } from '../lib/reminders'
 import { checkIn } from '../lib/connections'
 import { Avatar } from './Connections'
+import { nextAction, projectProgress } from '../lib/projects'
 
 const GROUPS: { key: TimeOfDay; label: string; emoji: string }[] = [
   { key: 'morning', label: 'Morning', emoji: '🌅' },
@@ -216,6 +217,8 @@ export function TodayPage() {
             )}
           </section>
 
+          <PinnedProjects />
+
           <section>
             <SectionTitle right={<button onClick={() => navigate('goals')} className="text-xs font-semibold text-accent hover:underline">All goals</button>}>
               Goals in motion
@@ -266,6 +269,39 @@ export function TodayPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function PinnedProjects() {
+  const projects = useStore((s) => s.projects)
+  const tasks = useStore((s) => s.tasks)
+  const areas = useAreaMap()
+  const pinned = projects.filter((p) => p.pinned && p.status !== 'archived' && p.status !== 'done')
+  if (!pinned.length) return null
+  return (
+    <section>
+      <SectionTitle right={<button onClick={() => navigate('projects')} className="text-xs font-semibold text-accent hover:underline">All projects</button>}>Projects</SectionTitle>
+      <Card className="divide-y divide-border">
+        {pinned.map((p) => {
+          const hex = areaHex(p.areaId ? areas.get(p.areaId) : null)
+          const progress = projectProgress(p, tasks)
+          const next = nextAction(p, tasks)
+          return (
+            <button key={p.id} onClick={() => navigate('projects', p.id)} className="flex w-full items-center gap-3 p-3 text-left">
+              <div className="grid size-9 shrink-0 place-items-center rounded-xl text-lg" style={{ background: `${hex}1f` }}>{p.emoji}</div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate text-sm font-semibold">{p.title}</span>
+                  <span className="text-xs font-bold tabular" style={{ color: hex }}>{Math.round(progress * 100)}%</span>
+                </div>
+                <ProgressBar value={progress} color={hex} className="mt-1.5" />
+                {next && <div className="mt-1 truncate text-[11px] text-muted">Next: {next.title}</div>}
+              </div>
+            </button>
+          )
+        })}
+      </Card>
+    </section>
   )
 }
 

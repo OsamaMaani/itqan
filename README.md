@@ -25,8 +25,14 @@ browser, it works offline, and you can install it as an app on desktop or phone.
 - **Weekly review**: an automatic summary of the week plus three reflection prompts.
 - **Ideas**: save an idea in one line, move it through New → Exploring → Doing → Done, and turn it into a task or a goal in one click.
 - **Reminders**: birthdays, anniversaries, deadlines and bills, once or repeating, with alerts like "1 week before". Desktop notifications arrive even when Itqan is closed.
-- **Projects**: bigger pieces of work broken into tasks, with progress, deadlines, notes and
-  links. Typing `+portfolio` in quick add puts a task in that project.
+- **Projects**: bigger pieces of work broken into tasks.
+  - List or **board** view: To do, Doing, Done, with drag and drop, and ◀ ▶ buttons on the phone.
+  - Flag tasks as **blocked**.
+  - Progress comes from tasks, or you set it by hand.
+  - **Pace** against the deadline, and a **next action**.
+  - Status **updates** and an activity timeline, notes and links.
+  - **Pin to Today**.
+  - Typing `+portfolio` in quick add puts a task in that project.
 - **Connections**: your family, friends, classmates and colleagues.
   - Choose how often to check in with each person, and Itqan tells you who to reach out to.
   - Log calls and meetups with notes.

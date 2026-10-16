@@ -7,7 +7,7 @@ import { emptyData, starterData } from './seed'
 import { todayKey } from './date'
 import type {
   ActiveTimer, Area, Contact, Data, DateKey, DayNote, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory,
-  Project, Reminder, Settings, Task, WeeklyReview,
+  Project, ProjectUpdate, Reminder, Settings, Task, TaskStage, WeeklyReview,
 } from './types'
 import { birthdayReminderDate } from './connections'
 
@@ -32,6 +32,9 @@ interface Actions {
   restoreTask: (t: Task) => void
   moveTask: (id: ID, date: DateKey | null) => void
   toggleSubtask: (taskId: ID, subId: ID) => void
+  /** Moves a task between board columns; 'done' completes it. Returns true when it became done. */
+  setTaskStage: (id: ID, stage: TaskStage | 'done') => boolean
+  toggleTaskBlocked: (id: ID) => void
   // habits
   addHabit: (h: Omit<Habit, 'id' | 'createdAt' | 'order' | 'archived'>) => ID
   updateHabit: (id: ID, patch: Partial<Habit>) => void
@@ -79,8 +82,12 @@ interface Actions {
   // projects
   addProject: (p: Pick<Project, 'title'> & Partial<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>) => ID
   updateProject: (id: ID, patch: Partial<Project>) => void
-  /** Deletes the project; its tasks are kept, just without a project. */
+  /** Deletes the project and its updates; its tasks are kept, just without a project. */
   deleteProject: (id: ID) => void
+  /** Sets manual progress (0–100) and switches the project to manual progress. */
+  setProjectProgress: (id: ID, percent: number) => void
+  addProjectUpdate: (u: Pick<ProjectUpdate, 'projectId' | 'text' | 'progress'> & { date?: DateKey }) => ID
+  deleteProjectUpdate: (id: ID) => void
   /** An idea becomes a project: the idea moves to "doing" and links nothing else. */
   ideaToProject: (ideaId: ID) => ID
   // connections
@@ -133,7 +140,7 @@ export const useStore = create<Store>()(
         const id = uid()
         const task: Task = {
           notes: '', areaId: null, goalId: null, projectId: null, date: todayKey(), timeOfDay: 'anytime', priority: 0,
-          estimateMin: null, subtasks: [], order: Date.now(), ...t,
+          estimateMin: null, subtasks: [], stage: 'todo', blocked: false, order: Date.now(), ...t,
           id, done: false, doneAt: null, createdAt: now(),
         }
         set((s) => ({ tasks: [...s.tasks, task] }))
@@ -160,6 +167,26 @@ export const useStore = create<Store>()(
         return t
       },
       restoreTask: (t) => set((s) => ({ tasks: [...s.tasks, t] })),
+      setTaskStage: (id, stage) => {
+        const t = get().tasks.find((x) => x.id === id)
+        if (!t) return false
+        const done = stage === 'done'
+        set((s) => ({
+          tasks: s.tasks.map((x) =>
+            x.id === id
+              ? {
+                  ...x,
+                  done,
+                  doneAt: done ? (x.done ? x.doneAt : now()) : null,
+                  stage: done ? x.stage : stage,
+                  blocked: done ? false : x.blocked,
+                }
+              : x,
+          ),
+        }))
+        return done && !t.done
+      },
+      toggleTaskBlocked: (id) => set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? { ...t, blocked: !t.blocked } : t)) })),
       moveTask: (id, date) =>
         set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? { ...t, date } : t)) })),
       toggleSubtask: (taskId, subId) =>
@@ -345,7 +372,7 @@ export const useStore = create<Store>()(
         set((s) => ({
           projects: [...s.projects, {
             emoji: '🚀', description: '', areaId: null, goalId: null, status: 'active', startDate: todayKey(), dueDate: null,
-            notes: '', links: [], ...p, id, createdAt: t, updatedAt: t,
+            notes: '', links: [], progressMode: 'tasks', manualProgress: 0, view: 'list', pinned: false, ...p, id, createdAt: t, updatedAt: t,
           }],
         }))
         return id
@@ -355,8 +382,18 @@ export const useStore = create<Store>()(
       deleteProject: (id) =>
         set((s) => ({
           projects: s.projects.filter((p) => p.id !== id),
+          projectUpdates: s.projectUpdates.filter((u) => u.projectId !== id),
           tasks: s.tasks.map((t) => (t.projectId === id ? { ...t, projectId: null } : t)),
         })),
+      setProjectProgress: (id, percent) =>
+        get().updateProject(id, { progressMode: 'manual', manualProgress: Math.round(Math.min(100, Math.max(0, percent))) }),
+      addProjectUpdate: (u) => {
+        const id = uid()
+        set((s) => ({ projectUpdates: [...s.projectUpdates, { date: todayKey(), ...u, id, createdAt: now() }] }))
+        if (u.progress !== null) get().setProjectProgress(u.projectId, u.progress)
+        return id
+      },
+      deleteProjectUpdate: (id) => set((s) => ({ projectUpdates: s.projectUpdates.filter((u) => u.id !== id) })),
       ideaToProject: (ideaId) => {
         const idea = get().ideas.find((i) => i.id === ideaId)
         const id = get().addProject({ title: idea?.title ?? 'New project', description: idea?.notes ?? '', areaId: idea?.areaId ?? null, goalId: idea?.goalId ?? null, emoji: '💡' })
@@ -437,7 +474,7 @@ export const useStore = create<Store>()(
         areas: s.areas, tasks: s.tasks, habits: s.habits, habitLogs: s.habitLogs, goals: s.goals,
         goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
         reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
-        contacts: s.contacts, interactions: s.interactions, settings: s.settings,
+        projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, settings: s.settings,
       }),
       migrate: (persisted, version) => migrate(persisted, version) as unknown as Store,
     },
@@ -461,7 +498,7 @@ export function snapshot(s: Store): Data {
     areas: s.areas, tasks: s.tasks, habits: s.habits, habitLogs: s.habitLogs, goals: s.goals,
     goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
     reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
-    contacts: s.contacts, interactions: s.interactions, settings: s.settings,
+    projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, settings: s.settings,
   }
 }
 

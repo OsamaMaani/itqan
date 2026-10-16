@@ -34,6 +34,11 @@ The vocabulary is fixed. Use these words in code, UI and memory alike.
 | **Stamp / tombstone** | When an entity last changed; a tombstone marks a delete. | `Stamp` |
 | **Sync file** | The encrypted `itqan-sync.json` in the private repo. | `Envelope` |
 | **Project** | A body of work made of tasks, with a status and dates. | `Project` |
+| **Stage** | A task's board column while open: To do or Doing. Done is `done`. | `TaskStage` |
+| **Blocked** | A task waiting on something outside your control. | `Task.blocked` |
+| **Next action** | The first unblocked task in Doing, else in To do. | `nextAction()` |
+| **Project update** | A short status post on a project, optionally setting progress. | `ProjectUpdate` |
+| **Pinned project** | Shown on Today. | `Project.pinned` |
 | **Connection / person** | Someone you want to keep in touch with. UI: "Connections". | `Contact` |
 | **Circle** | Family, friends, university, work, mentors, other. | `Circle` |
 | **Rhythm** | How often to check in with a person. | `cadenceDays` |

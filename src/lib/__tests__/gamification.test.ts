@@ -4,7 +4,7 @@ import { emptyData } from '../seed'
 import type { Data, Task } from '../types'
 
 const task = (p: Partial<Task>): Task => ({
-  id: Math.random().toString(), title: 't', notes: '', areaId: null, goalId: null, projectId: null, date: '2026-10-16', timeOfDay: 'anytime',
+  id: Math.random().toString(), title: 't', notes: '', areaId: null, goalId: null, projectId: null, stage: 'todo', blocked: false, date: '2026-10-16', timeOfDay: 'anytime',
   priority: 0, estimateMin: null, subtasks: [], done: false, doneAt: null, createdAt: '2026-10-16T08:00:00', order: 0, ...p,
 })
 

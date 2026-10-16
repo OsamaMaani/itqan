@@ -8,7 +8,7 @@ import type { Data, Task } from '../types'
 
 const data = (): Data => ({ ...emptyData(), ...starterData('2026-10-16'), habitLogs: { h1: { '2026-10-15': 1 } }, dayNotes: { '2026-10-16': { intention: 'focus', mood: 4, reflection: '' } } })
 const task = (id: string, title = id): Task => ({
-  id, title, notes: '', areaId: null, goalId: null, projectId: null, date: null, timeOfDay: 'anytime', priority: 0, estimateMin: null,
+  id, title, notes: '', areaId: null, goalId: null, projectId: null, stage: 'todo', blocked: false, date: null, timeOfDay: 'anytime', priority: 0, estimateMin: null,
   subtasks: [], done: false, doneAt: null, createdAt: `2026-10-16T0${id.length}:00:00Z`, order: 0,
 })
 

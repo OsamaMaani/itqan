@@ -17,7 +17,7 @@ export const DEFAULT_SETTINGS: Settings = {
 export function emptyData(): Data {
   return {
     areas: [], tasks: [], habits: [], habitLogs: {}, goals: [], goalLogs: [],
-    focusSessions: [], timer: null, dayNotes: {}, reviews: {}, memories: [], ideas: [], reminders: [], projects: [], contacts: [], interactions: [],
+    focusSessions: [], timer: null, dayNotes: {}, reviews: {}, memories: [], ideas: [], reminders: [], projects: [], projectUpdates: [], contacts: [], interactions: [],
     settings: { ...DEFAULT_SETTINGS },
   }
 }
@@ -75,7 +75,7 @@ export function starterData(today: string): Pick<Data, 'areas' | 'habits' | 'goa
 
   const task = (title: string, a: Area | null, extra: Partial<Task> = {}): Task => ({
     id: uid(), title, notes: '', areaId: a?.id ?? null, goalId: null, projectId: null, date: today, timeOfDay: 'anytime',
-    priority: 0, estimateMin: null, subtasks: [], done: false, doneAt: null, createdAt: now, order: order++, ...extra,
+    priority: 0, estimateMin: null, subtasks: [], done: false, doneAt: null, stage: 'todo', blocked: false, createdAt: now, order: order++, ...extra,
   })
 
   const tasks: Task[] = [

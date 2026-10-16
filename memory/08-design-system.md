@@ -60,6 +60,10 @@ Shadows are near-invisible; the primary button gets a coloured glow.
   dialog footers pad `env(safe-area-inset-bottom)`. Dialogs use `dvh`, not `vh`.
 - **Phones get their own arrangement, not a squeezed desktop one:** stats and row actions move to
   their own line below `sm`; hover-only controls are always visible on touch.
+- **No exit animations between pages** (ADR-021): pages fade in with CSS (`.page-enter`) and
+  nothing waits for the previous page to leave. Do not reintroduce `AnimatePresence mode="wait"`
+  around routes.
+- **Touch has no HTML5 drag** — every drag interaction needs a tap alternative (◀ ▶ on board cards).
 - Verify any UI change at 375 px (iPhone), 768 px and 1280 px, light and dark, including its dialogs.
 
 ## Copy

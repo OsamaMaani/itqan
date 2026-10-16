@@ -4,14 +4,14 @@ import { addDaysKey } from '../lib/date'
 import { useToday } from '../lib/hooks'
 import { uid } from '../lib/id'
 import { useStore } from '../lib/store'
-import type { Priority, Subtask, Task, TimeOfDay } from '../lib/types'
+import type { Priority, Subtask, Task, TaskStage, TimeOfDay } from '../lib/types'
 import { AreaPicker } from './AreaPicker'
-import { Button, Input, Label, Modal, Segmented, Select, Textarea } from './ui'
+import { Button, cx, Input, Label, Modal, Segmented, Select, Textarea } from './ui'
 
-type Draft = Pick<Task, 'title' | 'notes' | 'areaId' | 'goalId' | 'projectId' | 'date' | 'timeOfDay' | 'priority' | 'estimateMin' | 'subtasks'>
+type Draft = Pick<Task, 'title' | 'notes' | 'areaId' | 'goalId' | 'projectId' | 'date' | 'timeOfDay' | 'priority' | 'estimateMin' | 'subtasks' | 'stage' | 'blocked'>
 
 const blank = (date: string | null): Draft => ({
-  title: '', notes: '', areaId: null, goalId: null, projectId: null, date, timeOfDay: 'anytime', priority: 0, estimateMin: null, subtasks: [],
+  title: '', notes: '', areaId: null, goalId: null, projectId: null, stage: 'todo', blocked: false, date, timeOfDay: 'anytime', priority: 0, estimateMin: null, subtasks: [],
 })
 
 /** Create a task (no `task`) or edit one. */
@@ -143,6 +143,19 @@ export function TaskEditor({ open, onClose, task, defaults }: {
               <option value="">No project</option>
               {projects.filter((p) => p.status !== 'archived' || p.id === d.projectId).map((p) => <option key={p.id} value={p.id}>{p.emoji} {p.title}</option>)}
             </Select>
+          </div>
+        )}
+
+        {!task?.done && (
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <Label>Status</Label>
+              <Segmented<TaskStage> value={d.stage} onChange={(v) => set('stage', v)} options={[{ value: 'todo', label: 'To do' }, { value: 'doing', label: 'Doing' }]} />
+            </div>
+            <label className={cx('flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold transition', d.blocked ? 'bg-danger/10 text-danger' : 'bg-surface-2 text-muted')}>
+              <input type="checkbox" checked={d.blocked} onChange={(e) => set('blocked', e.target.checked)} className="accent-[var(--danger)]" />
+              Blocked
+            </label>
           </div>
         )}
 

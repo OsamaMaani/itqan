@@ -47,9 +47,15 @@ export interface Task {
   subtasks: Subtask[]
   done: boolean
   doneAt: string | null
+  /** Board column while not done (schema v4). `done` stays the single source of truth for done. */
+  stage: TaskStage
+  /** Waiting on something; shown in red on boards and lists (schema v4). */
+  blocked: boolean
   createdAt: string
   order: number
 }
+
+export type TaskStage = 'todo' | 'doing'
 
 export type HabitSchedule =
   | { type: 'daily' }
@@ -221,8 +227,26 @@ export interface Project {
   dueDate: DateKey | null
   notes: string
   links: ProjectLink[]
+  /** Where progress comes from: the project's tasks, or a number set by hand (schema v4). */
+  progressMode: 'tasks' | 'manual'
+  /** 0–100, used when progressMode is 'manual' */
+  manualProgress: number
+  view: 'list' | 'board'
+  /** Show on Today */
+  pinned: boolean
   createdAt: string
   updatedAt: string
+}
+
+/** A short status note on a project, optionally recording a new manual progress (schema v4). */
+export interface ProjectUpdate {
+  id: ID
+  projectId: ID
+  date: DateKey
+  text: string
+  /** The manual progress set with this update, 0–100 */
+  progress: number | null
+  createdAt: string
 }
 
 export const CIRCLES = ['family', 'friend', 'university', 'work', 'mentor', 'other'] as const
@@ -295,6 +319,7 @@ export interface Data {
   reviews: Record<DateKey, WeeklyReview>
   memories: Memory[]
   projects: Project[]
+  projectUpdates: ProjectUpdate[]
   contacts: Contact[]
   interactions: Interaction[]
   ideas: Idea[]

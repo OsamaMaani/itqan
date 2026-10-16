@@ -6,7 +6,7 @@ import type { Data } from './types'
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 3
+export const SCHEMA_VERSION = 4
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -23,6 +23,16 @@ const steps: Record<number, Step> = {
     projects: d.projects ?? [],
     contacts: d.contacts ?? [],
     interactions: d.interactions ?? [],
+  }),
+  // 3 → 4 (2026-10-16): project boards, manual progress and updates. Tasks start "to do" and not
+  // blocked; projects keep task-based progress and the list view they had.
+  3: (d) => ({
+    ...d,
+    tasks: ((d.tasks as Record<string, unknown>[] | undefined) ?? []).map((t) => ({ stage: 'todo', blocked: false, ...t })),
+    projects: ((d.projects as Record<string, unknown>[] | undefined) ?? []).map((p) => ({
+      progressMode: 'tasks', manualProgress: 0, view: 'list', pinned: false, ...p,
+    })),
+    projectUpdates: d.projectUpdates ?? [],
   }),
 }
 
@@ -54,6 +64,7 @@ export function normalize(d: Record<string, unknown>): Data {
     ideas: pick('ideas'),
     reminders: pick('reminders'),
     projects: pick('projects'),
+    projectUpdates: pick('projectUpdates'),
     contacts: pick('contacts'),
     interactions: pick('interactions'),
     settings: { ...DEFAULT_SETTINGS, ...((d.settings as object) ?? {}) },

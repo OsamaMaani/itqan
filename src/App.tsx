@@ -1,4 +1,3 @@
-import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { CommandPalette } from './components/CommandPalette'
 import { Onboarding } from './components/Onboarding'
@@ -62,11 +61,12 @@ export default function App() {
       <div className="min-w-0 flex-1">
         <MobileHeader route={route} />
         <main className="mx-auto w-full max-w-7xl px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
-          <AnimatePresence mode="wait">
-            <motion.div key={`${route}/${param ?? ''}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }}>
+          {/* The new page renders at once and only fades in. No exit animation to wait for: with
+              AnimatePresence mode="wait", a page change arriving mid-animation (create a project →
+              its page → back) or a paused window could leave the page blank (fixed 2026-10-16). */}
+          <div key={`${route}/${param ?? ''}`} className="page-enter">
               <Page />
-            </motion.div>
-          </AnimatePresence>
+          </div>
         </main>
       </div>
       <MobileNav route={route} onAdd={() => setNewTask(true)} />

@@ -286,3 +286,38 @@ a body of work measured by its tasks. A project may serve a goal (`goalId`).
 
 Schema v3 (migration tested on its own and through sync): `projects`, `contacts`,
 `interactions`; `Task.projectId`; `Reminder.contactId` and `Reminder.countYears`.
+
+---
+
+## ADR-020 | 2026-10-16 | accepted | Project boards, manual progress, updates, next action, pinning
+
+**Asked for:** manual progress for projects not tracked through tasks, and a To do / Doing / Done
+board. **Decision (schema v4):**
+- `Task.stage` (`todo` | `doing`) is the column while open; **`done` stays the single source of
+  truth for done**, so streak/XP/review logic is untouched. `setTaskStage` keeps `done`,
+  `doneAt` and `stage` consistent (tested): moving into Done completes once, out of Done reopens.
+  `Task.blocked` flags waiting work (red on boards and lists; cleared on completion).
+- `Project.progressMode` `tasks | manual` + `manualProgress` (0–100); a done project is 100 %.
+- `ProjectUpdate` — short status posts, optionally setting manual progress — shown in one
+  timeline with task completions (derived, not stored).
+- **Pace** (ahead / on track / behind / overdue) compares progress with time elapsed between start
+  and deadline; **next action** = first unblocked task in Doing, else To do. Both pure and tested
+  in `src/lib/projects.ts`.
+- `Project.view` (list / board) and `Project.pinned` (shown on Today) are stored on the project,
+  so they follow the owner across devices.
+- Board: drag & drop on desktop; ◀ ▶ buttons on touch (HTML5 drag does not work on iOS);
+  columns scroll horizontally with snap on phones.
+
+**Rejected:** a separate "issue" entity for boards (two kinds of task would split Today, Plan and
+XP); a `status` enum replacing `done` (every reader of `done` would change, for no gain).
+
+---
+
+## ADR-021 | 2026-10-16 | accepted | Page changes never wait for an exit animation
+
+**Bug:** after creating a project, tapping back could show a blank page. `AnimatePresence
+mode="wait"` keeps the new page unmounted until the old page's exit animation finishes; a page
+change arriving mid-animation, or a window that is not painting (paused animation frames), could
+leave nothing mounted. **Decision:** the page wrapper is a plain keyed `<div>` with a CSS fade-in
+(`.page-enter`); no exit animations between pages. New projects open after their dialog closes
+(next tick). Verified by switching back and forth 50 ms apart.

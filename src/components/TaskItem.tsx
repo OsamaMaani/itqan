@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { ArrowRight, CalendarClock, Check, Flag, FolderKanban, ListChecks, Target, Timer, Trash2 } from 'lucide-react'
+import { ArrowRight, CalendarClock, Check, Flag, FolderKanban, ListChecks, OctagonAlert, Target, Timer, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { celebrate } from '../lib/celebrate'
 import { addDaysKey, diffDays, prettyDay } from '../lib/date'
@@ -89,6 +89,8 @@ export function TaskItem({ task, showDate, hideProject, onToggled }: { task: Tas
             {task.title}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-muted empty:hidden">
+            {!task.done && task.stage === 'doing' && <span className="rounded-md bg-sky-500/10 px-1.5 py-0.5 font-bold text-sky-500">Doing</span>}
+            {!task.done && task.blocked && <span className="inline-flex items-center gap-0.5 font-bold text-danger"><OctagonAlert size={11} /> Blocked</span>}
             {area && <AreaChip area={area} />}
             {task.priority > 0 && (
               <span className="inline-flex items-center gap-0.5 font-semibold" style={{ color: PRIORITY_COLOR[task.priority] }}>

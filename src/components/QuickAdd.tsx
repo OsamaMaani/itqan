@@ -5,12 +5,13 @@ import { prettyDay } from '../lib/date'
 import { useToday } from '../lib/hooks'
 import { parseQuickAdd } from '../lib/quickAdd'
 import { useStore } from '../lib/store'
-import type { DateKey } from '../lib/types'
+import type { DateKey, TaskStage } from '../lib/types'
 import { AreaChip, cx } from './ui'
 
 /** One-line task entry with live parsing: "#area !2 tomorrow @evening ~30m". */
-export function QuickAdd({ defaultDate, defaultProjectId, defaultAreaId, placeholder, autoFocus, onAdded, className }: {
+export function QuickAdd({ defaultDate, defaultProjectId, defaultAreaId, defaultStage, placeholder, autoFocus, onAdded, className }: {
   defaultDate: DateKey | null
+  defaultStage?: TaskStage
   defaultProjectId?: string | null
   defaultAreaId?: string | null
   placeholder?: string
@@ -35,7 +36,7 @@ export function QuickAdd({ defaultDate, defaultProjectId, defaultAreaId, placeho
 
   const submit = () => {
     if (!p.title) return
-    addTask({ title: p.title, areaId, projectId, priority: p.priority, timeOfDay: p.timeOfDay, estimateMin: p.estimateMin, date })
+    addTask({ title: p.title, areaId, projectId, priority: p.priority, timeOfDay: p.timeOfDay, estimateMin: p.estimateMin, date, stage: defaultStage ?? 'todo' })
     setText('')
     onAdded?.()
   }
