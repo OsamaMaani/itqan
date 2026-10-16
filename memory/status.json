@@ -4,9 +4,8 @@
   "updated": "2026-10-16",
   "current_stage": 4,
   "next_actions": [
-    "S4-05: create the GitHub repos and token (steps in chat), push the code, enable Pages.",
-    "Connect sync on the laptop first (creates the encrypted file), then on the iPhone.",
-    "On the iPhone, use Reminders → Add all to Calendar for phone alerts."
+    "On the iPhone: Reminders → Add all to Calendar, so the phone alerts natively (ADR-017).",
+    "Use Itqan daily for a week, then answer the open questions and pick the next Stage 2 items."
   ],
   "stages": [
     {
@@ -182,7 +181,7 @@
           "id": "S2-01",
           "title": "Publish to GitHub and enable Pages",
           "module": "infra",
-          "status": "todo"
+          "status": "done"
         },
         {
           "id": "S2-02",
@@ -295,9 +294,9 @@
         },
         {
           "id": "S4-05",
-          "title": "Owner: create repos + token; publish the app; connect laptop and iPhone",
+          "title": "Owner setup: repos + token; app published; laptop and iPhone connected and verified",
           "module": "sync",
-          "status": "in-progress"
+          "status": "done"
         }
       ]
     }
@@ -386,7 +385,7 @@
     {
       "slug": "sync",
       "name": "Sync",
-      "status": "in-progress"
+      "status": "done"
     }
   ],
   "open_questions": [
@@ -434,6 +433,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-16",
+      "entry": "Live: the app is published on GitHub Pages (code repo public, scrubbed of personal details, no-reply commit identity). Sync connected on laptop and iPhone; the encrypted file was verified to hold no readable text, and a task created on the iPhone arrived on the laptop."
+    },
     {
       "date": "2026-10-16",
       "entry": "S4-01…S4-04: encrypted GitHub sync (ADR-016) — per-entity merge with stamps and tombstones, AES-GCM/PBKDF2, sha-checked writes with retry; 22 new tests incl. an engine test against a fake GitHub that forces a real save conflict. iPhone reminders via .ics Calendar export (ADR-017). Waiting on the owner's GitHub setup to go live."
