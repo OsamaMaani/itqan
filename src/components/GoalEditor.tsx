@@ -78,7 +78,7 @@ export function GoalEditor({ open, onClose, goal, defaults, onCreated }: {
             {d.milestones.map((x, i) => (
               <div key={x.id} className="flex items-center gap-2 rounded-lg bg-surface-2/60 px-3 py-1.5 text-sm">
                 <span className="text-xs font-bold text-muted">{i + 1}</span>
-                <input className="flex-1 bg-transparent outline-none" value={x.title} onChange={(e) => set('milestones', d.milestones.map((y) => (y.id === x.id ? { ...y, title: e.target.value } : y)))} />
+                <input className="min-w-0 flex-1 bg-transparent text-base outline-none sm:text-sm" value={x.title} onChange={(e) => set('milestones', d.milestones.map((y) => (y.id === x.id ? { ...y, title: e.target.value } : y)))} />
                 <button type="button" onClick={() => set('milestones', d.milestones.filter((y) => y.id !== x.id))} className="text-muted hover:text-danger"><X size={14} /></button>
               </div>
             ))}

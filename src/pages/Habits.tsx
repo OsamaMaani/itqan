@@ -69,7 +69,7 @@ function HabitRow({ habit }: { habit: Habit }) {
             {(target > 1 || habit.unit) && <span>· {target} {habit.unit}/day</span>}
           </div>
         </div>
-        <div className="flex gap-5 text-center">
+        <div className="flex w-full justify-around gap-5 border-t border-border pt-3 text-center sm:w-auto sm:justify-start sm:border-0 sm:pt-0">
           <Stat icon={<Flame size={14} fill="currentColor" />} value={st.current} label={`${st.unit} streak`} className="text-gold" />
           <Stat icon={<Trophy size={14} />} value={st.best} label="best" className="text-accent" />
           <Stat value={`${Math.round(rate30 * 100)}%`} label="30 days" />
@@ -87,7 +87,7 @@ function HabitRow({ habit }: { habit: Habit }) {
                 key={k}
                 onClick={() => toggle(k)}
                 title={`${format(fromKey(k), 'EEE, MMM d')}${amt ? ` — ${amt} ${habit.unit}` : ''}`}
-                className={cx('flex w-11 flex-col items-center gap-1 rounded-xl py-2 text-[10px] font-bold transition hover:scale-105', !sched && 'opacity-40', k === today && 'ring-2 ring-accent/40')}
+                className={cx('flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl py-2 text-[10px] font-bold transition hover:scale-105 sm:w-11 sm:flex-none', !sched && 'opacity-40', k === today && 'ring-2 ring-accent/40')}
                 style={met ? { background: hex, color: 'white' } : { background: 'var(--surface-2)', color: 'var(--muted)' }}
               >
                 {format(fromKey(k), 'EEE')}

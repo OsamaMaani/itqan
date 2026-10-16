@@ -48,7 +48,7 @@ export function QuickAdd({ defaultDate, placeholder, autoFocus, onAdded, classNa
           onBlur={() => setFocused(false)}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') (e.target as HTMLInputElement).blur() }}
           placeholder={placeholder ?? 'Add a task…  try “Read 20 pages #books tomorrow !2”'}
-          className="h-12 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted/70"
+          className="h-12 min-w-0 flex-1 bg-transparent text-base outline-none sm:text-[15px] placeholder:text-muted/70"
         />
         {showChips && (
           <button onClick={submit} className="hidden items-center gap-1 rounded-lg bg-surface-2 px-2 py-1 text-[11px] font-semibold text-muted sm:flex">

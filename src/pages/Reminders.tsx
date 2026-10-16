@@ -132,6 +132,10 @@ function NotifierStatus() {
       <>Run <code className="rounded bg-surface-2 px-1">~/Itqan/scripts/install_local.sh</code> once to (re)install it. Until then, alerts show only while Itqan is open.</>)
   }
   if (state === 'checking') return box('info', <BellRing size={18} />, 'Connecting to desktop notifications…', '')
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    return box('info', <BellRing size={18} />, 'On iPhone, let Calendar remind you',
+      'Tap “Add all to Calendar” — your iPhone’s Calendar then alerts you even when Itqan is closed. Add new reminders later with the calendar button on each one.')
+  }
   return box('info', <BellRing size={18} />, 'Alerts show while Itqan is open',
     <>Desktop notifications when the app is closed come with the installed local app.{' '}
       {perm === 'default' && <button className="font-semibold text-accent" onClick={() => Notification.requestPermission().then(setPerm)}>Allow browser notifications</button>}</>)
@@ -159,13 +163,13 @@ function Row({ item: { r, occ, days }, onEdit }: { item: UpcomingItem; onEdit: (
   const soon = days >= 0 && days <= 1
 
   return (
-    <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, height: 0 }} className="group flex items-center gap-3 p-3">
+    <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, height: 0 }} className="group flex flex-wrap items-center gap-x-3 gap-y-1 p-3 sm:flex-nowrap">
       <div className="relative grid size-12 shrink-0 place-items-center rounded-xl bg-surface-2 text-2xl">
         {r.emoji || '🔔'}
         {r.important && <Star size={12} className="absolute -right-1 -top-1 fill-gold text-gold" />}
       </div>
       <button onClick={onEdit} className="min-w-0 flex-1 text-left">
-        <div className={cx('truncate font-semibold', r.done && 'text-muted line-through')}>{r.title}</div>
+        <div className={cx('font-semibold sm:truncate', r.done && 'text-muted line-through')}>{r.title}</div>
         <div className={cx('text-xs', days < 0 && !r.done ? 'font-semibold text-danger' : soon ? 'font-semibold text-accent' : 'text-muted')}>
           {whenText(r, occ, new Date())}
         </div>
@@ -181,7 +185,7 @@ function Row({ item: { r, occ, days }, onEdit }: { item: UpcomingItem; onEdit: (
           {days > 0 && <div className="text-[10px] font-semibold uppercase text-muted">day{days === 1 ? '' : 's'}</div>}
         </div>
       )}
-      <div className="flex opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
+      <div className="-mb-1 ml-auto flex w-full justify-end border-t border-border/60 pt-1 transition sm:mb-0 sm:w-auto sm:border-0 sm:pt-0 sm:opacity-0 sm:group-hover:opacity-100">
         {r.repeat === 'none' && (
           <IconButton label={r.done ? 'Mark not done' : 'Mark done'} onClick={() => update(r.id, { done: !r.done })}>
             {r.done ? <CheckCircle2 size={15} /> : <Check size={15} />}

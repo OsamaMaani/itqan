@@ -54,6 +54,10 @@
 }
 
 html, body, #root { min-height: 100%; }
+/* Grid and flex children may shrink below their content's natural width; without this, one long
+   word or placeholder makes a whole column wider than a phone screen. */
+:where(.grid) > * { min-width: 0; }
+html, body { overflow-x: clip; }
 body {
   background: var(--bg);
   background-image:

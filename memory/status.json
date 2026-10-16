@@ -435,6 +435,10 @@
   "log": [
     {
       "date": "2026-10-16",
+      "entry": "UI fixes: dialogs portalled to <body> (sync setup's buttons were clipped on desktop; the ☰ menu covered the phone's top bar), phone layouts for Habits/Plan/Reminders, 16 px fields (no iOS zoom), safe-area padding and touch icon for the home-screen app, no sideways scrolling. Every screen checked at 375/768/1280 px."
+    },
+    {
+      "date": "2026-10-16",
       "entry": "Live: the app is published on GitHub Pages (code repo public, scrubbed of personal details, no-reply commit identity). Sync connected on laptop and iPhone; the encrypted file was verified to hold no readable text, and a task created on the iPhone arrived on the laptop."
     },
     {

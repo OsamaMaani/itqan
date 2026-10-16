@@ -58,7 +58,7 @@ export default function App() {
       <Sidebar route={route} onAdd={() => setPalette(true)} />
       <div className="min-w-0 flex-1">
         <MobileHeader route={route} />
-        <main className="mx-auto w-full max-w-7xl px-4 pb-32 pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
+        <main className="mx-auto w-full max-w-7xl px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
           <AnimatePresence mode="wait">
             <motion.div key={route} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }}>
               <Page />

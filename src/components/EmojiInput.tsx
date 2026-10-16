@@ -20,7 +20,7 @@ export function EmojiInput({ value, onChange }: { value: string; onChange: (v: s
           <input
             placeholder="Or type one"
             maxLength={4}
-            className="col-span-6 mt-1 rounded-lg border border-border bg-surface-2/60 px-2 py-1 text-sm outline-none"
+            className="col-span-6 mt-1 rounded-lg border border-border bg-surface-2/60 px-2 py-1 text-base outline-none sm:text-sm"
             onChange={(e) => e.target.value && onChange(e.target.value)}
           />
         </div>

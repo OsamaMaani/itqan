@@ -46,6 +46,22 @@ Shadows are near-invisible; the primary button gets a coloured glow.
 - Phone: top bar with Insights/Review/Settings, bottom tab bar (Today, Plan, Habits, Goals,
   Focus), floating + button. Bottom padding keeps content clear of the bar.
 
+## Layout rules that prevent real bugs (2026-10-16)
+
+- **Every overlay is portalled to `<body>`** (`Modal` in `ui.tsx` uses `createPortal`). An ancestor
+  with `transform`, `filter` or `backdrop-filter` — every `Card`, every animated `motion.div` —
+  becomes the containing block of a `position: fixed` child and clips it. This caused the missing
+  Save button in sync setup and the ☰ menu covering the phone's top bar. New fixed layers (sheets,
+  popovers that escape their card) must use a portal too.
+- **Grid children may shrink** (`:where(.grid) > * { min-width: 0 }` in `index.css`); text inputs
+  inside flex rows get `min-w-0`. Otherwise one long placeholder widens the page on phones.
+- **Text fields are 16 px on phones** (`text-base sm:text-sm`) — iOS zooms the page on focus below 16 px.
+- **Safe areas:** the phone header pads `env(safe-area-inset-top)`, bottom bar / FAB / toasts /
+  dialog footers pad `env(safe-area-inset-bottom)`. Dialogs use `dvh`, not `vh`.
+- **Phones get their own arrangement, not a squeezed desktop one:** stats and row actions move to
+  their own line below `sm`; hover-only controls are always visible on touch.
+- Verify any UI change at 375 px (iPhone), 768 px and 1280 px, light and dark, including its dialogs.
+
 ## Copy
 
 Short, warm, never guilt-tripping: "A clear day", "one at a time", "Your first 25 minutes are the

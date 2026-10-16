@@ -65,7 +65,7 @@ export function MemoriesPage() {
     <div>
       <PageHeader
         title="Memories"
-        subtitle={d.memories.length ? `${d.memories.length} moments kept` : 'The moments worth keeping — big and small.'}
+        subtitle={d.memories.length ? `${d.memories.length} ${d.memories.length === 1 ? 'moment' : 'moments'} kept` : 'The moments worth keeping — big and small.'}
         right={<Button variant="primary" onClick={() => setEditing('new')}><Plus size={16} /> New memory</Button>}
       />
 

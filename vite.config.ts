@@ -20,7 +20,7 @@ export default defineConfig({
     VitePWA({
       disable: local,
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg'],
+      includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Itqan — Planner',
         short_name: 'Itqan',

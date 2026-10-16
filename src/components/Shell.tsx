@@ -99,7 +99,7 @@ export function MobileNav({ route, onAdd }: { route: Route; onAdd: () => void })
       <button
         onClick={onAdd}
         aria-label="New task"
-        className="fixed bottom-[84px] right-4 z-40 grid size-14 place-items-center rounded-2xl bg-gradient-accent text-accent-fg shadow-[0_10px_30px_-8px_var(--accent)] active:scale-95 lg:hidden"
+        className="fixed bottom-[calc(84px+env(safe-area-inset-bottom))] right-4 z-40 grid size-14 place-items-center rounded-2xl bg-gradient-accent text-accent-fg shadow-[0_10px_30px_-8px_var(--accent)] active:scale-95 lg:hidden"
       >
         <Plus size={26} />
       </button>
@@ -125,7 +125,7 @@ export function MobileHeader({ route }: { route: Route }) {
   const [open, setOpen] = useState(false)
   const more = NAV.filter((n) => !MOBILE.includes(n.route))
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-bg/80 px-4 py-3 backdrop-blur-xl lg:hidden">
+    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-bg/85 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl lg:hidden">
       <Logo />
       <div className="flex items-center gap-1">
       <SyncBadge className="size-10" />

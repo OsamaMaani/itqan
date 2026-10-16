@@ -23,7 +23,7 @@ export function PlanPage() {
     <div>
       <PageHeader
         title="Plan"
-        subtitle="Drag tasks between days. Unscheduled ideas wait in the Inbox."
+        subtitle={<><span className="hidden sm:inline">Drag tasks between days. </span><span className="sm:hidden">Tap a task to change its day. </span>Unscheduled tasks wait in the Inbox.</>}
         right={
           <div className="flex items-center gap-1">
             <IconButton label="Previous week" onClick={() => setOffset((o) => o - 1)}><ChevronLeft size={18} /></IconButton>
@@ -76,7 +76,7 @@ function DayColumn({ day, title, subtitle, tasks, highlight, past, icon }: {
         const id = e.dataTransfer.getData('text/task-id')
         if (id) move(id, day)
       }}
-      className={cx('flex min-h-48 flex-col p-2 transition', highlight && 'border-accent/50 ring-4 ring-accent-soft', over && 'border-accent bg-accent-soft', past && 'opacity-70')}
+      className={cx('flex flex-col p-2 transition sm:min-h-48', highlight && 'border-accent/50 ring-4 ring-accent-soft', over && 'border-accent bg-accent-soft', past && 'opacity-70')}
     >
       <div className="flex items-center justify-between px-3 pb-1 pt-2">
         <div className="flex items-center gap-2">
@@ -96,7 +96,7 @@ function DayColumn({ day, title, subtitle, tasks, highlight, past, icon }: {
           {tasks.map((t) => <TaskItem key={t.id} task={t} />)}
         </AnimatePresence>
       </div>
-      <QuickAdd defaultDate={day} placeholder="Add…" className="mt-1 border-dashed bg-transparent [&_input]:h-9 [&_input]:text-sm" />
+      <QuickAdd defaultDate={day} placeholder="Add…" className="mt-1 border-dashed bg-transparent [&_input]:h-9 sm:[&_input]:text-sm" />
     </Card>
   )
 }

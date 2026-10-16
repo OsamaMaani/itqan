@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { X } from 'lucide-react'
+import { ChevronDown, X } from 'lucide-react'
+import { createPortal } from 'react-dom'
 import { useEffect, useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 import { AREA_HEX } from '../lib/colors'
 import type { Area } from '../lib/types'
@@ -56,7 +57,7 @@ export function IconButton({ className, label, ...rest }: ButtonHTMLAttributes<H
   )
 }
 
-const field = 'rounded-xl border border-border bg-surface-2/60 px-3 py-2 text-sm text-text outline-none transition placeholder:text-muted/70 focus:border-accent focus:ring-4 focus:ring-accent-soft'
+const field = 'rounded-xl border border-border bg-surface-2/60 px-3 py-2 text-base text-text sm:text-sm outline-none transition placeholder:text-muted/70 focus:border-accent focus:ring-4 focus:ring-accent-soft'
 
 export function Input({ className, ...rest }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cx(field, 'h-10', !/(^|\s)w-/.test(className ?? '') && 'w-full', className)} {...rest} />
@@ -67,12 +68,17 @@ export function Textarea({ className, ...rest }: TextareaHTMLAttributes<HTMLText
 }
 
 export function Select({ className, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={cx(field, 'h-10 w-full appearance-none pr-8', className)} {...rest} />
+  return (
+    <div className="relative">
+      <select className={cx(field, 'h-10 w-full appearance-none pr-9', className)} {...rest} />
+      <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
+    </div>
+  )
 }
 
 export function Label({ children, hint }: { children: ReactNode; hint?: string }) {
   return (
-    <span className="mb-1.5 flex items-baseline justify-between text-xs font-semibold text-muted">
+    <span className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-2 text-xs font-semibold text-muted">
       {children}
       {hint && <span className="font-normal opacity-70">{hint}</span>}
     </span>
@@ -87,7 +93,7 @@ export function Segmented<T extends string | number>({ value, options, onChange,
 }) {
   const id = useId()
   return (
-    <div className={cx('inline-flex rounded-xl bg-surface-2 p-1', className)}>
+    <div className={cx('inline-flex max-w-full flex-wrap gap-y-1 rounded-xl bg-surface-2 p-1', className)}>
       {options.map((o) => (
         <button
           key={String(o.value)}
@@ -184,10 +190,16 @@ export function Modal({ open, onClose, title, children, footer, wide }: {
     if (!open) return
     const on = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', on)
-    return () => window.removeEventListener('keydown', on)
+    // Keep the page behind the dialog still (iOS would otherwise scroll it).
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { window.removeEventListener('keydown', on); document.body.style.overflow = prev }
   }, [open, onClose])
 
-  return (
+  // Rendered into <body>: an ancestor with a transform, filter or backdrop-filter would otherwise
+  // become the containing block of this `position: fixed` layer and clip it (the "missing Save
+  // button" and "menu covers the top bar" bugs, 2026-10-16).
+  return createPortal(
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
@@ -200,7 +212,7 @@ export function Modal({ open, onClose, title, children, footer, wide }: {
             role="dialog"
             aria-modal="true"
             className={cx(
-              'relative flex max-h-[92vh] w-full flex-col rounded-t-3xl border border-border bg-surface shadow-2xl sm:rounded-3xl',
+              'relative flex max-h-[92dvh] w-full flex-col rounded-t-3xl border border-border bg-surface shadow-2xl sm:max-h-[88dvh] sm:rounded-3xl',
               wide ? 'sm:max-w-2xl' : 'sm:max-w-lg',
             )}
             initial={{ opacity: 0, y: 40, scale: 0.98 }}
@@ -208,16 +220,21 @@ export function Modal({ open, onClose, title, children, footer, wide }: {
             exit={{ opacity: 0, y: 30, scale: 0.98 }}
             transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
           >
-            <div className="flex items-center justify-between gap-4 px-5 pt-5 pb-3">
+            <div className="flex shrink-0 items-center justify-between gap-4 px-5 pb-3 pt-5">
               <h3 className="text-lg font-bold">{title}</h3>
               <IconButton label="Close" onClick={onClose}><X size={18} /></IconButton>
             </div>
-            <div className="overflow-y-auto px-5 pb-5">{children}</div>
-            {footer && <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-3">{footer}</div>}
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-5">{children}</div>
+            {footer && (
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-border px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                {footer}
+              </div>
+            )}
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }
 
