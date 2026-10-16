@@ -21,6 +21,7 @@ import { useStore } from '../lib/store'
 import { toast } from '../lib/toast'
 import type { Project, ProjectStatus, Task, TaskStage } from '../lib/types'
 import { fmtMin } from './Focus'
+import { openAchievement } from './Achievements'
 
 export { projectStats }
 
@@ -180,7 +181,16 @@ function ProjectDetail({ id }: { id: string }) {
 
   const setStatus = (status: ProjectStatus) => {
     update(p.id, { status })
-    if (status === 'done') { celebrate.goal(); toast({ emoji: '🎉', message: `Project complete: ${p.title}` }, 6000) }
+    if (status === 'done') {
+      celebrate.goal()
+      toast({
+        emoji: '🎉', message: `Project complete: ${p.title}`,
+        action: {
+          label: 'Add to achievements',
+          run: () => openAchievement({ title: `Finished: ${p.title}`, story: p.description, date: today, category: 'projects', emoji: p.emoji || '🚀', impact: 2, projectId: p.id, goalId: p.goalId, source: `project:${p.id}` }),
+        },
+      }, 10000)
+    }
   }
 
   return (

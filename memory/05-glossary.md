@@ -23,6 +23,8 @@ The vocabulary is fixed. Use these words in code, UI and memory alike.
 | **Focus session** | A completed timer block, logged with minutes. | `FocusSession` |
 | **Intention** | One line for "what would make today good". | `DayNote.intention` |
 | **Weekly review** | Reflection for one week, keyed by the week's first day. | `WeeklyReview` |
+| **Achievement** | A real-life win the owner records (career, faith, health…). | `Achievement` |
+| **Badge** | A game reward unlocked by activity (Insights). Never called "achievement". | `Badge` |
 | **XP / Level** | Points derived from activity (ADR-005); levels from XP. | `gamification.ts` |
 | **Memory** | A moment worth keeping, dated when it happened. | `Memory` |
 | **On this day** | Memories from today's month-day in earlier years. | `onThisDay()` |

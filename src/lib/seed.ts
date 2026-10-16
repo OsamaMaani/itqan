@@ -17,7 +17,7 @@ export const DEFAULT_SETTINGS: Settings = {
 export function emptyData(): Data {
   return {
     areas: [], tasks: [], habits: [], habitLogs: {}, goals: [], goalLogs: [],
-    focusSessions: [], timer: null, dayNotes: {}, reviews: {}, memories: [], ideas: [], reminders: [], projects: [], projectUpdates: [], contacts: [], interactions: [],
+    focusSessions: [], timer: null, dayNotes: {}, reviews: {}, memories: [], ideas: [], reminders: [], projects: [], projectUpdates: [], contacts: [], interactions: [], achievements: [],
     settings: { ...DEFAULT_SETTINGS },
   }
 }

@@ -249,6 +249,28 @@ export interface ProjectUpdate {
   createdAt: string
 }
 
+/** A real-life accomplishment (schema v5). Not the game badges in gamification.ts. */
+export interface Achievement {
+  id: ID
+  title: string
+  story: string
+  date: DateKey
+  /** A preset key from ACHIEVEMENT_CATEGORIES, or a custom label */
+  category: string
+  emoji: string
+  /** 1 small · 2 notable · 3 major */
+  impact: 1 | 2 | 3
+  highlight: boolean
+  tags: string[]
+  links: ProjectLink[]
+  goalId: ID | null
+  projectId: ID | null
+  /** What suggested it ("goal:<id>", "project:<id>", "streak:<habitId>:30", "focus:100"), so it is never suggested twice */
+  source: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export const CIRCLES = ['family', 'friend', 'university', 'work', 'mentor', 'other'] as const
 export type Circle = (typeof CIRCLES)[number]
 
@@ -322,6 +344,7 @@ export interface Data {
   projectUpdates: ProjectUpdate[]
   contacts: Contact[]
   interactions: Interaction[]
+  achievements: Achievement[]
   ideas: Idea[]
   reminders: Reminder[]
   settings: Settings

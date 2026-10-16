@@ -6,7 +6,7 @@ import { Heatmap } from '../components/Heatmap'
 import { Card, cx, PageHeader, ProgressBar, Segmented, SectionTitle } from '../components/ui'
 import { AREA_HEX } from '../lib/colors'
 import { addDaysKey, fromKey, rangeKeys, todayKey } from '../lib/date'
-import { achievements, xpByDay } from '../lib/gamification'
+import { badges as computeBadges, xpByDay } from '../lib/gamification'
 import { completionRate, isMetOn, streak } from '../lib/habits'
 import { useData, useProgress, useToday } from '../lib/hooks'
 import { fmtMin } from './Focus'
@@ -25,7 +25,7 @@ export function InsightsPage() {
   const tasksDone = d.tasks.filter((t) => t.done).length
   const focusMin = d.focusSessions.reduce((s, f) => s + f.minutes, 0)
   const bestStreak = Math.max(0, ...d.habits.map((h) => streak(h, d.habitLogs, today, d.settings.weekStartsOn).best))
-  const badges = useMemo(() => achievements(d, today), [d, today])
+  const badges = useMemo(() => computeBadges(d, today), [d, today])
   const unlocked = badges.filter((b) => b.unlocked).length
 
   // Effort per area over the selected range: tasks, habit days and focus time, as one score.
@@ -138,7 +138,7 @@ export function InsightsPage() {
       </Card>
 
       <div>
-        <SectionTitle>Achievements · {unlocked}/{badges.length}</SectionTitle>
+        <SectionTitle>Badges · {unlocked}/{badges.length}</SectionTitle>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {badges.map((b) => (
             <Card key={b.id} className={cx('relative p-4 text-center transition', !b.unlocked && 'opacity-50 grayscale')}>

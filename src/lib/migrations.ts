@@ -6,7 +6,7 @@ import type { Data } from './types'
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 4
+export const SCHEMA_VERSION = 5
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -34,6 +34,8 @@ const steps: Record<number, Step> = {
     })),
     projectUpdates: d.projectUpdates ?? [],
   }),
+  // 4 → 5 (2026-10-16): Achievements. A new collection; nothing existing changes.
+  4: (d) => ({ ...d, achievements: d.achievements ?? [] }),
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {
@@ -67,6 +69,7 @@ export function normalize(d: Record<string, unknown>): Data {
     projectUpdates: pick('projectUpdates'),
     contacts: pick('contacts'),
     interactions: pick('interactions'),
+    achievements: pick('achievements'),
     settings: { ...DEFAULT_SETTINGS, ...((d.settings as object) ?? {}) },
   }
 }

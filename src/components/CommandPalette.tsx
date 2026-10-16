@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { Bell, Camera, CornerDownLeft, Download, Lightbulb, Moon, Plus, Search, Timer } from 'lucide-react'
+import { Bell, Camera, Trophy, CornerDownLeft, Download, Lightbulb, Moon, Plus, Search, Timer } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { downloadBackup } from '../lib/backup'
 import { prettyDay } from '../lib/date'
@@ -9,6 +9,7 @@ import { navigate } from '../lib/router'
 import { snapshot, useStore } from '../lib/store'
 import { toast } from '../lib/toast'
 import { NAV } from './Shell'
+import { openAchievement } from '../pages/Achievements'
 import { AreaChip, cx, Kbd } from './ui'
 
 interface Item {
@@ -58,6 +59,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
       run: () => { st.startTimer({ mode: 'focus', totalMs: st.settings.focusMinutes * 60000, label: 'Focus', areaId: null, goalId: null, taskId: null }); navigate('focus') },
     })
     list.push({ id: 'new-reminder', icon: <Bell size={16} />, label: 'New reminder', keywords: 'reminder remind date birthday new', run: () => navigate('reminders') })
+    list.push({ id: 'new-achievement', icon: <Trophy size={16} />, label: 'Record an achievement', keywords: 'achievement win accomplishment record new', run: () => { navigate('achievements'); openAchievement() } })
     list.push({ id: 'new-memory', icon: <Camera size={16} />, label: 'Write a memory', keywords: 'memory memories journal write new', run: () => navigate('memories') })
     list.push({
       id: 'theme', icon: <Moon size={16} />, label: 'Toggle dark mode', keywords: 'theme dark light mode',

@@ -6,7 +6,7 @@ import { migrate, SCHEMA_VERSION } from './migrations'
 import { emptyData, starterData } from './seed'
 import { todayKey } from './date'
 import type {
-  ActiveTimer, Area, Contact, Data, DateKey, DayNote, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory,
+  Achievement, ActiveTimer, Area, Contact, Data, DateKey, DayNote, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory,
   Project, ProjectUpdate, Reminder, Settings, Task, TaskStage, WeeklyReview,
 } from './types'
 import { birthdayReminderDate } from './connections'
@@ -100,6 +100,11 @@ interface Actions {
   snoozeContact: (id: ID, until: DateKey | null) => void
   /** Creates, updates or removes the yearly birthday reminder for this person. */
   syncBirthdayReminder: (contactId: ID, wanted: boolean) => void
+  // achievements
+  addAchievement: (a: Pick<Achievement, 'title'> & Partial<Omit<Achievement, 'id' | 'createdAt' | 'updatedAt'>>) => ID
+  updateAchievement: (id: ID, patch: Partial<Achievement>) => void
+  deleteAchievement: (id: ID) => Achievement | undefined
+  restoreAchievement: (a: Achievement) => void
   // settings & data
   updateSettings: (patch: Partial<Settings>) => void
   completeOnboarding: (name: string, starter: boolean) => void
@@ -236,6 +241,7 @@ export const useStore = create<Store>()(
           focusSessions: s.focusSessions.map((f) => (f.goalId === id ? { ...f, goalId: null } : f)),
           ideas: s.ideas.map((i) => (i.goalId === id ? { ...i, goalId: null } : i)),
           projects: s.projects.map((p) => (p.goalId === id ? { ...p, goalId: null } : p)),
+          achievements: s.achievements.map((a) => (a.goalId === id ? { ...a, goalId: null } : a)),
         })),
       logGoal: (goalId, amount, note = '', date = todayKey()) => {
         const log = { id: uid(), goalId, amount, note, date, createdAt: now() }
@@ -383,6 +389,7 @@ export const useStore = create<Store>()(
         set((s) => ({
           projects: s.projects.filter((p) => p.id !== id),
           projectUpdates: s.projectUpdates.filter((u) => u.projectId !== id),
+          achievements: s.achievements.map((a) => (a.projectId === id ? { ...a, projectId: null } : a)),
           tasks: s.tasks.map((t) => (t.projectId === id ? { ...t, projectId: null } : t)),
         })),
       setProjectProgress: (id, percent) =>
@@ -456,6 +463,27 @@ export const useStore = create<Store>()(
         }
       },
 
+      // --- achievements ------------------------------------------------------------
+      addAchievement: (a) => {
+        const id = uid()
+        const t = now()
+        set((s) => ({
+          achievements: [...s.achievements, {
+            story: '', date: todayKey(), category: 'personal', emoji: '🏆', impact: 2, highlight: false, tags: [], links: [],
+            goalId: null, projectId: null, source: null, ...a, id, createdAt: t, updatedAt: t,
+          }],
+        }))
+        return id
+      },
+      updateAchievement: (id, patch) =>
+        set((s) => ({ achievements: s.achievements.map((a) => (a.id === id ? { ...a, ...patch, updatedAt: now() } : a)) })),
+      deleteAchievement: (id) => {
+        const a = get().achievements.find((x) => x.id === id)
+        set((s) => ({ achievements: s.achievements.filter((x) => x.id !== id) }))
+        return a
+      },
+      restoreAchievement: (a) => set((s) => ({ achievements: [...s.achievements, a] })),
+
       // --- settings & data -------------------------------------------------------
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
       completeOnboarding: (name, starter) =>
@@ -474,7 +502,8 @@ export const useStore = create<Store>()(
         areas: s.areas, tasks: s.tasks, habits: s.habits, habitLogs: s.habitLogs, goals: s.goals,
         goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
         reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
-        projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, settings: s.settings,
+        projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
+        settings: s.settings,
       }),
       migrate: (persisted, version) => migrate(persisted, version) as unknown as Store,
     },
@@ -498,7 +527,8 @@ export function snapshot(s: Store): Data {
     areas: s.areas, tasks: s.tasks, habits: s.habits, habitLogs: s.habitLogs, goals: s.goals,
     goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
     reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
-    projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, settings: s.settings,
+    projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
+    settings: s.settings,
   }
 }
 

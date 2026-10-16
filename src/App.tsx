@@ -14,6 +14,7 @@ import { useStore } from './lib/store'
 import { toast } from './lib/toast'
 import { FocusPage } from './pages/Focus'
 import { GoalsPage } from './pages/Goals'
+import { AchievementsPage, GlobalAchievementEditor } from './pages/Achievements'
 import { ConnectionsPage } from './pages/Connections'
 import { HabitsPage } from './pages/Habits'
 import { IdeasPage } from './pages/Ideas'
@@ -28,7 +29,7 @@ import { TodayPage } from './pages/Today'
 
 const PAGES: Record<Route, () => React.ReactElement> = {
   today: TodayPage, plan: PlanPage, habits: HabitsPage, goals: GoalsPage, projects: ProjectsPage, connections: ConnectionsPage,
-  focus: FocusPage, ideas: IdeasPage, reminders: RemindersPage, memories: MemoriesPage,
+  focus: FocusPage, ideas: IdeasPage, reminders: RemindersPage, memories: MemoriesPage, achievements: AchievementsPage,
   insights: InsightsPage, review: ReviewPage, settings: SettingsPage,
 }
 
@@ -73,6 +74,7 @@ export default function App() {
       <CommandPalette open={palette} onClose={() => setPalette(false)} />
       <TaskEditor open={newTask} onClose={() => setNewTask(false)} />
       <TimerWatcher />
+      <GlobalAchievementEditor />
       <Toaster />
       <Onboarding />
     </div>

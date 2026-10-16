@@ -4,8 +4,8 @@
   "updated": "2026-10-16",
   "current_stage": 4,
   "next_actions": [
-    "Open Itqan on the iPhone once so it updates (data format v4), then it syncs again.",
-    "Try a project in Board view; pin the ones you are working on now."
+    "Open Itqan on the iPhone once so it updates (data format v5), then it syncs again.",
+    "Record this year's achievements so far; check the suggestions Itqan offers."
   ],
   "stages": [
     {
@@ -101,7 +101,7 @@
         },
         {
           "id": "S1-06",
-          "title": "Insights: level, XP per day, area balance, habit consistency, activity heatmap, achievements",
+          "title": "Insights: level, XP per day, area balance, habit consistency, activity heatmap, badges",
           "module": "insights",
           "status": "done"
         },
@@ -215,6 +215,19 @@
           "title": "Fix: blank page after create → back (no waiting page transitions, ADR-021)",
           "module": "projects",
           "status": "done"
+        },
+        {
+          "id": "S2-19",
+          "title": "Achievements: by year & category, year in review, suggestions, export (ADR-022)",
+          "module": "achievements",
+          "status": "done"
+        },
+        {
+          "id": "S2-20",
+          "title": "Schema v5 migration, tested",
+          "module": "core-data",
+          "status": "done",
+          "critical": true
         },
         {
           "id": "S2-01",
@@ -427,6 +440,11 @@
       "status": "done"
     },
     {
+      "slug": "achievements",
+      "name": "Achievements",
+      "status": "done"
+    },
+    {
       "slug": "learning",
       "name": "Learning companions",
       "status": "not-started"
@@ -482,6 +500,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-16",
+      "entry": "S2-19, S2-20: Achievements (ADR-022, schema v5) — year in review, categories incl. custom, impact, highlights, proof links, suggestions from goals/projects/streaks/focus, text export; goal and project completion offer 'Add to achievements'. Game rewards renamed Badges. Tested end to end in the browser at phone and laptop sizes."
+    },
     {
       "date": "2026-10-16",
       "entry": "S2-16…S2-18: project boards, manual progress, pace, next action, updates and pinning (ADR-020, schema v4); blank-page bug fixed by removing waiting page transitions (ADR-021). 103 tests; board, progress, updates and pinning exercised in the browser at phone and laptop sizes; the real v3→v4 upgrade verified on browser data."

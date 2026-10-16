@@ -92,3 +92,13 @@ describe('v3 → v4 (project boards, manual progress, updates)', () => {
     expect(d.projects[0]).toMatchObject({ progressMode: 'manual', manualProgress: 60 })
   })
 })
+
+describe('v4 → v5 (achievements)', () => {
+  it('adds an empty achievements list and changes nothing else', () => {
+    const v4 = { tasks: [{ id: 't', stage: 'doing', blocked: false, projectId: null }], projects: [{ id: 'p', progressMode: 'manual', manualProgress: 40, view: 'board', pinned: true }] }
+    const d = migrate(v4, 4)
+    expect(d.achievements).toEqual([])
+    expect(d.tasks).toEqual(v4.tasks)
+    expect(d.projects).toEqual(v4.projects)
+  })
+})

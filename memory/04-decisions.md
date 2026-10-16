@@ -321,3 +321,27 @@ change arriving mid-animation, or a window that is not painting (paused animatio
 leave nothing mounted. **Decision:** the page wrapper is a plain keyed `<div>` with a CSS fade-in
 (`.page-enter`); no exit animations between pages. New projects open after their dialog closes
 (next tick). Verified by switching back and forth 50 ms apart.
+
+---
+
+## ADR-022 | 2026-10-16 | accepted | Achievements: the owner's real wins, by year and category
+
+**Decision (schema v5):** `Achievement` — title, story, date, category (12 presets or a custom
+label), impact (small / notable / major), highlight, tags, proof links, optional goal/project,
+and `source`. The page shows one year at a time with a **year in review** (count, major wins,
+change vs the previous year, category breakdown, highlights), category filter, search, a monthly
+timeline, and a plain-text **export** per year (copy or .txt) for a CV, LinkedIn or a yearly
+reflection. Logic in `src/lib/achievements.ts`, tested.
+
+**Suggestions:** completed goals and projects, habit streaks of 30/100/365, and 10/50/100/500
+focus hours are offered as achievements. `source` (e.g. `goal:<id>`) means a suggestion is never
+offered again once recorded; "dismiss" is a per-device convenience in localStorage (not synced,
+not essential). Completing a goal or a project offers "Add to achievements" in its toast; the
+editor can be opened from anywhere (`openAchievement`, mounted once in App).
+
+**Naming:** the game rewards in Insights were renamed **Badges** (`badges()` in gamification.ts)
+so "Achievements" means only real accomplishments. Recording one is +5 XP; 10 unlock "Proud".
+
+**Rejected:** generating achievements automatically without asking (it is a record of what the
+owner is proud of — they choose); photos/certificates as files (localStorage limits, ADR-014 —
+links instead).

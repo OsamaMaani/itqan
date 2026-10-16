@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { BarChart3, Bell, BookOpenCheck, CalendarDays, Camera, FolderKanban, Lightbulb, Menu, Plus, Settings, Sun, Target, Timer, Repeat, Users } from 'lucide-react'
+import { BarChart3, Bell, BookOpenCheck, CalendarDays, Camera, FolderKanban, Lightbulb, Menu, Plus, Settings, Sun, Target, Timer, Trophy, Repeat, Users } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useProgress } from '../lib/hooks'
 import { navigate, type Route } from '../lib/router'
@@ -20,6 +20,7 @@ export const NAV: { route: Route; label: string; icon: ReactNode }[] = [
   { route: 'reminders', label: 'Reminders', icon: <Bell size={18} /> },
   { route: 'connections', label: 'Connections', icon: <Users size={18} /> },
   { route: 'memories', label: 'Memories', icon: <Camera size={18} /> },
+  { route: 'achievements', label: 'Achievements', icon: <Trophy size={18} /> },
   { route: 'insights', label: 'Insights', icon: <BarChart3 size={18} /> },
   { route: 'review', label: 'Review', icon: <BookOpenCheck size={18} /> },
   { route: 'settings', label: 'Settings', icon: <Settings size={18} /> },

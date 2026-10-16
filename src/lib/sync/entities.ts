@@ -17,7 +17,7 @@ export type Entities = Record<string, unknown>
 
 export const ARRAY_COLLECTIONS = [
   'areas', 'tasks', 'habits', 'goals', 'goalLogs', 'focusSessions', 'memories', 'ideas', 'reminders',
-  'projects', 'projectUpdates', 'contacts', 'interactions',
+  'projects', 'projectUpdates', 'contacts', 'interactions', 'achievements',
 ] as const
 type ArrayCollection = (typeof ARRAY_COLLECTIONS)[number]
 

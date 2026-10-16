@@ -7,6 +7,9 @@ import { fromKey } from '../lib/date'
 import { goalCurrent, goalPace, goalProgress, goalTarget, type Pace } from '../lib/goals'
 import { areaHex, useAreaMap, useToday } from '../lib/hooks'
 import { useStore } from '../lib/store'
+import { categoryForArea } from '../lib/achievements'
+import { todayKey } from '../lib/date'
+import { openAchievement } from '../pages/Achievements'
 import { toast } from '../lib/toast'
 import type { Goal } from '../lib/types'
 import { GoalEditor } from './GoalEditor'
@@ -22,7 +25,14 @@ const PACE: Record<Pace, { label: string; cls: string }> = {
 
 function onCompleted(goal: Goal) {
   celebrate.goal()
-  toast({ emoji: '🏆', message: `Goal complete: ${goal.title}` }, 6000)
+  const area = useStore.getState().areas.find((a) => a.id === goal.areaId)
+  toast({
+    emoji: '🏆', message: `Goal complete: ${goal.title}`,
+    action: {
+      label: 'Add to achievements',
+      run: () => openAchievement({ title: goal.title, story: goal.why, date: todayKey(), category: categoryForArea(area), emoji: '🏆', impact: 3, goalId: goal.id, source: `goal:${goal.id}` }),
+    },
+  }, 10000)
 }
 
 /** "+" button that logs progress on a numeric goal, or opens milestones. */

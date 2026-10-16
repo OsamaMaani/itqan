@@ -38,10 +38,15 @@ browser, it works offline, and you can install it as an app on desktop or phone.
   - Log calls and meetups with notes.
   - Call, message, WhatsApp or email in one tap.
   - Get reminders about a person on any day, plus birthday reminders.
+- **Achievements**: record your wins by year and category.
+  - Mark how big each one was, and add proof links.
+  - A **year in review** shows your count, major wins, the change from last year, and your top categories.
+  - Itqan suggests wins from goals and projects you completed, long habit streaks, and focus hours.
+  - Export a year as text for your CV or LinkedIn.
 - **Memories**: a private timeline of moments with tags, favourites, search and "On this day".
 - **Command bar** (`Ctrl+K`): type `Read 20 pages #books tomorrow !2 @evening ~30m` and the
   area, day, priority, time of day and estimate are filled in for you.
-- **Fun**: XP, levels, achievements, confetti, and sounds you can turn off. It follows your
+- **Fun**: XP, levels, badges, confetti, and sounds you can turn off. It follows your
   system's light/dark setting, and you can override it.
 - **Your data**: JSON backup and restore, with a reminder every two weeks.
 

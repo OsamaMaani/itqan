@@ -22,10 +22,11 @@ export const XP = {
   idea: 2,
   ideaDone: 20,
   checkIn: 5,
+  achievement: 5,
   projectDone: 100,
 } as const
 
-export type XpKind = 'task' | 'habit' | 'focus' | 'goal' | 'review' | 'intention' | 'memory' | 'idea' | 'people' | 'project'
+export type XpKind = 'task' | 'habit' | 'focus' | 'goal' | 'review' | 'intention' | 'memory' | 'idea' | 'people' | 'project' | 'achievement'
 
 export interface XpEvent {
   date: DateKey
@@ -71,6 +72,7 @@ export function xpEvents(d: Data): XpEvent[] {
     ev.push({ date: dayOf(i.createdAt), kind: 'idea', xp: XP.idea })
     if (i.status === 'done') ev.push({ date: dayOf(i.updatedAt), kind: 'idea', xp: XP.ideaDone })
   }
+  for (const a of d.achievements ?? []) ev.push({ date: dayOf(a.createdAt), kind: 'achievement', xp: XP.achievement })
   for (const x of d.interactions ?? []) ev.push({ date: x.date, kind: 'people', xp: XP.checkIn })
   for (const p of d.projects ?? []) if (p.status === 'done') ev.push({ date: dayOf(p.updatedAt), kind: 'project', xp: XP.projectDone })
   return ev
@@ -132,9 +134,9 @@ export function activeStreak(events: XpEvent[], today: DateKey): number {
   return n
 }
 
-// --- achievements ------------------------------------------------------------------
+// --- badges (game rewards; not to be confused with the owner's real Achievements) ------
 
-export interface Achievement {
+export interface Badge {
   id: string
   emoji: string
   title: string
@@ -142,7 +144,7 @@ export interface Achievement {
   unlocked: boolean
 }
 
-export function achievements(d: Data, today: DateKey): Achievement[] {
+export function badges(d: Data, today: DateKey): Badge[] {
   const ev = xpEvents(d)
   const xp = totalXp(ev)
   const lvl = levelInfo(xp).level
@@ -186,6 +188,7 @@ export function achievements(d: Data, today: DateKey): Achievement[] {
     a('ideas-25', '💡', 'Idea machine', 'Capture 25 ideas', ideas.length >= 25),
     a('idea-done', '🚀', 'From idea to reality', 'See an idea through to done', ideas.some((i) => i.status === 'done')),
     a('project-done', '🏁', 'Shipped', 'Finish a project', (d.projects ?? []).some((p) => p.status === 'done')),
+    a('proud-10', '🏅', 'Proud', 'Record 10 achievements', (d.achievements ?? []).length >= 10),
     a('people-10', '🫶', 'Good friend', 'Log 10 check-ins with people', (d.interactions ?? []).length >= 10),
     a('people-50', '🤝', 'Connector', 'Log 50 check-ins with people', (d.interactions ?? []).length >= 50),
   ]
