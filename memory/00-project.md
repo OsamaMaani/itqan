@@ -42,6 +42,8 @@ possible, and published on **GitHub**. He may offer it to others later.
 
 - **Memories** — a private timeline of moments, with "On this day".
 - **Ideas** — capture ideas as they come, then act on them (task, goal, done).
+- **Projects** — bigger pieces of work broken into tasks, with progress and deadlines.
+- **Connections** — the people who matter: how often to check in, birthdays, notes, history.
 - **Reminders** — important dates (birthdays, anniversaries, deadlines, bills) with desktop
   notifications that arrive even when Itqan is closed.
 

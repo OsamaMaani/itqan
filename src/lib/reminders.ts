@@ -97,7 +97,7 @@ export function nextOccurrence(r: Reminder, now: Date): DateKey {
 
 /** "turns 30", "5 years" — for yearly dates with a real original year. */
 export function yearsOn(r: Reminder, occurrence: DateKey): number | null {
-  if (r.repeat !== 'yearly') return null
+  if (r.repeat !== 'yearly' || r.countYears === false) return null
   const n = Number(occurrence.slice(0, 4)) - Number(r.date.slice(0, 4))
   return n > 0 ? n : null
 }

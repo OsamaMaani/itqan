@@ -8,10 +8,10 @@ import type { Priority, Subtask, Task, TimeOfDay } from '../lib/types'
 import { AreaPicker } from './AreaPicker'
 import { Button, Input, Label, Modal, Segmented, Select, Textarea } from './ui'
 
-type Draft = Pick<Task, 'title' | 'notes' | 'areaId' | 'goalId' | 'date' | 'timeOfDay' | 'priority' | 'estimateMin' | 'subtasks'>
+type Draft = Pick<Task, 'title' | 'notes' | 'areaId' | 'goalId' | 'projectId' | 'date' | 'timeOfDay' | 'priority' | 'estimateMin' | 'subtasks'>
 
 const blank = (date: string | null): Draft => ({
-  title: '', notes: '', areaId: null, goalId: null, date, timeOfDay: 'anytime', priority: 0, estimateMin: null, subtasks: [],
+  title: '', notes: '', areaId: null, goalId: null, projectId: null, date, timeOfDay: 'anytime', priority: 0, estimateMin: null, subtasks: [],
 })
 
 /** Create a task (no `task`) or edit one. */
@@ -23,6 +23,7 @@ export function TaskEditor({ open, onClose, task, defaults }: {
 }) {
   const today = useToday()
   const goals = useStore((s) => s.goals)
+  const projects = useStore((s) => s.projects)
   const addTask = useStore((s) => s.addTask)
   const updateTask = useStore((s) => s.updateTask)
   const [d, setD] = useState<Draft>(() => task ?? { ...blank(today), ...defaults })
@@ -134,6 +135,16 @@ export function TaskEditor({ open, onClose, task, defaults }: {
             </Select>
           </div>
         </div>
+
+        {projects.length > 0 && (
+          <div>
+            <Label>Project</Label>
+            <Select value={d.projectId ?? ''} onChange={(e) => set('projectId', e.target.value || null)}>
+              <option value="">No project</option>
+              {projects.filter((p) => p.status !== 'archived' || p.id === d.projectId).map((p) => <option key={p.id} value={p.id}>{p.emoji} {p.title}</option>)}
+            </Select>
+          </div>
+        )}
 
         <div>
           <Label>Steps</Label>

@@ -6,9 +6,10 @@ import { migrate, SCHEMA_VERSION } from './migrations'
 import { emptyData, starterData } from './seed'
 import { todayKey } from './date'
 import type {
-  ActiveTimer, Area, Data, DateKey, DayNote, Goal, Habit, ID, Idea, IdeaStatus, Memory, Reminder,
-  Settings, Task, WeeklyReview,
+  ActiveTimer, Area, Contact, Data, DateKey, DayNote, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory,
+  Project, Reminder, Settings, Task, WeeklyReview,
 } from './types'
+import { birthdayReminderDate } from './connections'
 
 /**
  * The single store. Every write goes through an action here — components never build
@@ -71,10 +72,27 @@ interface Actions {
   ideaToTask: (ideaId: ID, title: string, date: DateKey | null) => ID
   linkIdeaGoal: (ideaId: ID, goalId: ID) => void
   // reminders
-  addReminder: (r: Omit<Reminder, 'id' | 'createdAt' | 'done'>) => ID
+  addReminder: (r: Omit<Reminder, 'id' | 'createdAt' | 'done' | 'contactId' | 'countYears'> & Partial<Pick<Reminder, 'contactId' | 'countYears'>>) => ID
   updateReminder: (id: ID, patch: Partial<Reminder>) => void
   deleteReminder: (id: ID) => Reminder | undefined
   restoreReminder: (r: Reminder) => void
+  // projects
+  addProject: (p: Pick<Project, 'title'> & Partial<Omit<Project, 'id' | 'createdAt' | 'updatedAt'>>) => ID
+  updateProject: (id: ID, patch: Partial<Project>) => void
+  /** Deletes the project; its tasks are kept, just without a project. */
+  deleteProject: (id: ID) => void
+  /** An idea becomes a project: the idea moves to "doing" and links nothing else. */
+  ideaToProject: (ideaId: ID) => ID
+  // connections
+  addContact: (c: Pick<Contact, 'name'> & Partial<Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>>) => ID
+  updateContact: (id: ID, patch: Partial<Contact>) => void
+  /** Deletes the person, their check-in history and their birthday reminder; other reminders about them are kept. */
+  deleteContact: (id: ID) => void
+  logInteraction: (contactId: ID, kind: InteractionKind, note: string, date: DateKey) => ID
+  deleteInteraction: (id: ID) => void
+  snoozeContact: (id: ID, until: DateKey | null) => void
+  /** Creates, updates or removes the yearly birthday reminder for this person. */
+  syncBirthdayReminder: (contactId: ID, wanted: boolean) => void
   // settings & data
   updateSettings: (patch: Partial<Settings>) => void
   completeOnboarding: (name: string, starter: boolean) => void
@@ -107,13 +125,14 @@ export const useStore = create<Store>()(
           goals: s.goals.map((g) => (g.areaId === id ? { ...g, areaId: null } : g)),
           focusSessions: s.focusSessions.map((f) => (f.areaId === id ? { ...f, areaId: null } : f)),
           ideas: s.ideas.map((i) => (i.areaId === id ? { ...i, areaId: null } : i)),
+          projects: s.projects.map((p) => (p.areaId === id ? { ...p, areaId: null } : p)),
         })),
 
       // --- tasks -----------------------------------------------------------------
       addTask: (t) => {
         const id = uid()
         const task: Task = {
-          notes: '', areaId: null, goalId: null, date: todayKey(), timeOfDay: 'anytime', priority: 0,
+          notes: '', areaId: null, goalId: null, projectId: null, date: todayKey(), timeOfDay: 'anytime', priority: 0,
           estimateMin: null, subtasks: [], order: Date.now(), ...t,
           id, done: false, doneAt: null, createdAt: now(),
         }
@@ -189,6 +208,7 @@ export const useStore = create<Store>()(
           tasks: s.tasks.map((t) => (t.goalId === id ? { ...t, goalId: null } : t)),
           focusSessions: s.focusSessions.map((f) => (f.goalId === id ? { ...f, goalId: null } : f)),
           ideas: s.ideas.map((i) => (i.goalId === id ? { ...i, goalId: null } : i)),
+          projects: s.projects.map((p) => (p.goalId === id ? { ...p, goalId: null } : p)),
         })),
       logGoal: (goalId, amount, note = '', date = todayKey()) => {
         const log = { id: uid(), goalId, amount, note, date, createdAt: now() }
@@ -306,7 +326,7 @@ export const useStore = create<Store>()(
       // --- reminders -------------------------------------------------------------
       addReminder: (r) => {
         const id = uid()
-        set((s) => ({ reminders: [...s.reminders, { ...r, id, done: false, createdAt: now() }] }))
+        set((s) => ({ reminders: [...s.reminders, { contactId: null, countYears: true, ...r, id, done: false, createdAt: now() }] }))
         return id
       },
       updateReminder: (id, patch) =>
@@ -317,6 +337,87 @@ export const useStore = create<Store>()(
         return r
       },
       restoreReminder: (r) => set((s) => ({ reminders: [...s.reminders, r] })),
+
+      // --- projects --------------------------------------------------------------
+      addProject: (p) => {
+        const id = uid()
+        const t = now()
+        set((s) => ({
+          projects: [...s.projects, {
+            emoji: '🚀', description: '', areaId: null, goalId: null, status: 'active', startDate: todayKey(), dueDate: null,
+            notes: '', links: [], ...p, id, createdAt: t, updatedAt: t,
+          }],
+        }))
+        return id
+      },
+      updateProject: (id, patch) =>
+        set((s) => ({ projects: s.projects.map((p) => (p.id === id ? { ...p, ...patch, updatedAt: now() } : p)) })),
+      deleteProject: (id) =>
+        set((s) => ({
+          projects: s.projects.filter((p) => p.id !== id),
+          tasks: s.tasks.map((t) => (t.projectId === id ? { ...t, projectId: null } : t)),
+        })),
+      ideaToProject: (ideaId) => {
+        const idea = get().ideas.find((i) => i.id === ideaId)
+        const id = get().addProject({ title: idea?.title ?? 'New project', description: idea?.notes ?? '', areaId: idea?.areaId ?? null, goalId: idea?.goalId ?? null, emoji: '💡' })
+        if (idea) get().updateIdea(ideaId, { status: idea.status === 'new' || idea.status === 'exploring' ? 'doing' : idea.status })
+        return id
+      },
+
+      // --- connections -----------------------------------------------------------
+      addContact: (c) => {
+        const id = uid()
+        const t = now()
+        set((s) => ({
+          contacts: [...s.contacts, {
+            emoji: '', circle: 'friend', tags: [], phone: '', email: '', link: '', company: '', role: '', howWeMet: '',
+            birthday: '', notes: '', cadenceDays: null, lastContactManual: null, snoozedUntil: null, birthdayReminderId: null,
+            favorite: false, archived: false, ...c, id, createdAt: t, updatedAt: t,
+          }],
+        }))
+        return id
+      },
+      updateContact: (id, patch) =>
+        set((s) => ({ contacts: s.contacts.map((c) => (c.id === id ? { ...c, ...patch, updatedAt: now() } : c)) })),
+      deleteContact: (id) => {
+        const c = get().contacts.find((x) => x.id === id)
+        set((s) => ({
+          contacts: s.contacts.filter((x) => x.id !== id),
+          interactions: s.interactions.filter((i) => i.contactId !== id),
+          reminders: s.reminders
+            .filter((r) => r.id !== c?.birthdayReminderId)
+            .map((r) => (r.contactId === id ? { ...r, contactId: null } : r)),
+        }))
+      },
+      logInteraction: (contactId, kind, note, date) => {
+        const id = uid()
+        set((s) => ({
+          interactions: [...s.interactions, { id, contactId, kind, note, date, createdAt: now() }],
+          // A check-in clears any snooze.
+          contacts: s.contacts.map((c) => (c.id === contactId && c.snoozedUntil ? { ...c, snoozedUntil: null, updatedAt: now() } : c)),
+        }))
+        return id
+      },
+      deleteInteraction: (id) => set((s) => ({ interactions: s.interactions.filter((i) => i.id !== id) })),
+      snoozeContact: (id, until) => get().updateContact(id, { snoozedUntil: until }),
+      syncBirthdayReminder: (contactId, wanted) => {
+        const s = get()
+        const c = s.contacts.find((x) => x.id === contactId)
+        if (!c) return
+        const existing = c.birthdayReminderId ? s.reminders.find((r) => r.id === c.birthdayReminderId) : undefined
+        const when = birthdayReminderDate(c.birthday, todayKey())
+        if (!wanted || !when) {
+          if (existing) s.deleteReminder(existing.id)
+          if (c.birthdayReminderId) s.updateContact(contactId, { birthdayReminderId: null })
+          return
+        }
+        const fields = { title: `${c.name}’s birthday`, date: when.date, countYears: when.countYears, contactId }
+        if (existing) s.updateReminder(existing.id, fields)
+        else {
+          const rid = s.addReminder({ ...fields, notes: '', emoji: '🎂', time: null, repeat: 'yearly', alerts: [0, 10080], important: false })
+          s.updateContact(contactId, { birthdayReminderId: rid })
+        }
+      },
 
       // --- settings & data -------------------------------------------------------
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
@@ -335,7 +436,8 @@ export const useStore = create<Store>()(
       partialize: (s): Data => ({
         areas: s.areas, tasks: s.tasks, habits: s.habits, habitLogs: s.habitLogs, goals: s.goals,
         goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
-        reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, settings: s.settings,
+        reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
+        contacts: s.contacts, interactions: s.interactions, settings: s.settings,
       }),
       migrate: (persisted, version) => migrate(persisted, version) as unknown as Store,
     },
@@ -358,7 +460,8 @@ export function snapshot(s: Store): Data {
   return {
     areas: s.areas, tasks: s.tasks, habits: s.habits, habitLogs: s.habitLogs, goals: s.goals,
     goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
-    reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, settings: s.settings,
+    reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
+    contacts: s.contacts, interactions: s.interactions, settings: s.settings,
   }
 }
 

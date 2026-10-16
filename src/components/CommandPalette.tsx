@@ -25,11 +25,12 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
   const [sel, setSel] = useState(0)
   const today = useToday()
   const areas = useStore((s) => s.areas)
+  const projects = useStore((s) => s.projects)
   const weekStartsOn = useStore((s) => s.settings.weekStartsOn)
 
   useEffect(() => { if (open) { setQ(''); setSel(0) } }, [open])
 
-  const parsed = useMemo(() => parseQuickAdd(q, areas, today, weekStartsOn), [q, areas, today, weekStartsOn])
+  const parsed = useMemo(() => parseQuickAdd(q, areas, today, weekStartsOn, projects), [q, areas, today, weekStartsOn, projects])
 
   const items = useMemo<Item[]>(() => {
     const st = useStore.getState()
@@ -48,7 +49,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
         id: 'add', icon: <Plus size={16} />, keywords: '',
         label: <span>Add task <b>“{parsed.title}”</b></span>,
         hint: <span className="flex items-center gap-1.5">{area && <AreaChip area={area} />}{date ? prettyDay(date, today) : 'Inbox'}{parsed.priority > 0 && ` · P${parsed.priority}`}</span>,
-        run: () => { st.addTask({ title: parsed.title, areaId: parsed.areaId, priority: parsed.priority, timeOfDay: parsed.timeOfDay, estimateMin: parsed.estimateMin, date }); toast({ emoji: '✅', message: `Added “${parsed.title}”` }) },
+        run: () => { st.addTask({ title: parsed.title, areaId: parsed.areaId, projectId: parsed.projectId, priority: parsed.priority, timeOfDay: parsed.timeOfDay, estimateMin: parsed.estimateMin, date }); toast({ emoji: '✅', message: `Added “${parsed.title}”` }) },
       })
     }
     for (const n of NAV) list.push({ id: `go-${n.route}`, icon: n.icon, label: `Go to ${n.label}`, keywords: `go ${n.label}`, run: () => navigate(n.route) })
@@ -115,7 +116,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
               ))}
             </div>
             <div className="border-t border-border px-4 py-2 text-[11px] text-muted">
-              <b>idea: …</b> saves an idea · <b>#area</b> · <b>!1–!3</b> priority · <b>today / tomorrow / friday / next week / in 3 days / inbox</b> · <b>@morning</b> · <b>~30m</b>
+              <b>idea: …</b> saves an idea · <b>#area</b> · <b>+project</b> · <b>!1–!3</b> priority · <b>today / tomorrow / friday / next week / in 3 days / inbox</b> · <b>@morning</b> · <b>~30m</b>
             </div>
           </motion.div>
         </div>

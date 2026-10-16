@@ -4,7 +4,7 @@ import type { Reminder } from '../types'
 
 const r = (p: Partial<Reminder>): Reminder => ({
   id: 'r1', title: 'T', notes: '', emoji: '', date: '2026-10-20', time: null, repeat: 'none', alerts: [0],
-  important: false, done: false, createdAt: '', ...p,
+  important: false, contactId: null, countYears: true, done: false, createdAt: '', ...p,
 })
 
 describe('calendar export', () => {

@@ -6,7 +6,7 @@ import type { Data } from './types'
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -14,6 +14,16 @@ type Step = (d: Record<string, unknown>) => Record<string, unknown>
 const steps: Record<number, Step> = {
   // 1 → 2 (2026-10-16): Memories, Ideas and Reminders arrive. Everything else is untouched.
   1: (d) => ({ ...d, memories: d.memories ?? [], ideas: d.ideas ?? [], reminders: d.reminders ?? [] }),
+  // 2 → 3 (2026-10-16): Projects and Connections. Tasks may belong to a project; reminders may be
+  // about a person. Existing tasks and reminders gain a null link — nothing else changes.
+  2: (d) => ({
+    ...d,
+    tasks: ((d.tasks as Record<string, unknown>[] | undefined) ?? []).map((t) => ({ projectId: null, ...t })),
+    reminders: ((d.reminders as Record<string, unknown>[] | undefined) ?? []).map((r) => ({ contactId: null, countYears: true, ...r })),
+    projects: d.projects ?? [],
+    contacts: d.contacts ?? [],
+    interactions: d.interactions ?? [],
+  }),
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {
@@ -43,6 +53,9 @@ export function normalize(d: Record<string, unknown>): Data {
     memories: pick('memories'),
     ideas: pick('ideas'),
     reminders: pick('reminders'),
+    projects: pick('projects'),
+    contacts: pick('contacts'),
+    interactions: pick('interactions'),
     settings: { ...DEFAULT_SETTINGS, ...((d.settings as object) ?? {}) },
   }
 }

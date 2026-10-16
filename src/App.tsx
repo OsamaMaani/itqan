@@ -8,31 +8,34 @@ import { TimerWatcher } from './components/TimerWatcher'
 import { Toaster } from './components/Toaster'
 import { celebrate } from './lib/celebrate'
 import { useMediaQuery, useProgress } from './lib/hooks'
-import { navigate, ROUTES, useRoute, type Route } from './lib/router'
+import { navigate, ROUTES, useRoute, useRouteParam, type Route } from './lib/router'
 import { startNotifier } from './lib/notifier'
 import { startSync } from './lib/sync/engine'
 import { useStore } from './lib/store'
 import { toast } from './lib/toast'
 import { FocusPage } from './pages/Focus'
 import { GoalsPage } from './pages/Goals'
+import { ConnectionsPage } from './pages/Connections'
 import { HabitsPage } from './pages/Habits'
 import { IdeasPage } from './pages/Ideas'
 import { InsightsPage } from './pages/Insights'
 import { MemoriesPage } from './pages/Memories'
 import { PlanPage } from './pages/Plan'
+import { ProjectsPage } from './pages/Projects'
 import { RemindersPage } from './pages/Reminders'
 import { ReviewPage } from './pages/Review'
 import { SettingsPage } from './pages/Settings'
 import { TodayPage } from './pages/Today'
 
 const PAGES: Record<Route, () => React.ReactElement> = {
-  today: TodayPage, plan: PlanPage, habits: HabitsPage, goals: GoalsPage,
+  today: TodayPage, plan: PlanPage, habits: HabitsPage, goals: GoalsPage, projects: ProjectsPage, connections: ConnectionsPage,
   focus: FocusPage, ideas: IdeasPage, reminders: RemindersPage, memories: MemoriesPage,
   insights: InsightsPage, review: ReviewPage, settings: SettingsPage,
 }
 
 export default function App() {
   const route = useRoute()
+  const param = useRouteParam()
   const [palette, setPalette] = useState(false)
   const [newTask, setNewTask] = useState(false)
   const theme = useStore((s) => s.settings.theme)
@@ -44,7 +47,7 @@ export default function App() {
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0a100e' : '#f4f6f5')
   }, [theme, systemDark])
 
-  useEffect(() => { window.scrollTo({ top: 0 }) }, [route])
+  useEffect(() => { window.scrollTo({ top: 0 }) }, [route, param])
   useEffect(() => { startSync(); startNotifier() }, [])
 
   useKeyboard({ openPalette: () => setPalette(true), openNewTask: () => setNewTask(true) })
@@ -60,7 +63,7 @@ export default function App() {
         <MobileHeader route={route} />
         <main className="mx-auto w-full max-w-7xl px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
           <AnimatePresence mode="wait">
-            <motion.div key={route} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }}>
+            <motion.div key={`${route}/${param ?? ''}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }}>
               <Page />
             </motion.div>
           </AnimatePresence>

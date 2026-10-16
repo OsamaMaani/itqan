@@ -249,3 +249,40 @@ then alerts natively, offline. The laptop keeps its own helper (ADR-013).
 
 **Rejected:** a free push relay (third-party service holding a subscription for the owner's phone —
 another account and a dependency for one feature).
+
+---
+
+## ADR-018 | 2026-10-16 | accepted | Connections: a personal relationship manager on top of reminders
+
+**Decision:** `Contact` (circle, tags, phone/email/link, company/role, how-we-met, birthday with
+optional year, notes, check-in rhythm), `Interaction` (call / message / meet / email / other,
+dated, with a note). The check-in rules live in `src/lib/connections.ts` (tested):
+- last contact = latest interaction or the hand-entered "last time we talked", whichever is later;
+- next check-in = last contact + rhythm, or snooze date if later; a person never contacted counts
+  from the day they were added, so importing many people does not make them all due at once;
+- "Reach out" lists people overdue, due today or within 2 days.
+
+**Reuse, not a second engine:** "Remind me about this person" is an ordinary `Reminder` with a
+`contactId`; a birthday is a yearly reminder created by `syncBirthdayReminder` (and removed with
+the person). So desktop notifications (ADR-013), the iPhone Calendar export (ADR-017) and sync all
+work for people without new code. Check-ins also send a 10:00 desktop nudge on their due day.
+A birthday without a year sets `countYears: false` so no wrong age is shown.
+
+**Rejected:** a separate birthday/alert engine for contacts (two recurrence implementations
+drift); importing phone contacts (no web API on iOS; and most phone contacts are not people you
+want to keep up with).
+
+---
+
+## ADR-019 | 2026-10-16 | accepted | Projects group tasks; goals stay outcomes
+
+**Decision:** a `Project` (status planning / active / on hold / done / archived, dates, area,
+optional goal, notes, links) owns tasks through `Task.projectId`. Progress = done ÷ all tasks;
+focus time = sessions on its tasks. Quick add understands `+project`; an idea can become a
+project. Deleting a project keeps its tasks.
+**Why not reuse Goals:** a goal is an outcome measured by a number or milestones; a project is
+a body of work measured by its tasks. A project may serve a goal (`goalId`).
+**Detail pages** use `#/projects/<id>` (router now carries one parameter).
+
+Schema v3 (migration tested on its own and through sync): `projects`, `contacts`,
+`interactions`; `Task.projectId`; `Reminder.contactId` and `Reminder.countYears`.

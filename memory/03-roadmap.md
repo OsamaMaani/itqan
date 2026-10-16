@@ -15,7 +15,7 @@ achievements, celebrations.
 
 ## Stage 2 — Shaped by real use (in progress)
 Done so far: local no-server app (ADR-012); Memories, Ideas, Reminders with desktop
-notifications (ADR-013/014/015).
+notifications (ADR-013/014/015); Projects (ADR-019) and Connections (ADR-018).
 
 Driven by the owner's first one to two weeks of feedback. Candidates, in rough priority:
 - Publish to GitHub and turn on Pages (S2-01).

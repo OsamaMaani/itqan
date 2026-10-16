@@ -1,6 +1,6 @@
 import { formatDistanceToNowStrict } from 'date-fns'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowRight, CheckSquare, Lightbulb, Pencil, Target, Trash2 } from 'lucide-react'
+import { ArrowRight, CheckSquare, FolderKanban, Lightbulb, Pencil, Target, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { AreaPicker } from '../components/AreaPicker'
 import { GoalEditor } from '../components/GoalEditor'
@@ -8,6 +8,7 @@ import { AreaChip, Button, Card, cx, EmptyState, IconButton, Input, Label, Modal
 import { celebrate } from '../lib/celebrate'
 import { addDaysKey } from '../lib/date'
 import { useAreaMap, useData, useToday } from '../lib/hooks'
+import { navigate } from '../lib/router'
 import { useStore } from '../lib/store'
 import { toast } from '../lib/toast'
 import type { Idea, IdeaStatus } from '../lib/types'
@@ -110,6 +111,7 @@ function IdeaCard({ idea }: { idea: Idea }) {
   const goal = useStore((s) => (idea.goalId ? s.goals.find((g) => g.id === idea.goalId) : undefined))
   const setStatus = useStore((s) => s.setIdeaStatus)
   const linkGoal = useStore((s) => s.linkIdeaGoal)
+  const ideaToProject = useStore((s) => s.ideaToProject)
   const [editing, setEditing] = useState(false)
   const [tasking, setTasking] = useState(false)
   const [goaling, setGoaling] = useState(false)
@@ -145,6 +147,7 @@ function IdeaCard({ idea }: { idea: Idea }) {
             <>
               <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setTasking(true)}><CheckSquare size={13} /> Task</Button>
               {!goal && <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setGoaling(true)}><Target size={13} /> Goal</Button>}
+              <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { const id = ideaToProject(idea.id); toast({ emoji: '🚀', message: 'Project created from your idea' }); navigate('projects', id) }}><FolderKanban size={13} /> Project</Button>
             </>
           )}
           <div className="ml-auto flex">

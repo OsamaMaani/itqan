@@ -34,7 +34,8 @@ export function useData(): Data {
     useShallow((s) => ({
       areas: s.areas, tasks: s.tasks, habits: s.habits, habitLogs: s.habitLogs, goals: s.goals,
       goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
-      reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, settings: s.settings,
+      reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
+      contacts: s.contacts, interactions: s.interactions, settings: s.settings,
     })),
   )
 }
@@ -47,7 +48,7 @@ export function useProgress() {
     const total = totalXp(events)
     return { events, total, level: levelInfo(total), todayXp: xpOn(events, today), streak: activeStreak(events, today) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [d.tasks, d.habits, d.habitLogs, d.focusSessions, d.goals, d.goalLogs, d.reviews, d.dayNotes, d.memories, d.ideas, today])
+  }, [d.tasks, d.habits, d.habitLogs, d.focusSessions, d.goals, d.goalLogs, d.reviews, d.dayNotes, d.memories, d.ideas, d.interactions, d.contacts, today])
 }
 
 export function useAreaMap(): Map<string, Area> {

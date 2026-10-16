@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { decrypt, deriveKey, encrypt, randomB64, WrongPassphrase } from '../sync/crypto'
+import { upgradeEntities } from '../sync/engine'
 import { fromEntities, hasUserData, toEntities } from '../sync/entities'
 import { initMeta, merge, stamp, type Meta } from '../sync/merge'
 import { emptyData, starterData } from '../seed'
@@ -7,7 +8,7 @@ import type { Data, Task } from '../types'
 
 const data = (): Data => ({ ...emptyData(), ...starterData('2026-10-16'), habitLogs: { h1: { '2026-10-15': 1 } }, dayNotes: { '2026-10-16': { intention: 'focus', mood: 4, reflection: '' } } })
 const task = (id: string, title = id): Task => ({
-  id, title, notes: '', areaId: null, goalId: null, date: null, timeOfDay: 'anytime', priority: 0, estimateMin: null,
+  id, title, notes: '', areaId: null, goalId: null, projectId: null, date: null, timeOfDay: 'anytime', priority: 0, estimateMin: null,
   subtasks: [], done: false, doneAt: null, createdAt: `2026-10-16T0${id.length}:00:00Z`, order: 0,
 })
 
@@ -126,5 +127,22 @@ describe('encryption', () => {
     const bytes = atob(env.data)
     const flipped = btoa(String.fromCharCode(bytes.charCodeAt(0) ^ 1) + bytes.slice(1))
     await expect(decrypt({ ...env, data: flipped }, key)).rejects.toBeInstanceOf(WrongPassphrase)
+  })
+})
+
+describe('sync file from an older Itqan', () => {
+  it('a version-2 file is upgraded on read: tasks gain projectId, reminders gain contactId', () => {
+    const v2 = {
+      'tasks:t1': { id: 't1', title: 'From the phone', createdAt: '2026-10-16T08:00:00Z' },
+      'reminders:r1': { id: 'r1', title: 'Mum', repeat: 'yearly', createdAt: '2026-10-16T08:00:00Z' },
+      'habitLogs:h1|2026-10-15': 1,
+      'settings:shared': '{"name":"Sam"}',
+    }
+    const up = upgradeEntities(v2, 2)
+    expect(up['tasks:t1']).toMatchObject({ title: 'From the phone', projectId: null })
+    expect(up['reminders:r1']).toMatchObject({ title: 'Mum', contactId: null, countYears: true })
+    expect(up['habitLogs:h1|2026-10-15']).toBe(1)
+    expect(JSON.parse(up['settings:shared'] as string).name).toBe('Sam')
+    expect(Object.keys(up).sort()).toEqual(Object.keys(v2).sort()) // nothing added, nothing lost
   })
 })

@@ -41,12 +41,34 @@ describe('v1 → v2 (memories, ideas, reminders)', () => {
     expect(d.memories).toEqual([])
     expect(d.ideas).toEqual([])
     expect(d.reminders).toEqual([])
-    expect(d.tasks).toEqual([{ id: 't1' }])
+    expect(d.tasks).toEqual([{ id: 't1', projectId: null }]) // + v3's project link
     expect(d.habitLogs).toEqual({ h1: { '2026-10-15': 1 } })
     expect(d.settings.name).toBe('Sam')
   })
   it('a v1 backup still restores', () => {
     const b = { app: 'itqan', schemaVersion: 1, exportedAt: '', data: { areas: [], tasks: [{ id: 'x' }], habits: [], goals: [] } }
-    expect(parseBackup(JSON.stringify(b)).tasks).toEqual([{ id: 'x' }])
+    expect(parseBackup(JSON.stringify(b)).tasks).toEqual([{ id: 'x', projectId: null }])
+  })
+})
+
+describe('v2 → v3 (projects, connections)', () => {
+  it('links nothing, adds the new collections, and keeps every field of existing records', () => {
+    const v2 = {
+      tasks: [{ id: 't1', title: 'Read', goalId: 'g1', done: true }],
+      reminders: [{ id: 'r1', title: 'Mum', repeat: 'yearly' }],
+      memories: [{ id: 'm1' }], ideas: [{ id: 'i1' }],
+    }
+    const d = migrate(v2, 2)
+    expect(d.tasks).toEqual([{ id: 't1', title: 'Read', goalId: 'g1', done: true, projectId: null }])
+    expect(d.reminders).toEqual([{ id: 'r1', title: 'Mum', repeat: 'yearly', contactId: null, countYears: true }])
+    expect(d.memories).toEqual([{ id: 'm1' }])
+    expect(d.projects).toEqual([])
+    expect(d.contacts).toEqual([])
+    expect(d.interactions).toEqual([])
+  })
+  it('never overwrites a value that is already there', () => {
+    const d = migrate({ tasks: [{ id: 't', projectId: 'p1' }], reminders: [{ id: 'r', contactId: 'c1', countYears: false }] }, 2)
+    expect(d.tasks[0].projectId).toBe('p1')
+    expect(d.reminders[0]).toMatchObject({ contactId: 'c1', countYears: false })
   })
 })

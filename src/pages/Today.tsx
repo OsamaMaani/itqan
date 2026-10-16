@@ -19,6 +19,8 @@ import { wisdomFor } from '../lib/wisdom'
 import { onThisDay } from './Memories'
 import { upcoming } from './Reminders'
 import { whenText } from '../lib/reminders'
+import { checkIn } from '../lib/connections'
+import { Avatar } from './Connections'
 
 const GROUPS: { key: TimeOfDay; label: string; emoji: string }[] = [
   { key: 'morning', label: 'Morning', emoji: '🌅' },
@@ -271,10 +273,17 @@ function ComingUp() {
   const today = useToday()
   const reminders = useStore((s) => s.reminders)
   const memories = useStore((s) => s.memories)
+  const contacts = useStore((s) => s.contacts)
+  const interactions = useStore((s) => s.interactions)
+  const reach = contacts
+    .map((c) => ({ c, ci: checkIn(c, interactions, today) }))
+    .filter((x) => x.ci.state === 'overdue' || x.ci.state === 'today')
+    .sort((a, b) => (a.ci.days ?? 0) - (b.ci.days ?? 0))
+    .slice(0, 4)
   const now = new Date()
   const soon = upcoming(reminders, now, today).filter((x) => x.days <= 7).slice(0, 5)
   const otd = onThisDay(memories, today)
-  if (!soon.length && !otd.length) return null
+  if (!soon.length && !otd.length && !reach.length) return null
   return (
     <section className="space-y-3">
       {soon.length > 0 && (
@@ -287,6 +296,24 @@ function ComingUp() {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold">{r.title}</span>
                   <span className={cx('text-[11px]', days < 0 ? 'font-semibold text-danger' : days === 0 ? 'font-semibold text-accent' : 'text-muted')}>{whenText(r, occ, now)}</span>
+                </span>
+              </button>
+            ))}
+          </Card>
+        </>
+      )}
+      {reach.length > 0 && (
+        <>
+          <SectionTitle right={<button onClick={() => navigate('connections')} className="text-xs font-semibold text-accent hover:underline">All people</button>}>Reach out</SectionTitle>
+          <Card className="divide-y divide-border">
+            {reach.map(({ c, ci }) => (
+              <button key={c.id} onClick={() => navigate('connections', c.id)} className="flex w-full items-center gap-3 p-3 text-left">
+                <Avatar c={c} size={34} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold">{c.name}</span>
+                  <span className={cx('text-[11px]', ci.state === 'overdue' ? 'font-semibold text-danger' : 'font-semibold text-accent')}>
+                    {ci.state === 'overdue' ? `Overdue by ${-(ci.days ?? 0)}d` : 'Check in today'}
+                  </span>
                 </span>
               </button>
             ))}

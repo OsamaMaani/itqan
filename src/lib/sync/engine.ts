@@ -125,12 +125,13 @@ async function parseRemote(text: string, c: SyncConfig): Promise<Side> {
   if (doc.schemaVersion > SCHEMA_VERSION) {
     throw new SyncError('Your other device runs a newer Itqan. Update this one first (on the laptop: run install_local.sh).')
   }
-  if (doc.schemaVersion < SCHEMA_VERSION) {
-    // Bring older data up to this version with the same migrations local data uses.
-    const upgraded = migrate(fromEntities(doc.entities, emptyData()), doc.schemaVersion)
-    return { entities: toEntities(upgraded), meta: doc.meta }
-  }
+  if (doc.schemaVersion < SCHEMA_VERSION) return { entities: upgradeEntities(doc.entities, doc.schemaVersion), meta: doc.meta }
   return { entities: doc.entities, meta: doc.meta }
+}
+
+/** Brings entities written by an older Itqan up to this version, using the same migrations as local data. */
+export function upgradeEntities(entities: Entities, fromVersion: number): Entities {
+  return toEntities(migrate(fromEntities(entities, emptyData()), fromVersion))
 }
 
 export async function syncNow(): Promise<void> {

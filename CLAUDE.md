@@ -83,7 +83,8 @@ Goals, Focus, Insights, Weekly review, Settings, onboarding with the owner's rou
 a Ctrl+K command bar with natural-language quick add, XP/levels/achievements, backup/restore,
 installable PWA. Since then (Stage 2): a no-server local app with an app-menu launcher (ADR-012),
 and Memories, Ideas and Reminders with desktop notifications via a local helper service
-(ADR-013), and encrypted sync between laptop and iPhone through a private GitHub repo (ADR-016).
+(ADR-013), encrypted sync between laptop and iPhone through a private GitHub repo (ADR-016), and Projects
+and Connections (ADR-018, ADR-019; schema v3).
 `memory/status.json` and `dashboard/index.html` are the live answer — this
 paragraph is a snapshot and will lag them.
 

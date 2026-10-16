@@ -1,15 +1,16 @@
 import { addDaysKey, dayOfWeek, weekStartKey } from './date'
-import type { Area, DateKey, Priority, TimeOfDay } from './types'
+import type { Area, DateKey, Priority, Project, TimeOfDay } from './types'
 
 /**
  * Parses a one-line task like
- *   "Read 30 pages #books !2 tomorrow @evening ~30m"
+ *   "Read 30 pages #books !2 tomorrow @evening ~30m +portfolio"
  * into its parts. Unrecognised words stay in the title. `date` is undefined when the text
  * says nothing about a day (the caller picks a default), and null for "inbox"/"someday".
  */
 export interface Parsed {
   title: string
   areaId: string | null
+  projectId: string | null
   priority: Priority
   timeOfDay: TimeOfDay
   estimateMin: number | null
@@ -24,8 +25,8 @@ const TIMES: Record<string, TimeOfDay> = {
 
 const norm = (s: string) => s.toLowerCase().replace(/[\s_-]+/g, '')
 
-export function parseQuickAdd(input: string, areas: Area[], today: DateKey, weekStartsOn: 0 | 1 | 6 = 6): Parsed {
-  const out: Parsed = { title: '', areaId: null, priority: 0, timeOfDay: 'anytime', estimateMin: null, date: undefined }
+export function parseQuickAdd(input: string, areas: Area[], today: DateKey, weekStartsOn: 0 | 1 | 6 = 6, projects: Project[] = []): Parsed {
+  const out: Parsed = { title: '', areaId: null, projectId: null, priority: 0, timeOfDay: 'anytime', estimateMin: null, date: undefined }
   const words = input.trim().split(/\s+/).filter(Boolean)
   const keep: string[] = []
 
@@ -39,6 +40,16 @@ export function parseQuickAdd(input: string, areas: Area[], today: DateKey, week
       const live = areas.filter((a) => !a.archived)
       const hit = live.find((a) => norm(a.name) === q) ?? live.find((a) => norm(a.name).startsWith(q))
       if (hit) { out.areaId = hit.id; continue }
+    }
+    if (w.startsWith('+') && w.length > 1) {
+      const q = norm(w.slice(1))
+      const live = projects.filter((p) => p.status !== 'archived' && p.status !== 'done')
+      const hit = live.find((p) => norm(p.title) === q) ?? live.find((p) => norm(p.title).startsWith(q))
+      if (hit) {
+        out.projectId = hit.id
+        if (!out.areaId && hit.areaId) out.areaId = hit.areaId
+        continue
+      }
     }
     if (/^!{1,3}$/.test(w)) { out.priority = w.length as Priority; continue }
     if (/^![1-3]$/.test(w)) { out.priority = Number(w[1]) as Priority; continue }

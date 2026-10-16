@@ -9,8 +9,10 @@ import type { DateKey } from '../lib/types'
 import { AreaChip, cx } from './ui'
 
 /** One-line task entry with live parsing: "#area !2 tomorrow @evening ~30m". */
-export function QuickAdd({ defaultDate, placeholder, autoFocus, onAdded, className }: {
+export function QuickAdd({ defaultDate, defaultProjectId, defaultAreaId, placeholder, autoFocus, onAdded, className }: {
   defaultDate: DateKey | null
+  defaultProjectId?: string | null
+  defaultAreaId?: string | null
   placeholder?: string
   autoFocus?: boolean
   onAdded?: () => void
@@ -20,16 +22,20 @@ export function QuickAdd({ defaultDate, placeholder, autoFocus, onAdded, classNa
   const [focused, setFocused] = useState(false)
   const today = useToday()
   const areas = useStore((s) => s.areas)
+  const projects = useStore((s) => s.projects)
   const weekStartsOn = useStore((s) => s.settings.weekStartsOn)
   const addTask = useStore((s) => s.addTask)
 
-  const p = useMemo(() => parseQuickAdd(text, areas, today, weekStartsOn), [text, areas, today, weekStartsOn])
+  const p = useMemo(() => parseQuickAdd(text, areas, today, weekStartsOn, projects), [text, areas, today, weekStartsOn, projects])
   const date = p.date === undefined ? defaultDate : p.date
-  const area = areas.find((a) => a.id === p.areaId)
+  const areaId = p.areaId ?? defaultAreaId ?? null
+  const projectId = p.projectId ?? defaultProjectId ?? null
+  const area = areas.find((a) => a.id === areaId)
+  const project = projects.find((x) => x.id === projectId)
 
   const submit = () => {
     if (!p.title) return
-    addTask({ title: p.title, areaId: p.areaId, priority: p.priority, timeOfDay: p.timeOfDay, estimateMin: p.estimateMin, date })
+    addTask({ title: p.title, areaId, projectId, priority: p.priority, timeOfDay: p.timeOfDay, estimateMin: p.estimateMin, date })
     setText('')
     onAdded?.()
   }
@@ -62,10 +68,11 @@ export function QuickAdd({ defaultDate, placeholder, autoFocus, onAdded, classNa
             <div className="flex flex-wrap items-center gap-2 border-t border-border px-3 py-2 text-[11px] font-semibold text-muted">
               <span className="inline-flex items-center gap-1"><CalendarDays size={12} />{date ? prettyDay(date, today) : 'Inbox'}</span>
               {area && <AreaChip area={area} />}
+              {project && !defaultProjectId && <span className="inline-flex items-center gap-1">{project.emoji} {project.title}</span>}
               {p.priority > 0 && <span className="inline-flex items-center gap-1"><Flag size={12} />P{p.priority}</span>}
               {p.timeOfDay !== 'anytime' && <span className="capitalize">{p.timeOfDay}</span>}
               {p.estimateMin && <span className="inline-flex items-center gap-1"><Timer size={12} />{p.estimateMin}m</span>}
-              <span className="ml-auto hidden font-normal opacity-70 md:inline">#area · !1–3 · today/tomorrow/friday · @morning · ~30m</span>
+              <span className="ml-auto hidden font-normal opacity-70 md:inline">#area · +project · !1–3 · today/tomorrow/friday · @morning · ~30m</span>
             </div>
           </motion.div>
         )}

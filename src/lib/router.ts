@@ -1,24 +1,39 @@
 import { useEffect, useState } from 'react'
 
-export const ROUTES = ['today', 'plan', 'habits', 'goals', 'focus', 'ideas', 'reminders', 'memories', 'insights', 'review', 'settings'] as const
+export const ROUTES = [
+  'today', 'plan', 'habits', 'goals', 'projects', 'focus', 'ideas', 'reminders', 'connections', 'memories',
+  'insights', 'review', 'settings',
+] as const
 export type Route = (typeof ROUTES)[number]
 
-function read(): Route {
-  const h = window.location.hash.replace(/^#\/?/, '') as Route
-  return ROUTES.includes(h) ? h : 'today'
+interface Location { route: Route; param: string | null }
+
+function read(): Location {
+  const [r, param] = window.location.hash.replace(/^#\/?/, '').split('/')
+  return ROUTES.includes(r as Route) ? { route: r as Route, param: param ? decodeURIComponent(param) : null } : { route: 'today', param: null }
 }
 
-export function navigate(r: Route) {
-  window.location.hash = `/${r}`
+/** `navigate('projects', id)` → #/projects/<id> (a detail page). */
+export function navigate(r: Route, param?: string) {
+  window.location.hash = param ? `/${r}/${encodeURIComponent(param)}` : `/${r}`
 }
 
-/** Hash routing: works on GitHub Pages with no server rewrites (ADR-003). */
-export function useRoute(): Route {
-  const [r, setR] = useState<Route>(read)
+function useLocation(): Location {
+  const [loc, setLoc] = useState<Location>(read)
   useEffect(() => {
-    const on = () => setR(read())
+    const on = () => setLoc(read())
     window.addEventListener('hashchange', on)
     return () => window.removeEventListener('hashchange', on)
   }, [])
-  return r
+  return loc
+}
+
+/** Hash routing: works on GitHub Pages and from file:// with no server rewrites (ADR-003). */
+export function useRoute(): Route {
+  return useLocation().route
+}
+
+/** The id after the route, e.g. the project in #/projects/<id>. */
+export function useRouteParam(): string | null {
+  return useLocation().param
 }

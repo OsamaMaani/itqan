@@ -4,8 +4,9 @@
   "updated": "2026-10-16",
   "current_stage": 4,
   "next_actions": [
-    "On the iPhone: Reminders → Add all to Calendar, so the phone alerts natively (ADR-017).",
-    "Use Itqan daily for a week, then answer the open questions and pick the next Stage 2 items."
+    "Open Itqan on the iPhone once so it updates to the new version (it then syncs again).",
+    "Add your people in Connections and set a check-in rhythm for each.",
+    "Turn bigger pieces of work into Projects; use +name in quick add."
   ],
   "stages": [
     {
@@ -174,6 +175,26 @@
           "id": "S2-11",
           "title": "Desktop notifications via local helper service, secured and tested (ADR-013)",
           "module": "reminders",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S2-13",
+          "title": "Projects: tasks grouped into projects, progress, deadlines, notes, links, +project quick add",
+          "module": "projects",
+          "status": "done"
+        },
+        {
+          "id": "S2-14",
+          "title": "Connections: people, check-in rhythm, history, birthdays, one-tap contact, reminders about people",
+          "module": "connections",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S2-15",
+          "title": "Schema v3 migration, tested locally and through sync",
+          "module": "core-data",
           "status": "done",
           "critical": true
         },
@@ -378,6 +399,16 @@
       "status": "done"
     },
     {
+      "slug": "projects",
+      "name": "Projects",
+      "status": "done"
+    },
+    {
+      "slug": "connections",
+      "name": "Connections",
+      "status": "done"
+    },
+    {
       "slug": "learning",
       "name": "Learning companions",
       "status": "not-started"
@@ -433,6 +464,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-16",
+      "entry": "S2-13…S2-15: Projects (ADR-019) and Connections (ADR-018), schema v3. Check-in rules and birthday maths tested; people reuse reminders, so desktop alerts, Calendar export and sync work for them. Both features exercised in the browser at phone and laptop sizes; no screen overflows."
+    },
     {
       "date": "2026-10-16",
       "entry": "UI fixes: dialogs portalled to <body> (sync setup's buttons were clipped on desktop; the ☰ menu covered the phone's top bar), phone layouts for Habits/Plan/Reminders, 16 px fields (no iOS zoom), safe-area padding and touch icon for the home-screen app, no sideways scrolling. Every screen checked at 375/768/1280 px."

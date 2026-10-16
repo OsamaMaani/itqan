@@ -4,7 +4,7 @@ import type { Reminder } from '../types'
 
 const r = (p: Partial<Reminder>): Reminder => ({
   id: 'r', title: 'T', notes: '', emoji: '', date: '2026-10-16', time: null, repeat: 'none',
-  alerts: [0], important: false, done: false, createdAt: '', ...p,
+  alerts: [0], important: false, contactId: null, countYears: true, done: false, createdAt: '', ...p,
 })
 const local = (s: string) => new Date(s) // "2026-10-16T10:00" parses as local time
 

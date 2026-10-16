@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { BarChart3, Bell, BookOpenCheck, CalendarDays, Camera, Lightbulb, Menu, Plus, Settings, Sun, Target, Timer, Repeat } from 'lucide-react'
+import { BarChart3, Bell, BookOpenCheck, CalendarDays, Camera, FolderKanban, Lightbulb, Menu, Plus, Settings, Sun, Target, Timer, Repeat, Users } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useProgress } from '../lib/hooks'
 import { navigate, type Route } from '../lib/router'
@@ -14,9 +14,11 @@ export const NAV: { route: Route; label: string; icon: ReactNode }[] = [
   { route: 'plan', label: 'Plan', icon: <CalendarDays size={18} /> },
   { route: 'habits', label: 'Habits', icon: <Repeat size={18} /> },
   { route: 'goals', label: 'Goals', icon: <Target size={18} /> },
+  { route: 'projects', label: 'Projects', icon: <FolderKanban size={18} /> },
   { route: 'focus', label: 'Focus', icon: <Timer size={18} /> },
   { route: 'ideas', label: 'Ideas', icon: <Lightbulb size={18} /> },
   { route: 'reminders', label: 'Reminders', icon: <Bell size={18} /> },
+  { route: 'connections', label: 'Connections', icon: <Users size={18} /> },
   { route: 'memories', label: 'Memories', icon: <Camera size={18} /> },
   { route: 'insights', label: 'Insights', icon: <BarChart3 size={18} /> },
   { route: 'review', label: 'Review', icon: <BookOpenCheck size={18} /> },
@@ -61,14 +63,14 @@ export function Sidebar({ route, onAdd }: { route: Route; onAdd: () => void }) {
         <Plus size={18} /> New task
         <span className="ml-auto rounded-md bg-black/10 px-1.5 py-0.5 text-[10px]">Ctrl K</span>
       </button>
-      <nav className="mt-5 flex flex-col gap-0.5 overflow-y-auto">
+      <nav className="mt-4 flex min-h-0 flex-col gap-0.5 overflow-y-auto">
         {NAV.map((n, i) => {
           const on = route === n.route
           return (
             <button
               key={n.route}
               onClick={() => navigate(n.route)}
-              className={cx('relative flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition', on ? 'text-text' : 'text-muted hover:bg-surface-2/70 hover:text-text')}
+              className={cx('relative flex h-9 shrink-0 items-center gap-3 rounded-xl px-3 text-sm font-semibold transition', on ? 'text-text' : 'text-muted hover:bg-surface-2/70 hover:text-text')}
             >
               {on && <motion.span layoutId="nav-pill" className="absolute inset-0 rounded-xl bg-surface-2" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />}
               <span className={cx('relative', on && 'text-accent')}>{n.icon}</span>

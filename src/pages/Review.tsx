@@ -46,6 +46,7 @@ export function ReviewPage() {
     }
     const focus = d.focusSessions.filter((f) => inWeek(f.startedAt)).reduce((s, f) => s + f.minutes, 0)
     const goalLogs = d.goalLogs.filter((l) => days.includes(l.date)).length
+    const people = new Set(d.interactions.filter((i) => days.includes(i.date)).map((i) => i.contactId)).size
     const xp = xpByDay(events)
     const xpWeek = days.reduce((s, k) => s + (xp[k] ?? 0), 0)
     const best = days.reduce((b, k) => ((xp[k] ?? 0) > (xp[b] ?? 0) ? k : b), days[0])
@@ -53,7 +54,7 @@ export function ReviewPage() {
     const mood = moods.length ? Math.round(moods.reduce<number>((s, m) => s + m, 0) / moods.length) : 0
     const perArea = new Map<string | null, number>()
     for (const t of done) perArea.set(t.areaId, (perArea.get(t.areaId) ?? 0) + 1)
-    return { done, planned, habitRate: sched ? met / sched : null, focus, goalLogs, xpWeek, best, bestXp: xp[best] ?? 0, mood, perArea }
+    return { done, planned, habitRate: sched ? met / sched : null, focus, goalLogs, people, xpWeek, best, bestXp: xp[best] ?? 0, mood, perArea }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [d, ws, events, today])
 
@@ -88,6 +89,7 @@ export function ReviewPage() {
             <Mini value={fmtMin(summary.focus)} label="focused" />
             <Mini value={`${summary.xpWeek}`} label="XP earned" />
             <Mini value={`${summary.goalLogs}`} label="goal check-ins" />
+            <Mini value={`${summary.people}`} label={summary.people === 1 ? 'person you checked in with' : 'people you checked in with'} />
             <Mini value={summary.mood ? MOODS[summary.mood] : '—'} label="average mood" />
           </div>
           {summary.bestXp > 0 && (

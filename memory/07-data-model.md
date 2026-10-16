@@ -22,6 +22,9 @@ Zustand as `{ state: Data, version: SCHEMA_VERSION }`.
 | `reviews` | `{ [weekStart]: WeeklyReview }` | Keyed by the week's first DateKey |
 | `memories` | `Memory[]` | `date` = when it happened; text, emoji, tags, favourite (ADR-014) |
 | `ideas` | `Idea[]` | `status` new → exploring → doing → done / dropped; `taskIds`, `goalId` (ADR-015) |
+| `projects` | `Project[]` | Status, dates, area, goal, notes, links; tasks join via `Task.projectId` (ADR-019) |
+| `contacts` | `Contact[]` | Circle, rhythm (`cadenceDays`), birthday `YYYY-MM-DD` or `MM-DD`, `birthdayReminderId` (ADR-018) |
+| `interactions` | `Interaction[]` | Check-ins with a person: kind, date, note |
 | `reminders` | `Reminder[]` | `date` = first/original occurrence; `time` null = all-day; `repeat`; `alerts` = minutes before (ADR-013) |
 | `settings` | `Settings` | Includes `onboarded`, `lastBackupAt` |
 
@@ -52,4 +55,5 @@ ADR-006). Storing them would let them drift from the history they summarise.
 4. `normalize()` must still produce a complete `Data` from partial input.
 5. Backups from the old version must import (they pass through the same `migrate`).
 
-Current version: **2**. History: 1 = initial; 2 (2026-10-16) = `memories`, `ideas`, `reminders`.
+Current version: **3**. History: 1 = initial; 2 = `memories`, `ideas`, `reminders`; 3 = `projects`,
+`contacts`, `interactions`, `Task.projectId`, `Reminder.contactId`, `Reminder.countYears` (all 2026-10-16).

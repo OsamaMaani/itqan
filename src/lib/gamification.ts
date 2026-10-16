@@ -21,9 +21,11 @@ export const XP = {
   memory: 5,
   idea: 2,
   ideaDone: 20,
+  checkIn: 5,
+  projectDone: 100,
 } as const
 
-export type XpKind = 'task' | 'habit' | 'focus' | 'goal' | 'review' | 'intention' | 'memory' | 'idea'
+export type XpKind = 'task' | 'habit' | 'focus' | 'goal' | 'review' | 'intention' | 'memory' | 'idea' | 'people' | 'project'
 
 export interface XpEvent {
   date: DateKey
@@ -69,6 +71,8 @@ export function xpEvents(d: Data): XpEvent[] {
     ev.push({ date: dayOf(i.createdAt), kind: 'idea', xp: XP.idea })
     if (i.status === 'done') ev.push({ date: dayOf(i.updatedAt), kind: 'idea', xp: XP.ideaDone })
   }
+  for (const x of d.interactions ?? []) ev.push({ date: x.date, kind: 'people', xp: XP.checkIn })
+  for (const p of d.projects ?? []) if (p.status === 'done') ev.push({ date: dayOf(p.updatedAt), kind: 'project', xp: XP.projectDone })
   return ev
 }
 
@@ -181,5 +185,8 @@ export function achievements(d: Data, today: DateKey): Achievement[] {
     a('memories-10', '📸', 'Storyteller', 'Save 10 memories', memories >= 10),
     a('ideas-25', '💡', 'Idea machine', 'Capture 25 ideas', ideas.length >= 25),
     a('idea-done', '🚀', 'From idea to reality', 'See an idea through to done', ideas.some((i) => i.status === 'done')),
+    a('project-done', '🏁', 'Shipped', 'Finish a project', (d.projects ?? []).some((p) => p.status === 'done')),
+    a('people-10', '🫶', 'Good friend', 'Log 10 check-ins with people', (d.interactions ?? []).length >= 10),
+    a('people-50', '🤝', 'Connector', 'Log 50 check-ins with people', (d.interactions ?? []).length >= 50),
   ]
 }

@@ -33,4 +33,10 @@ The vocabulary is fixed. Use these words in code, UI and memory alike.
 | **Entity** | One independently-synced piece of data, keyed like `tasks:<id>`. | `Entities` |
 | **Stamp / tombstone** | When an entity last changed; a tombstone marks a delete. | `Stamp` |
 | **Sync file** | The encrypted `itqan-sync.json` in the private repo. | `Envelope` |
+| **Project** | A body of work made of tasks, with a status and dates. | `Project` |
+| **Connection / person** | Someone you want to keep in touch with. UI: "Connections". | `Contact` |
+| **Circle** | Family, friends, university, work, mentors, other. | `Circle` |
+| **Rhythm** | How often to check in with a person. | `cadenceDays` |
+| **Check-in** | A logged call, message, meetup or email with a person. | `Interaction` |
+| **Reach out** | People overdue, due today or within 2 days. | `checkIn()` |
 | **DateKey** | A local-time day as `yyyy-MM-dd`. Never UTC. | `DateKey` |

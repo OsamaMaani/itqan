@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { ArrowRight, CalendarClock, Check, Flag, ListChecks, Target, Timer, Trash2 } from 'lucide-react'
+import { ArrowRight, CalendarClock, Check, Flag, FolderKanban, ListChecks, Target, Timer, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { celebrate } from '../lib/celebrate'
 import { addDaysKey, diffDays, prettyDay } from '../lib/date'
@@ -34,7 +34,7 @@ export function Checkbox({ checked, onChange, color }: { checked: boolean; onCha
   )
 }
 
-export function TaskItem({ task, showDate, onToggled }: { task: Task; showDate?: boolean; onToggled?: (done: boolean) => void }) {
+export function TaskItem({ task, showDate, hideProject, onToggled }: { task: Task; showDate?: boolean; hideProject?: boolean; onToggled?: (done: boolean) => void }) {
   const areas = useAreaMap()
   const today = useToday()
   const toggle = useStore((s) => s.toggleTask)
@@ -42,6 +42,7 @@ export function TaskItem({ task, showDate, onToggled }: { task: Task; showDate?:
   const restore = useStore((s) => s.restoreTask)
   const move = useStore((s) => s.moveTask)
   const goal = useStore((s) => (task.goalId ? s.goals.find((g) => g.id === task.goalId) : undefined))
+  const project = useStore((s) => (task.projectId ? s.projects.find((p) => p.id === task.projectId) : undefined))
   const startTimer = useStore((s) => s.startTimer)
   const focusMinutes = useStore((s) => s.settings.focusMinutes)
   const [editing, setEditing] = useState(false)
@@ -101,6 +102,11 @@ export function TaskItem({ task, showDate, onToggled }: { task: Task; showDate?:
             )}
             {task.estimateMin && <span className="inline-flex items-center gap-1"><Timer size={11} />{task.estimateMin}m</span>}
             {task.subtasks.length > 0 && <span className="inline-flex items-center gap-1"><ListChecks size={11} />{subDone}/{task.subtasks.length}</span>}
+            {project && !hideProject && (
+              <button onClick={(e) => { e.stopPropagation(); navigate('projects', project.id) }} className="inline-flex items-center gap-1 hover:text-accent">
+                <FolderKanban size={11} />{project.title}
+              </button>
+            )}
             {goal && <span className="inline-flex items-center gap-1"><Target size={11} />{goal.title}</span>}
           </div>
         </div>

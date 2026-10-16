@@ -1,5 +1,7 @@
 import { create } from 'zustand'
-import { buildSchedule } from './reminders'
+import { checkIn } from './connections'
+import { toKey } from './date'
+import { at, buildSchedule, type ScheduledAlert } from './reminders'
 import { useStore } from './store'
 import { toast } from './toast'
 import type { Reminder } from './types'
@@ -29,10 +31,26 @@ async function call(path: string, init: RequestInit = {}): Promise<Response> {
   })
 }
 
+/** A 10:00 desktop nudge on the day each person's check-in falls due (ADR-018). */
+export function checkInAlerts(now: Date): ScheduledAlert[] {
+  const { contacts, interactions } = useStore.getState()
+  const today = toKey(now)
+  const out: ScheduledAlert[] = []
+  for (const c of contacts) {
+    const ci = checkIn(c, interactions, today)
+    if (!ci.due || ci.due < today) continue // overdue ones were already announced on their day
+    const fireAt = at({ time: '10:00' } as Reminder, ci.due).getTime()
+    if (fireAt < now.getTime() - 12 * 3600_000) continue
+    out.push({ key: `checkin|${c.id}|${ci.due}`, fireAt, title: `🫶 Check in with ${c.name}`, body: 'It has been a while — a quick message is enough.', urgent: false })
+  }
+  return out
+}
+
 export async function syncReminders(reminders: Reminder[]): Promise<void> {
   if (!TOKEN) return
   try {
-    const res = await call('/schedule', { method: 'PUT', body: JSON.stringify({ items: buildSchedule(reminders, new Date()) }) })
+    const items = [...buildSchedule(reminders, new Date()), ...checkInAlerts(new Date())]
+    const res = await call('/schedule', { method: 'PUT', body: JSON.stringify({ items }) })
     if (res.status === 401) return void useNotifier.setState({ state: 'unauthorized' })
     if (!res.ok) throw new Error(String(res.status))
     const h = await (await call('/health')).json()
@@ -73,7 +91,7 @@ export function startNotifier(): void {
     timer = setTimeout(() => syncReminders(useStore.getState().reminders), 400)
   }
   schedule()
-  useStore.subscribe((s, prev) => { if (s.reminders !== prev.reminders) schedule() })
+  useStore.subscribe((s, prev) => { if (s.reminders !== prev.reminders || s.contacts !== prev.contacts || s.interactions !== prev.interactions) schedule() })
   setInterval(schedule, 60 * 60 * 1000)
 
   // Fallback while the app is open and the helper is not reachable.
@@ -81,7 +99,7 @@ export function startNotifier(): void {
   setInterval(() => {
     const now = Date.now()
     if (useNotifier.getState().state !== 'connected') {
-      for (const a of buildSchedule(useStore.getState().reminders, new Date(now), 1)) {
+      for (const a of [...buildSchedule(useStore.getState().reminders, new Date(now), 1), ...checkInAlerts(new Date(now))]) {
         if (a.fireAt > last && a.fireAt <= now) inAppNotify(a.title, a.body, a.urgent)
       }
       if (TOKEN && useNotifier.getState().state === 'offline') schedule() // helper may be back

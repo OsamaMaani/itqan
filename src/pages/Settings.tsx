@@ -108,7 +108,7 @@ export function SettingsPage() {
         <div className="grid gap-2 text-sm sm:grid-cols-2">
           <Shortcut keys={['Ctrl', 'K']} label="Command bar: add tasks, jump anywhere" />
           <Shortcut keys={['N']} label="New task" />
-          <Shortcut keys={['1', '…', '9']} label="Go to Today, Plan, Habits, Goals, Focus, Ideas, Reminders, Memories, Insights" />
+          <Shortcut keys={['1', '…', '9']} label="Go to Today, Plan, Habits, Goals, Projects, Focus, Ideas, Reminders, Connections" />
           <Shortcut keys={['Esc']} label="Close a dialog" />
         </div>
         <p className="mt-4 text-sm text-muted">

@@ -37,6 +37,8 @@ export interface Task {
   notes: string
   areaId: ID | null
   goalId: ID | null
+  /** The project this task belongs to (schema v3). */
+  projectId: ID | null
   /** null = Inbox (not scheduled yet) */
   date: DateKey | null
   timeOfDay: TimeOfDay
@@ -189,8 +191,81 @@ export interface Reminder {
   alerts: number[]
   /** Important reminders stay on screen until dismissed. */
   important: boolean
+  /** The person this reminder is about (schema v3). */
+  contactId: ID | null
+  /** Yearly reminders: show "N years" (false for a birthday saved without its year). */
+  countYears: boolean
   /** Only for repeat 'none': handled, so no more alerts. */
   done: boolean
+  createdAt: string
+}
+
+export const PROJECT_STATUSES = ['planning', 'active', 'on-hold', 'done', 'archived'] as const
+export type ProjectStatus = (typeof PROJECT_STATUSES)[number]
+
+export interface ProjectLink {
+  id: ID
+  label: string
+  url: string
+}
+
+export interface Project {
+  id: ID
+  title: string
+  emoji: string
+  description: string
+  areaId: ID | null
+  goalId: ID | null
+  status: ProjectStatus
+  startDate: DateKey | null
+  dueDate: DateKey | null
+  notes: string
+  links: ProjectLink[]
+  createdAt: string
+  updatedAt: string
+}
+
+export const CIRCLES = ['family', 'friend', 'university', 'work', 'mentor', 'other'] as const
+export type Circle = (typeof CIRCLES)[number]
+
+export interface Contact {
+  id: ID
+  name: string
+  emoji: string
+  circle: Circle
+  tags: string[]
+  phone: string
+  email: string
+  /** WhatsApp, LinkedIn, Instagram… any profile link */
+  link: string
+  company: string
+  role: string
+  howWeMet: string
+  /** "MM-DD" or "YYYY-MM-DD" (year optional) */
+  birthday: string
+  notes: string
+  /** Check in every N days; null = no rhythm */
+  cadenceDays: number | null
+  /** "Last time we talked", entered by hand before any check-in was logged */
+  lastContactManual: DateKey | null
+  /** Check-in pushed back until this day */
+  snoozedUntil: DateKey | null
+  /** The yearly reminder created for this person's birthday, if any */
+  birthdayReminderId: ID | null
+  favorite: boolean
+  archived: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type InteractionKind = 'call' | 'message' | 'meet' | 'email' | 'other'
+
+export interface Interaction {
+  id: ID
+  contactId: ID
+  date: DateKey
+  kind: InteractionKind
+  note: string
   createdAt: string
 }
 
@@ -219,6 +294,9 @@ export interface Data {
   dayNotes: Record<DateKey, DayNote>
   reviews: Record<DateKey, WeeklyReview>
   memories: Memory[]
+  projects: Project[]
+  contacts: Contact[]
+  interactions: Interaction[]
   ideas: Idea[]
   reminders: Reminder[]
   settings: Settings

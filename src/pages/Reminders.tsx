@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { BellRing, CalendarPlus, Check, CheckCircle2, Pencil, Plus, Send, Star, Trash2, TriangleAlert } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { EmojiInput } from '../components/EmojiInput'
-import { Button, Card, cx, EmptyState, IconButton, Input, Label, Modal, PageHeader, Segmented, SectionTitle, Textarea } from '../components/ui'
+import { Button, Card, cx, EmptyState, IconButton, Input, Label, Modal, PageHeader, Segmented, SectionTitle, Select, Textarea } from '../components/ui'
 import { diffDays, fromKey } from '../lib/date'
 import { useTick, useToday } from '../lib/hooks'
 import { sendTestNotification, useNotifier } from '../lib/notifier'
@@ -203,11 +203,12 @@ function Row({ item: { r, occ, days }, onEdit }: { item: UpcomingItem; onEdit: (
 }
 
 export function ReminderEditor({ reminder, template, onClose }: { reminder: Reminder | 'new' | null; template?: Partial<Draft>; onClose: () => void }) {
+  const contacts = useStore((s) => s.contacts)
   const today = useToday()
   const add = useStore((s) => s.addReminder)
   const update = useStore((s) => s.updateReminder)
   const existing = reminder && reminder !== 'new' ? reminder : null
-  const blank: Draft = { title: '', notes: '', emoji: '🔔', date: today, time: '09:00', repeat: 'none', alerts: [0], important: false }
+  const blank: Draft = { title: '', notes: '', emoji: '🔔', date: today, time: '09:00', repeat: 'none', alerts: [0], important: false, contactId: null, countYears: true }
   const [d, setD] = useState<Draft>(blank)
 
   useEffect(() => {
@@ -282,6 +283,21 @@ export function ReminderEditor({ reminder, template, onClose }: { reminder: Remi
           </div>
           {allDay && <p className="mt-1.5 text-[11px] text-muted">All-day reminders alert at 09:00.</p>}
         </div>
+        {d.repeat === 'yearly' && (
+          <label className="-mt-1 flex items-center gap-2 text-xs text-muted">
+            <input type="checkbox" checked={d.countYears} onChange={(e) => set('countYears', e.target.checked)} className="accent-[var(--accent)]" />
+            Count the years (“30 years”) — untick if the year is unknown
+          </label>
+        )}
+        {contacts.length > 0 && (
+          <div>
+            <Label hint="optional">About someone</Label>
+            <Select value={d.contactId ?? ''} onChange={(e) => set('contactId', e.target.value || null)}>
+              <option value="">Nobody in particular</option>
+              {contacts.filter((c) => !c.archived || c.id === d.contactId).sort((a, b) => a.name.localeCompare(b.name)).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </Select>
+          </div>
+        )}
         <button type="button" onClick={() => set('important', !d.important)} className={cx('flex w-full items-center gap-3 rounded-xl border p-3 text-left transition', d.important ? 'border-gold/60 bg-amber-500/10' : 'border-border')}>
           <Star size={18} className={d.important ? 'fill-gold text-gold' : 'text-muted'} />
           <span>

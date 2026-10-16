@@ -56,7 +56,7 @@ look at the UI in the browser — a report is a claim, not evidence.
 
 1. Persistence, migrations, backup/restore, anything in `store.ts` that deletes or replaces
 2. Date/day-boundary logic (`date.ts`, anything producing a `DateKey`)
-3. Streak, XP, level, achievement, goal-pace and reminder-recurrence maths
+3. Streak, XP, level, achievement, goal-pace, reminder-recurrence and check-in maths
 4. The reminders helper (`scripts/itqan_reminders.py`) and anything that talks to it — it is a
    local network listener, so it is security work
 5. The first instance of any new pattern (first new route type, first new persisted entity)
