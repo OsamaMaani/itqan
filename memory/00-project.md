@@ -1,0 +1,57 @@
+# 00 — Project
+
+## What Itqan is
+
+A personal planner that joins three time scales in one place:
+
+- **Today** — the tasks and habits that make up a day.
+- **This week** — planning days ahead and reviewing the week behind.
+- **The long run** — goals (objectives) that the daily work is *for*.
+
+The name is **Itqan** (إتقان): doing a thing with excellence and care. It comes from the hadith
+"Allah loves that when one of you does a deed, he does it with itqan", and it sets the tone: not
+hustle, but steady, consistent, well-done work. The companion idea — "the most beloved deeds are
+the consistent ones, even if small" — is why habits and streaks are central.
+
+## Who it is for
+
+**The owner**, first and only user for now (2026-10-16) — personal details are in
+`memory/private/owner.md` (local only). Alongside a full-time job, they:
+
+- study **courses**,
+- **read books**,
+- go to the **gym**,
+- study **French** (working toward B1),
+- **revise the Quran**,
+- "and many other things".
+
+He asked for it to be **dynamic, fun, modern, clean and interactive**, usable as soon as
+possible, and published on **GitHub**. He may offer it to others later.
+
+## What success looks like
+
+1. He opens it every morning and it tells him, in one screen, what today is for.
+2. Habits he cares about (Quran, French, reading) survive busy weeks — streaks make a missed day
+   visible without making it shameful.
+3. Each goal shows whether he is on pace, and how much per day finishes it on time.
+4. Once a week he looks back (Weekly review) and adjusts.
+5. It is pleasant enough that opening it is a small reward, not a chore (XP, levels,
+   achievements, celebrations).
+
+## Beyond planning (added 2026-10-16, at the owner's request)
+
+- **Memories** — a private timeline of moments, with "On this day".
+- **Ideas** — capture ideas as they come, then act on them (task, goal, done).
+- **Reminders** — important dates (birthdays, anniversaries, deadlines, bills) with desktop
+  notifications that arrive even when Itqan is closed.
+
+## The starter set (seed)
+
+On first run the user can load their routine: areas Quran, French, Gym, Books, Courses, Life;
+habits Revise Quran (daily), French practice (20 min daily), Read (10 pages daily), Gym (4×/week),
+Course study (5×/week); four example goals. All editable. Source: `src/lib/seed.ts`.
+
+## Out of scope for now
+
+Accounts, sync between devices, collaboration, calendars from other services. See the roadmap
+for when they would arrive.

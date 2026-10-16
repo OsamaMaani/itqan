@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # First, before anything else: the dashboard is how the project is monitored, so a
+      # dashboard that disagrees with memory/status.json fails the build (CLAUDE.md rule 5).
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Dashboard matches status.json
+        run: python3 scripts/build_dashboard.py --check
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npx tsc -b
+      - name: Tests
+        run: npx vitest run
+      - name: Build
+        run: npx vite build

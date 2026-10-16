@@ -1,0 +1,454 @@
+{
+  "project": "Itqan",
+  "subtitle": "إتقان — daily tasks, habits and long-term goals in one calm place",
+  "updated": "2026-10-16",
+  "current_stage": 4,
+  "next_actions": [
+    "S4-05: create the GitHub repos and token (steps in chat), push the code, enable Pages.",
+    "Connect sync on the laptop first (creates the encrypted file), then on the iPhone.",
+    "On the iPhone, use Reminders → Add all to Calendar for phone alerts."
+  ],
+  "stages": [
+    {
+      "id": 0,
+      "name": "Foundation",
+      "goal": "The spine: data model, safe persistence, offline install, checks.",
+      "exit": "The app installs, works offline, and npm run ci:check passes in CI.",
+      "tasks": [
+        {
+          "id": "S0-01",
+          "title": "Vite + React 19 + TypeScript + Tailwind 4 scaffold",
+          "module": "infra",
+          "status": "done"
+        },
+        {
+          "id": "S0-02",
+          "title": "Data model and Zustand store with all actions",
+          "module": "core-data",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S0-03",
+          "title": "Versioned persistence, migrations and backup/restore, with tests",
+          "module": "core-data",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S0-04",
+          "title": "Local-day date helpers (never UTC)",
+          "module": "core-data",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S0-05",
+          "title": "PWA: manifest, icons, offline service worker",
+          "module": "pwa",
+          "status": "done"
+        },
+        {
+          "id": "S0-06",
+          "title": "CI (dashboard check, typecheck, tests, build) and GitHub Pages deploy",
+          "module": "infra",
+          "status": "done"
+        },
+        {
+          "id": "S0-07",
+          "title": "Memory system, dashboard and builder subagent (adapted from an earlier project)",
+          "module": "infra",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Daily-use MVP",
+      "goal": "Everything needed to run a day, a week and a set of goals.",
+      "exit": "Owner can run his whole day from Itqan.",
+      "tasks": [
+        {
+          "id": "S1-01",
+          "title": "Today: progress ring, intention + mood, tasks by time of day, overdue, habits, goals, daily wisdom, Hijri date",
+          "module": "today",
+          "status": "done"
+        },
+        {
+          "id": "S1-02",
+          "title": "Plan: week view with Inbox, drag between days, per-day quick add",
+          "module": "plan",
+          "status": "done"
+        },
+        {
+          "id": "S1-03",
+          "title": "Habits: schedules, targets, streaks, 7-day backfill, heatmaps",
+          "module": "habits",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S1-04",
+          "title": "Goals: numeric and milestone goals, check-ins, pace and per-day need",
+          "module": "goals",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S1-05",
+          "title": "Focus timer: presets, links to task/goal/area, survives reload, notifications",
+          "module": "focus",
+          "status": "done"
+        },
+        {
+          "id": "S1-06",
+          "title": "Insights: level, XP per day, area balance, habit consistency, activity heatmap, achievements",
+          "module": "insights",
+          "status": "done"
+        },
+        {
+          "id": "S1-07",
+          "title": "Weekly review: auto summary and reflection prompts",
+          "module": "review",
+          "status": "done"
+        },
+        {
+          "id": "S1-08",
+          "title": "Settings: profile, theme, week start, areas, backup/restore, delete all",
+          "module": "settings",
+          "status": "done"
+        },
+        {
+          "id": "S1-09",
+          "title": "Command bar (Ctrl+K) with natural-language quick add and keyboard shortcuts",
+          "module": "command-bar",
+          "status": "done"
+        },
+        {
+          "id": "S1-10",
+          "title": "XP, levels, achievements and celebrations (derived, ADR-005)",
+          "module": "gamification",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S1-11",
+          "title": "Onboarding with the owner's routine as a starter set",
+          "module": "today",
+          "status": "done"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Shaped by real use",
+      "goal": "Fix and add what a week of daily use shows is missing.",
+      "exit": "the owner's feedback from the first two weeks is addressed.",
+      "tasks": [
+        {
+          "id": "S2-00",
+          "title": "Local single-file app + app-menu launcher, no server needed (ADR-012)",
+          "module": "infra",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S2-08",
+          "title": "Memories: timeline, tags, favourites, search, On this day",
+          "module": "memories",
+          "status": "done"
+        },
+        {
+          "id": "S2-09",
+          "title": "Ideas: capture, board by stage, turn into task or goal",
+          "module": "ideas",
+          "status": "done"
+        },
+        {
+          "id": "S2-10",
+          "title": "Reminders: repeating important dates with alerts (recurrence engine, tested)",
+          "module": "reminders",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S2-11",
+          "title": "Desktop notifications via local helper service, secured and tested (ADR-013)",
+          "module": "reminders",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S2-01",
+          "title": "Publish to GitHub and enable Pages",
+          "module": "infra",
+          "status": "todo"
+        },
+        {
+          "id": "S2-02",
+          "title": "Recurring tasks",
+          "module": "plan",
+          "status": "todo"
+        },
+        {
+          "id": "S2-03",
+          "title": "Reorder tasks by drag within a day",
+          "module": "plan",
+          "status": "todo"
+        },
+        {
+          "id": "S2-04",
+          "title": "Excuse a habit day (travel, illness) without breaking the streak",
+          "module": "habits",
+          "status": "todo",
+          "critical": true
+        },
+        {
+          "id": "S2-05",
+          "title": "Reminders at chosen times",
+          "module": "pwa",
+          "status": "todo"
+        },
+        {
+          "id": "S2-06",
+          "title": "Code-split pages to reduce first load",
+          "module": "infra",
+          "status": "todo"
+        },
+        {
+          "id": "S2-07",
+          "title": "Arabic interface with RTL (if Q2 says yes)",
+          "module": "settings",
+          "status": "todo"
+        },
+        {
+          "id": "S2-12",
+          "title": "Photos in memories (IndexedDB storage + backup) — if Q7 says yes",
+          "module": "memories",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Learning companions",
+      "goal": "Purpose-built trackers for what Owner studies.",
+      "exit": "Quran, books, courses and French each have a dedicated view that feeds goals.",
+      "tasks": [
+        {
+          "id": "S3-01",
+          "title": "Quran revision map with spaced-revision suggestions (Q4)",
+          "module": "learning",
+          "status": "todo"
+        },
+        {
+          "id": "S3-02",
+          "title": "Reading list: books, pages, shelves",
+          "module": "learning",
+          "status": "todo"
+        },
+        {
+          "id": "S3-03",
+          "title": "Course tracker: modules and lessons",
+          "module": "learning",
+          "status": "todo"
+        },
+        {
+          "id": "S3-04",
+          "title": "French: vocabulary review and oral-practice log",
+          "module": "learning",
+          "status": "todo"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Sync between devices",
+      "goal": "The same data on laptop and iPhone, free, encrypted (ADR-016).",
+      "exit": "Laptop and iPhone stay in sync without data loss.",
+      "tasks": [
+        {
+          "id": "S4-01",
+          "title": "Sync design: entities, stamps, tombstones, encryption (ADR-016)",
+          "module": "sync",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S4-02",
+          "title": "Sync engine + GitHub client, tested against a fake GitHub incl. save conflicts",
+          "module": "sync",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S4-03",
+          "title": "Sync setup UI, status badge, 'I already use Itqan' onboarding path",
+          "module": "sync",
+          "status": "done"
+        },
+        {
+          "id": "S4-04",
+          "title": "iPhone reminders via Calendar export (.ics, ADR-017)",
+          "module": "reminders",
+          "status": "done"
+        },
+        {
+          "id": "S4-05",
+          "title": "Owner: create repos + token; publish the app; connect laptop and iPhone",
+          "module": "sync",
+          "status": "in-progress"
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "slug": "core-data",
+      "name": "Data & persistence",
+      "status": "done"
+    },
+    {
+      "slug": "today",
+      "name": "Today",
+      "status": "done"
+    },
+    {
+      "slug": "plan",
+      "name": "Plan",
+      "status": "done"
+    },
+    {
+      "slug": "habits",
+      "name": "Habits",
+      "status": "done"
+    },
+    {
+      "slug": "goals",
+      "name": "Goals",
+      "status": "done"
+    },
+    {
+      "slug": "focus",
+      "name": "Focus",
+      "status": "done"
+    },
+    {
+      "slug": "insights",
+      "name": "Insights",
+      "status": "done"
+    },
+    {
+      "slug": "review",
+      "name": "Weekly review",
+      "status": "done"
+    },
+    {
+      "slug": "settings",
+      "name": "Settings",
+      "status": "done"
+    },
+    {
+      "slug": "command-bar",
+      "name": "Command bar",
+      "status": "done"
+    },
+    {
+      "slug": "gamification",
+      "name": "XP & achievements",
+      "status": "done"
+    },
+    {
+      "slug": "pwa",
+      "name": "Offline & install",
+      "status": "done"
+    },
+    {
+      "slug": "memories",
+      "name": "Memories",
+      "status": "done"
+    },
+    {
+      "slug": "ideas",
+      "name": "Ideas",
+      "status": "done"
+    },
+    {
+      "slug": "reminders",
+      "name": "Reminders & notifications",
+      "status": "done"
+    },
+    {
+      "slug": "learning",
+      "name": "Learning companions",
+      "status": "not-started"
+    },
+    {
+      "slug": "sync",
+      "name": "Sync",
+      "status": "in-progress"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "Q1",
+      "title": "Should the week start on Saturday?",
+      "blocks": "—",
+      "owner": "Owner"
+    },
+    {
+      "id": "Q2",
+      "title": "Arabic interface?",
+      "blocks": "S2-07",
+      "owner": "Owner"
+    },
+    {
+      "id": "Q3",
+      "title": "More than one device, or sharing soon?",
+      "blocks": "Stage 4",
+      "owner": "Owner"
+    },
+    {
+      "id": "Q4",
+      "title": "Quran revision unit: juz, hizb, pages or surahs? Memorisation too?",
+      "blocks": "S3-01",
+      "owner": "Owner"
+    },
+    {
+      "id": "Q5",
+      "title": "Plan the day around prayer times?",
+      "blocks": "—",
+      "owner": "Owner"
+    },
+    {
+      "id": "Q6",
+      "title": "~~iPhone sync approach~~ answered: GitHub sync (ADR-016)",
+      "blocks": "—",
+      "owner": "Owner"
+    },
+    {
+      "id": "Q7",
+      "title": "Photos in memories?",
+      "blocks": "S2-12",
+      "owner": "Owner"
+    }
+  ],
+  "log": [
+    {
+      "date": "2026-10-16",
+      "entry": "S4-01…S4-04: encrypted GitHub sync (ADR-016) — per-entity merge with stamps and tombstones, AES-GCM/PBKDF2, sha-checked writes with retry; 22 new tests incl. an engine test against a fake GitHub that forces a real save conflict. iPhone reminders via .ics Calendar export (ADR-017). Waiting on the owner's GitHub setup to go live."
+    },
+    {
+      "date": "2026-10-16",
+      "entry": "S2-08…S2-11: Memories, Ideas and Reminders. Schema v2 (migration tested, and verified on real v1 data in the browser). Desktop notifications through the itqan-reminders user service (ADR-013): token + origin + host guards each tested by attack; end-to-end test from the file:// app delivered a notification."
+    },
+    {
+      "date": "2026-10-16",
+      "entry": "S2-00: Itqan now runs as a local app with no server — a single offline HTML file opened by an 'Itqan' launcher in Chrome app mode with its own profile (ADR-012). Verified that data persists across a Chrome restart."
+    },
+    {
+      "date": "2026-10-16",
+      "entry": "Stages 0 and 1 built in one session: the full daily-use MVP, 32 tests, CI and Pages deploy, and the proven memory system. Verified in the browser on desktop and phone widths, light and dark."
+    }
+  ]
+}
