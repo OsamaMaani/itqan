@@ -63,7 +63,7 @@ export default function App() {
     <div className="flex min-h-screen">
       <Sidebar route={route} onAdd={() => setPalette(true)} />
       <div className="min-w-0 flex-1">
-        <MobileHeader route={route} />
+        <MobileHeader />
         <main className="mx-auto w-full max-w-7xl px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
           {/* The new page renders at once and only fades in. No exit animation to wait for: with
               AnimatePresence mode="wait", a page change arriving mid-animation (create a project →

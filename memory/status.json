@@ -524,6 +524,10 @@
   "log": [
     {
       "date": "2026-10-17",
+      "entry": "Phone navigation, at the owner's request: the bottom bar's fifth item is now More (the menu) instead of Focus; the sheet it opens lists Projects, Focus, Ideas and every other screen. The header's menu button is gone (it duplicated More). A running focus timer shows as a dot on More and a countdown on the Focus tile, so it isn't hidden behind the menu."
+    },
+    {
+      "date": "2026-10-17",
       "entry": "S2-23: independent review of every translation against its language guide, one reviewer for the screens and one for the daily-card content per language, language by language — Arabic 87 fixes, French 53, Chinese 56, Spanish 59 (meaning, calques, grammar, glossary consistency, hadith checked against the Arabic, Chinese-word definitions that were only synonyms, Spain-only words in Spanish, one Quran excerpt re-cut). Code fixes the reviewers found: signed numbers (“+5 XP”) kept their sign in front in right-to-left; “None” in pickers per thing picked (gender in French/Spanish); “every week” no longer “every 1 week” in Chinese (tested); a project with no tasks gets its own delete confirmation; habit streak labels read right under any number; GitHub’s English-only labels quoted as they are; the English of Bukhari 3559 now says “Among the best of you”. Rules added to memory/10-localization.md."
     },
     {

@@ -98,10 +98,16 @@ export function Sidebar({ route, onAdd }: { route: Route; onAdd: () => void }) {
   )
 }
 
-const MOBILE: Route[] = ['today', 'plan', 'habits', 'goals', 'focus']
+/** The phone's bottom bar: these four screens, then "More", which opens every other screen in a sheet. */
+const MOBILE: Route[] = ['today', 'plan', 'habits', 'goals']
+const MORE = NAV.filter((n) => !MOBILE.includes(n.route))
 
 export function MobileNav({ route, onAdd }: { route: Route; onAdd: () => void }) {
   const { m } = useI18n()
+  const [open, setOpen] = useState(false)
+  const timerRunning = useStore((s) => !!s.timer)
+  const inMore = MORE.some((n) => n.route === route)
+  const tab = 'flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold transition'
   return (
     <>
       <button
@@ -115,36 +121,26 @@ export function MobileNav({ route, onAdd }: { route: Route; onAdd: () => void })
         <div className="mx-auto flex max-w-lg">
           {MOBILE.map((r) => {
             const n = NAV.find((x) => x.route === r)!
-            const on = route === r
             return (
-              <button key={r} onClick={() => navigate(r)} className={cx('flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold transition', on ? 'text-accent' : 'text-muted')}>
+              <button key={r} onClick={() => navigate(r)} className={cx(tab, route === r ? 'text-accent' : 'text-muted')}>
                 {n.icon}
                 {m.nav[r]}
               </button>
             )
           })}
+          <button onClick={() => setOpen(true)} aria-haspopup="dialog" className={cx(tab, inMore ? 'text-accent' : 'text-muted')}>
+            <span className="relative">
+              <Menu size={18} />
+              {/* A running focus timer lives behind "More" on the phone: show that it is running. */}
+              {timerRunning && <span className="absolute -end-1 -top-0.5 size-2 rounded-full bg-accent ring-2 ring-surface" />}
+            </span>
+            {m.nav.more}
+          </button>
         </div>
       </nav>
-    </>
-  )
-}
-
-export function MobileHeader({ route }: { route: Route }) {
-  const { m } = useI18n()
-  const [open, setOpen] = useState(false)
-  const more = NAV.filter((n) => !MOBILE.includes(n.route))
-  return (
-    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-bg/85 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl lg:hidden">
-      <Logo />
-      <div className="flex items-center gap-1">
-      <SyncBadge className="size-10" />
-      <button onClick={() => setOpen(true)} aria-label={m.nav.more} className={cx('grid size-10 place-items-center rounded-xl', more.some((n) => n.route === route) ? 'bg-accent-soft text-accent' : 'text-muted')}>
-        <Menu size={20} />
-      </button>
-      </div>
       <Modal open={open} onClose={() => setOpen(false)} title={m.nav.more}>
         <div className="grid grid-cols-3 gap-2">
-          {more.map((n) => (
+          {MORE.map((n) => (
             <button
               key={n.route}
               onClick={() => { navigate(n.route); setOpen(false) }}
@@ -152,10 +148,20 @@ export function MobileHeader({ route }: { route: Route }) {
             >
               {n.icon}
               {m.nav[n.route]}
+              {n.route === 'focus' && <span><TimerBadge /></span>}
             </button>
           ))}
         </div>
       </Modal>
+    </>
+  )
+}
+
+export function MobileHeader() {
+  return (
+    <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-bg/85 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl lg:hidden">
+      <Logo />
+      <SyncBadge className="size-10" />
     </header>
   )
 }

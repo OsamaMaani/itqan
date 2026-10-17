@@ -53,8 +53,10 @@ Shadows are near-invisible; the primary button gets a coloured glow.
 ## Layout
 
 - Desktop (≥ `lg`): sticky sidebar (nav, New task, level card) + content up to `max-w-7xl`.
-- Phone: top bar with Insights/Review/Settings, bottom tab bar (Today, Plan, Habits, Goals,
-  Focus), floating + button. Bottom padding keeps content clear of the bar.
+- Phone: top bar (logo, sync badge), bottom tab bar (Today, Plan, Habits, Goals, More), floating
+  + button. "More" opens a sheet with every other screen, Focus first among them; a running focus
+  timer shows as a dot on More and a countdown on the Focus tile. Bottom padding keeps content
+  clear of the bar.
 
 ## Layout rules that prevent real bugs (2026-10-16)
 
