@@ -28,7 +28,7 @@ Zustand as `{ state: Data, version: SCHEMA_VERSION }`.
 | `contacts` | `Contact[]` | Circle, rhythm (`cadenceDays`), birthday `YYYY-MM-DD` or `MM-DD`, `birthdayReminderId` (ADR-018) |
 | `interactions` | `Interaction[]` | Check-ins with a person: kind, date, note |
 | `reminders` | `Reminder[]` | `date` = first/original occurrence; `time` null = all-day; `repeat`; `alerts` = minutes before (ADR-013) |
-| `settings` | `Settings` | Includes `onboarded`, `lastBackupAt` |
+| `settings` | `Settings` | Includes `onboarded`, `lastBackupAt`, and `daily` — the daily card's switches, word language and level (ADR-023). `normalize()` merges `daily` with its defaults key by key |
 
 ## The sync document (ADR-016)
 
@@ -57,7 +57,7 @@ ADR-006). Storing them would let them drift from the history they summarise.
 4. `normalize()` must still produce a complete `Data` from partial input.
 5. Backups from the old version must import (they pass through the same `migrate`).
 
-Current version: **5**. History: 1 = initial; 2 = `memories`, `ideas`, `reminders`; 3 = `projects`,
+Current version: **6**. History: 1 = initial; 2 = `memories`, `ideas`, `reminders`; 3 = `projects`,
 `contacts`, `interactions`, `Task.projectId`, `Reminder.contactId`, `Reminder.countYears`; 4 = `Task.stage`,
 `Task.blocked`, `Project.progressMode/manualProgress/view/pinned`, `projectUpdates`; 5 = `achievements`
-(all 2026-10-16).
+(all 2026-10-16); 6 = `Settings.daily` (2026-10-17).

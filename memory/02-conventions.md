@@ -16,6 +16,7 @@ correct code without reading the whole app.
 | UI primitives | `src/components/ui.tsx` | Card, Button, Input, Modal, ProgressRing… |
 | Feature components | `src/components/*.tsx` | Editors, tiles, cards shared by pages |
 | Screens | `src/pages/*.tsx` | One file per route; registered in `App.tsx` and `router.ts` |
+| Bundled content | `src/content/` | Daily card verses, hadith, wisdom, facts, word packs (ADR-023). Data only |
 
 ## Patterns
 
@@ -48,6 +49,9 @@ Coverage where a silent bug is unrecoverable, not everywhere:
 2. **Habit maths** — streaks, pending today, unscheduled days, weekly quotas, completion rate.
 3. **XP and levels** — derived from history; thresholds.
 4. **Quick-add parser** — every token type, and that ordinary words stay in the title.
+5. **Daily card content** — selection (`pickForDay`) and content integrity in `daily.test.ts`.
+   **Quran and hadith text is never typed by hand**: add the reference, copy the text from the
+   source, and run `python3 scripts/verify_daily.py` (word-for-word check; needs the network).
 
 UI is verified by running it (`npm run dev`), not by snapshot tests.
 

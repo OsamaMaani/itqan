@@ -1,6 +1,17 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/plus-jakarta-sans';
 
+/* Amiri Quran for Arabic on the daily card (ADR-023): its Arabic subset only, woff2 only (~45 KB).
+   It draws the Uthmani marks (open tanween U+08F0–08F2, small high letters) that system fonts miss. */
+@font-face {
+  font-family: 'Amiri Quran';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('@fontsource/amiri-quran/files/amiri-quran-arabic-400-normal.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Design tokens — memory/08-design-system.md. Components use these, never raw hex. */
@@ -51,6 +62,7 @@
   --color-gold: var(--gold);
   --color-danger: var(--danger);
   --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-quran: 'Amiri Quran', 'Amiri', 'Noto Naskh Arabic', 'Geeza Pro', serif;
 }
 
 html, body, #root { min-height: 100%; }

@@ -326,6 +326,25 @@ export interface Settings {
   showHijri: boolean
   lastBackupAt: string | null
   onboarded: boolean
+  /** The daily card on Today (ADR-023). Synced across devices. */
+  daily: DailySettings
+}
+
+export const WORD_LANGUAGES = ['fr', 'en', 'de', 'es', 'zh'] as const
+export type WordLanguage = (typeof WORD_LANGUAGES)[number]
+export const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const
+export type CefrLevel = (typeof CEFR_LEVELS)[number]
+
+export interface DailySettings {
+  verse: boolean
+  hadith: boolean
+  word: boolean
+  wisdom: boolean
+  fact: boolean
+  /** The English meaning under the Arabic of a verse or hadith. */
+  meaning: boolean
+  wordLanguage: WordLanguage
+  wordLevel: CefrLevel
 }
 
 export interface Data {

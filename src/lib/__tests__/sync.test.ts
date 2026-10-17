@@ -26,6 +26,11 @@ describe('entities', () => {
     expect(out.settings.name).toBe('Sam') // shared settings do follow
     expect(out.tasks.length).toBe(remote.tasks.length)
   })
+  it('daily card choices follow you to the other device', () => {
+    const remote = { ...data(), settings: { ...data().settings, daily: { ...data().settings.daily, hadith: false, wordLanguage: 'es' as const, wordLevel: 'B2' as const } } }
+    const out = fromEntities(toEntities(remote), emptyData())
+    expect(out.settings.daily).toEqual(remote.settings.daily)
+  })
   it('an empty device has no user data', () => {
     expect(hasUserData(toEntities(emptyData()))).toBe(false)
     expect(hasUserData(toEntities(data()))).toBe(true)
@@ -143,6 +148,7 @@ describe('sync file from an older Itqan', () => {
     expect(up['reminders:r1']).toMatchObject({ title: 'Mum', contactId: null, countYears: true })
     expect(up['habitLogs:h1|2026-10-15']).toBe(1)
     expect(JSON.parse(up['settings:shared'] as string).name).toBe('Sam')
+    expect(JSON.parse(up['settings:shared'] as string).daily.wordLanguage).toBe('fr') // v6 default
     expect(Object.keys(up).sort()).toEqual(Object.keys(v2).sort()) // nothing added, nothing lost
   })
 })

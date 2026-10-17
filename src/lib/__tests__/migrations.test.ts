@@ -102,3 +102,33 @@ describe('v4 → v5 (achievements)', () => {
     expect(d.projects).toEqual(v4.projects)
   })
 })
+
+describe('v5 → v6 (daily card settings)', () => {
+  it('turns everything on with French B1, and keeps every saved setting and record', () => {
+    const v5 = {
+      tasks: [{ id: 't', stage: 'doing', blocked: false, projectId: null }],
+      achievements: [{ id: 'a1', title: 'Shipped' }],
+      settings: { name: 'Sam', weekStartsOn: 1, showHijri: false, onboarded: true, lastBackupAt: '2026-10-01T00:00:00Z' },
+    }
+    const d = migrate(v5, 5)
+    expect(d.settings.daily).toEqual({ verse: true, hadith: true, word: true, wisdom: true, fact: true, meaning: true, wordLanguage: 'fr', wordLevel: 'B1' })
+    expect(d.settings).toMatchObject(v5.settings)
+    expect(d.tasks).toEqual(v5.tasks)
+    expect(d.achievements).toEqual(v5.achievements)
+  })
+  it('keeps daily choices already made, filling only what is missing', () => {
+    const d = migrate({ settings: { daily: { hadith: false, wordLanguage: 'zh' } } }, 5)
+    expect(d.settings.daily).toMatchObject({ hadith: false, wordLanguage: 'zh', verse: true, wordLevel: 'B1' })
+  })
+  it('a partial daily object at the current version still gets its defaults', () => {
+    const d = migrate({ settings: { daily: { word: false } } }, SCHEMA_VERSION)
+    expect(d.settings.daily).toMatchObject({ word: false, verse: true, wordLanguage: 'fr' })
+  })
+  it('a v5 backup restores with the daily settings added', () => {
+    const b = { app: 'itqan', schemaVersion: 5, exportedAt: '', data: { areas: [], tasks: [{ id: 'x' }], habits: [], goals: [], settings: { name: 'Sam' } } }
+    const d = parseBackup(JSON.stringify(b))
+    expect(d.tasks).toEqual([{ id: 'x' }])
+    expect(d.settings.name).toBe('Sam')
+    expect(d.settings.daily.wordLevel).toBe('B1')
+  })
+})

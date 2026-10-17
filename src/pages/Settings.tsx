@@ -9,7 +9,8 @@ import { AREA_HEX } from '../lib/colors'
 import { useData } from '../lib/hooks'
 import { snapshot, useStore } from '../lib/store'
 import { toast } from '../lib/toast'
-import { AREA_COLORS, type Area, type AreaColor, type Settings } from '../lib/types'
+import { HSK, LANGUAGES } from '../lib/daily'
+import { AREA_COLORS, CEFR_LEVELS, WORD_LANGUAGES, type Area, type AreaColor, type CefrLevel, type DailySettings, type Settings, type WordLanguage } from '../lib/types'
 
 export function SettingsPage() {
   const d = useData()
@@ -63,6 +64,8 @@ export function SettingsPage() {
           <Toggle label="Show Hijri date" checked={s.showHijri} onChange={(v) => update({ showHijri: v })} />
         </div>
       </Card>
+
+      <DailyCardSettings value={s.daily} onChange={(patch) => update({ daily: { ...s.daily, ...patch } })} />
 
       <Card className="p-5">
         <SectionTitle right={<Button size="sm" onClick={() => setEditingArea('new')}><Plus size={14} /> Add area</Button>}>Areas of life</SectionTitle>
@@ -118,6 +121,46 @@ export function SettingsPage() {
 
       <AreaEditor area={editingArea} onClose={() => setEditingArea(null)} />
     </div>
+  )
+}
+
+const LEVEL_NAME: Record<CefrLevel, string> = {
+  A1: 'beginner', A2: 'elementary', B1: 'intermediate', B2: 'upper intermediate', C1: 'advanced', C2: 'mastery',
+}
+
+function DailyCardSettings({ value: v, onChange }: { value: DailySettings; onChange: (patch: Partial<DailySettings>) => void }) {
+  return (
+    <Card className="space-y-5 p-5">
+      <div>
+        <SectionTitle className="mb-1">Daily card</SectionTitle>
+        <p className="text-sm text-muted">One of each a day on Today, the same on all your devices. On a phone it stays folded to one line until you open it.</p>
+      </div>
+      <div className="flex flex-wrap gap-x-6 gap-y-3">
+        <Toggle label="Verse of the Quran" checked={v.verse} onChange={(x) => onChange({ verse: x })} />
+        <Toggle label="Hadith" checked={v.hadith} onChange={(x) => onChange({ hadith: x })} />
+        <Toggle label="Word of the day" checked={v.word} onChange={(x) => onChange({ word: x })} />
+        <Toggle label="Wisdom" checked={v.wisdom} onChange={(x) => onChange({ wisdom: x })} />
+        <Toggle label="Fact" checked={v.fact} onChange={(x) => onChange({ fact: x })} />
+      </div>
+      {(v.verse || v.hadith) && (
+        <Toggle label="Show the English meaning under the Arabic" checked={v.meaning} onChange={(x) => onChange({ meaning: x })} />
+      )}
+      {v.word && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label>Word of the day — language</Label>
+            <Segmented<WordLanguage> value={v.wordLanguage} onChange={(x) => onChange({ wordLanguage: x })} options={WORD_LANGUAGES.map((l) => ({ value: l, label: LANGUAGES[l].name }))} />
+          </div>
+          <div>
+            <Label>Level</Label>
+            <Segmented<CefrLevel> value={v.wordLevel} onChange={(x) => onChange({ wordLevel: x })} options={CEFR_LEVELS.map((l) => ({ value: l, label: l }))} />
+            <p className="mt-1.5 text-xs text-muted">
+              {v.wordLevel} — {LEVEL_NAME[v.wordLevel]}{v.wordLanguage === 'zh' && <> · Chinese uses HSK: {v.wordLevel} ≈ {HSK[v.wordLevel]}</>}
+            </p>
+          </div>
+        </div>
+      )}
+    </Card>
   )
 }
 

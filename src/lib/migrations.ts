@@ -1,12 +1,12 @@
 import { DEFAULT_SETTINGS, emptyData } from './seed'
-import type { Data } from './types'
+import type { Data, Settings } from './types'
 
 /**
  * Persisted-data schema version. Bump it whenever a persisted shape in types.ts changes,
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 5
+export const SCHEMA_VERSION = 6
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -36,6 +36,12 @@ const steps: Record<number, Step> = {
   }),
   // 4 → 5 (2026-10-16): Achievements. A new collection; nothing existing changes.
   4: (d) => ({ ...d, achievements: d.achievements ?? [] }),
+  // 5 → 6 (2026-10-17): the daily card's settings (ADR-023) — everything on, French B1. Only a new
+  // settings field; no record changes.
+  5: (d) => {
+    const settings = (d.settings as Record<string, unknown> | undefined) ?? {}
+    return { ...d, settings: { ...settings, daily: { ...DEFAULT_SETTINGS.daily, ...((settings.daily as object) ?? {}) } } }
+  },
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {
@@ -70,6 +76,12 @@ export function normalize(d: Record<string, unknown>): Data {
     contacts: pick('contacts'),
     interactions: pick('interactions'),
     achievements: pick('achievements'),
-    settings: { ...DEFAULT_SETTINGS, ...((d.settings as object) ?? {}) },
+    settings: normalizeSettings(d.settings),
   }
+}
+
+/** Saved settings over the defaults; nested objects are merged too, so a missing key gets its default. */
+function normalizeSettings(raw: unknown): Settings {
+  const s = (raw && typeof raw === 'object' ? raw : {}) as Partial<Settings>
+  return { ...DEFAULT_SETTINGS, ...s, daily: { ...DEFAULT_SETTINGS.daily, ...(s.daily ?? {}) } }
 }

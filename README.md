@@ -11,7 +11,12 @@ browser, it works offline, and you can install it as an app on desktop or phone.
 
 - **Today**: a progress ring, an intention and mood for the day, tasks grouped by morning,
   afternoon and evening, overdue tasks you can move to today in one click, habits you complete
-  with a tap, the goals in progress, a line of daily wisdom and the Hijri date.
+  with a tap, the goals in progress and the Hijri date.
+- **Daily card** on Today: a Quran verse and a hadith in Arabic (with the English meaning if you
+  want it), a word of the day with an example (French, English, German, Spanish or Chinese, A1–C2),
+  a piece of wisdom from psychology, medicine and biology, and a fact. A new one of each every day,
+  the same on all your devices. On a phone it folds to one line. Each part can be switched off in
+  Settings.
 - **Plan**: a week view with an Inbox. Drag tasks between days.
 - **Habits**: run them every day, on chosen days, or N times a week, with a daily target
   ("20 min", "10 pages"). Each habit shows its streak, best streak and 30-day rate, plus a
@@ -109,6 +114,15 @@ npm run dev        # http://localhost:5173
 
 React 19, TypeScript, Vite 8, Tailwind CSS 4, Zustand, Motion, date-fns, vite-plugin-pwa,
 Vitest. There's no backend. See `memory/01-architecture.md`.
+
+## Sources and credits
+
+- Quran Arabic: the KFGQPC Uthmani text (King Fahd Complex, via The Noble Qur'an Encyclopedia,
+  quranenc.com), English: Saheeh International — both through the
+  [quran-json](https://github.com/risan/quran-json) dataset.
+- Hadith: [fawazahmed0/hadith-api](https://github.com/fawazahmed0/hadith-api) (sunnah.com
+  numbering, grades by al-Albani). `scripts/verify_daily.py` checks the app's text against both.
+- Arabic font: [Amiri Quran](https://github.com/aliftype/amiri) (SIL Open Font License).
 
 ## For contributors (human or AI)
 

@@ -47,6 +47,9 @@ possible, and published on **GitHub**. He may offer it to others later.
 - **Connections** — the people who matter: how often to check in, birthdays, notes, history.
 - **Reminders** — important dates (birthdays, anniversaries, deadlines, bills) with desktop
   notifications that arrive even when Itqan is closed.
+- **The daily card** (2026-10-17) — on Today, a Quran verse and a hadith in Arabic, a word of the
+  day (French B1 by default; five languages, A1–C2), wisdom from psychology, medicine and
+  biology, and a fact. Quiet by design: one folded line on the phone (ADR-023).
 
 ## The starter set (seed)
 
