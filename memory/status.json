@@ -4,7 +4,7 @@
   "updated": "2026-10-17",
   "current_stage": 4,
   "next_actions": [
-    "Re-run scripts/install_local.sh on the laptop, then open Itqan on the iPhone once so it updates (data format v6) and syncs again.",
+    "On the laptop: git pull, then re-run scripts/install_local.sh (it installs new dependencies itself now). Then open Itqan on the iPhone once so it updates (data format v6) and syncs again.",
     "Look at the new daily card on Today; in Settings → Daily card, choose the word's language and level and switch off anything you don't want.",
     "Record this year's achievements so far; check the suggestions Itqan offers."
   ],
@@ -514,6 +514,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-17",
+      "entry": "S2-00 follow-up: install_local.sh now runs `npm ci` whenever package-lock.json is newer than npm's record of the last install, so `git pull` + the script is the whole update — before, a pull that added a package (ADR-023's font) broke the build until a manual `npm install`. `npm ci`, not `npm install`: it never rewrites tracked files that would block the next pull. Checked: up to date → skipped; changed lockfile → installed; checkout stays clean."
+    },
     {
       "date": "2026-10-17",
       "entry": "S2-21, S2-22: the daily card on Today (ADR-023, schema v6) — 118 Quran passages (KFGQPC Uthmani in Amiri Quran, open-tanween code points mapped to Standard Unicode and proven on all 6,236 ayahs; Saheeh International), 102 hadith (Arabic copied from the cited hadith; al-Bukhari, Muslim, or sahih/hasan per al-Albani, grade shown), 81 sayings, 115 facts, and words of the day for French, English, German, Spanish and Chinese at A1–C2 (French B1: 90). scripts/verify_daily.py checks every verse and hadith word for word (negative-tested). One of each per day, the same on every device; laptop: top of the side column, phone: one folded line. Settings → Daily card. 129 tests; checked in the browser at 375/768/1280 px, light and dark; v5 → v6 upgrade verified on browser data."

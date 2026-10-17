@@ -26,7 +26,13 @@ if [ ! -s "$TOKEN_FILE" ]; then
 fi
 chmod 600 "$TOKEN_FILE"
 
-[ -d node_modules ] || npm install
+# Install dependencies whenever the lockfile has changed since the last install (a pull can add a
+# package — ADR-023 added a font), and skip it otherwise. `npm ci` installs exactly the lockfile
+# and never rewrites package.json or package-lock.json, so this checkout stays clean for the next
+# `git pull`. node_modules/.package-lock.json is npm's record of the last install.
+if [ package-lock.json -nt node_modules/.package-lock.json ]; then
+  npm ci --no-audit --no-fund
+fi
 VITE_ITQAN_HELPER_TOKEN="$(cat "$TOKEN_FILE")" npm run build:local
 
 # Reminders helper: a user service that starts at login.

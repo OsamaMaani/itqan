@@ -66,7 +66,10 @@ Hash routes (`#/today`, `#/goals`, …) in `src/lib/router.ts` — static hostin
 **Primary — on the owner's computer (ADR-012):** `scripts/install_local.sh` runs `npm run build:local`
 (one self-contained `app/index.html`, works from `file://`) and adds an "Itqan" app-menu
 launcher that opens it in Chrome app mode with its own profile at `~/.local/share/itqan/browser`
-— which is where the local app's data lives. No server runs.
+— which is where the local app's data lives. No server runs. To update: `git pull`, re-run the
+script; it runs `npm ci` whenever `package-lock.json` is newer than npm's record of the last
+install (`node_modules/.package-lock.json`), never plain `npm install`, which can rewrite tracked
+files and block the next pull.
 
 **Secondary — hosted:** `.github/workflows/deploy.yml` builds with `BASE_PATH=/<repo>/` and publishes `dist/` to GitHub
 Pages on each push to `main`. `ci.yml` runs the dashboard check, typecheck, tests and build.

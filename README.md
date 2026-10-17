@@ -62,6 +62,7 @@ browser, it works offline, and you can install it as an app on desktop or phone.
 ```
 
 This builds Itqan into one offline file (`app/index.html`) and adds **Itqan** to your app menu.
+To update later: `git pull`, then run the script again. It installs any new dependencies itself.
 It opens in its own window, like a desktop app, and nothing needs to stay running. Your data is
 saved in Itqan's own browser profile (`~/.local/share/itqan/browser`). After updating the code,
 run the script again: it updates the app and leaves your data alone.
