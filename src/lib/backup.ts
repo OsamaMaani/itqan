@@ -1,3 +1,4 @@
+import { tx } from '../i18n/core'
 import { migrate, SCHEMA_VERSION } from './migrations'
 import { todayKey } from './date'
 import type { Data } from './types'
@@ -29,18 +30,18 @@ export function parseBackup(text: string): Data {
   try {
     json = JSON.parse(text)
   } catch {
-    throw new Error('That file is not valid JSON.')
+    throw new Error(tx().m.errors.notJson)
   }
   const b = json as Partial<BackupFile>
   if (!b || b.app !== 'itqan' || typeof b.schemaVersion !== 'number' || !b.data) {
-    throw new Error('That file is not an Itqan backup.')
+    throw new Error(tx().m.errors.notBackup)
   }
   if (b.schemaVersion > SCHEMA_VERSION) {
-    throw new Error('This backup is from a newer version of Itqan. Update the app first.')
+    throw new Error(tx().m.errors.newerBackup)
   }
   const d = b.data as unknown as Record<string, unknown>
   for (const k of ['areas', 'tasks', 'habits', 'goals'] as const) {
-    if (!Array.isArray(d[k])) throw new Error(`The backup is damaged: "${k}" is missing.`)
+    if (!Array.isArray(d[k])) throw new Error(tx().f(tx().m.errors.damagedBackup, { field: k }))
   }
   return migrate(d, b.schemaVersion)
 }

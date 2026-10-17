@@ -1,6 +1,7 @@
 import {
   addDays, differenceInCalendarDays, format, parseISO, startOfWeek,
 } from 'date-fns'
+import { tx, type I18n } from '../i18n/core'
 import type { DateKey } from './types'
 
 /** Local-time day key. Never derive one from toISOString(): that is UTC and shifts the day. */
@@ -43,31 +44,21 @@ export function dayOfWeek(k: DateKey): number {
   return fromKey(k).getDay()
 }
 
-export function prettyDay(k: DateKey, today: DateKey = todayKey()): string {
+/** "Today", "Tomorrow", a weekday this week, else "Sat, Oct 17" — in the interface language. */
+export function prettyDay(k: DateKey, today: DateKey = todayKey(), t: I18n = tx()): string {
   const d = diffDays(k, today)
-  if (d === 0) return 'Today'
-  if (d === 1) return 'Tomorrow'
-  if (d === -1) return 'Yesterday'
-  if (d > 1 && d < 7) return format(fromKey(k), 'EEEE')
-  return format(fromKey(k), 'EEE, MMM d')
+  if (d >= -1 && d <= 1) return t.relDay(d)
+  if (d > 1 && d < 7) return t.d(k, 'weekday', true)
+  return t.d(k, 'weekdayShort', true)
 }
 
-export function hijri(d: Date): string {
-  try {
-    return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
-      day: 'numeric', month: 'long', year: 'numeric',
-    }).format(d)
-  } catch {
-    return ''
-  }
-}
+/** Which greeting fits the hour; the words are `m.today.greeting[key]`. */
+export type GreetingKey = 'late' | 'morning' | 'afternoon' | 'evening'
 
-export function greeting(d: Date = new Date()): string {
+export function greetingKey(d: Date = new Date()): GreetingKey {
   const h = d.getHours()
-  if (h < 5) return 'Up late'
-  if (h < 12) return 'Good morning'
-  if (h < 17) return 'Good afternoon'
-  return 'Good evening'
+  if (h < 5) return 'late'
+  if (h < 12) return 'morning'
+  if (h < 17) return 'afternoon'
+  return 'evening'
 }
-
-export const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']

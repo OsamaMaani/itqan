@@ -1,3 +1,4 @@
+import { tx } from '../i18n/core'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { goalProgress } from './goals'
@@ -344,7 +345,7 @@ export const useStore = create<Store>()(
       restoreIdea: (i) => set((s) => ({ ideas: [...s.ideas, i] })),
       ideaToTask: (ideaId, title, date) => {
         const idea = get().ideas.find((i) => i.id === ideaId)
-        const taskId = get().addTask({ title, date, areaId: idea?.areaId ?? null, goalId: idea?.goalId ?? null, notes: idea ? `From idea: ${idea.title}` : '' })
+        const taskId = get().addTask({ title, date, areaId: idea?.areaId ?? null, goalId: idea?.goalId ?? null, notes: idea ? tx().f(tx().m.store.fromIdea, { title: idea.title }) : '' })
         set((s) => ({
           ideas: s.ideas.map((i) =>
             i.id === ideaId
@@ -403,7 +404,7 @@ export const useStore = create<Store>()(
       deleteProjectUpdate: (id) => set((s) => ({ projectUpdates: s.projectUpdates.filter((u) => u.id !== id) })),
       ideaToProject: (ideaId) => {
         const idea = get().ideas.find((i) => i.id === ideaId)
-        const id = get().addProject({ title: idea?.title ?? 'New project', description: idea?.notes ?? '', areaId: idea?.areaId ?? null, goalId: idea?.goalId ?? null, emoji: '💡' })
+        const id = get().addProject({ title: idea?.title ?? tx().m.store.newProject, description: idea?.notes ?? '', areaId: idea?.areaId ?? null, goalId: idea?.goalId ?? null, emoji: '💡' })
         if (idea) get().updateIdea(ideaId, { status: idea.status === 'new' || idea.status === 'exploring' ? 'doing' : idea.status })
         return id
       },
@@ -455,7 +456,7 @@ export const useStore = create<Store>()(
           if (c.birthdayReminderId) s.updateContact(contactId, { birthdayReminderId: null })
           return
         }
-        const fields = { title: `${c.name}’s birthday`, date: when.date, countYears: when.countYears, contactId }
+        const fields = { title: tx().f(tx().m.store.birthday, { name: c.name }), date: when.date, countYears: when.countYears, contactId }
         if (existing) s.updateReminder(existing.id, fields)
         else {
           const rid = s.addReminder({ ...fields, notes: '', emoji: '🎂', time: null, repeat: 'yearly', alerts: [0, 10080], important: false })

@@ -1,3 +1,4 @@
+import { tx } from '../../i18n/core'
 import { b64, unb64 } from './crypto'
 
 /**
@@ -35,7 +36,7 @@ async function req(url: string, init: RequestInit): Promise<Response> {
     // no-store: GitHub allows caching for 60 s, which would hide the other device's changes.
     return await fetch(url, { ...init, cache: 'no-store' })
   } catch {
-    throw new SyncError('Offline — will sync when the connection is back.', 'network')
+    throw new SyncError(tx().m.errors.offline, 'network')
   }
 }
 
@@ -44,15 +45,15 @@ const path = (r: RepoRef) => `${API}/repos/${encodeURIComponent(r.owner)}/${enco
 /** Confirms the repository exists, is private, and the token can write to it. */
 export async function checkRepo(r: RepoRef): Promise<void> {
   const res = await req(path(r), { headers: headers(r) })
-  if (res.status === 401) throw new SyncError('GitHub rejected the token. Check that you copied all of it and it has not expired.', 'auth')
+  if (res.status === 401) throw new SyncError(tx().m.errors.tokenRejected, 'auth')
   if (res.status === 404 || res.status === 403) {
-    throw new SyncError(`Can’t see ${r.owner}/${r.repo}. Check the names, and that the token was given access to this repository.`, 'access')
+    throw new SyncError(tx().f(tx().m.errors.cantSeeRepo, { repo: `${r.owner}/${r.repo}` }), 'access')
   }
-  if (!res.ok) throw new SyncError(`GitHub answered ${res.status}.`)
+  if (!res.ok) throw new SyncError(tx().f(tx().m.errors.githubStatus, { status: String(res.status) }))
   const repo = await res.json()
-  if (!repo.private) throw new SyncError(`${r.owner}/${r.repo} is public. Make it private first — your data must not sit in a public repository, even encrypted.`, 'public')
+  if (!repo.private) throw new SyncError(tx().f(tx().m.errors.repoPublic, { repo: `${r.owner}/${r.repo}` }), 'public')
   if (repo.permissions && repo.permissions.push === false) {
-    throw new SyncError('The token can read but not write. Give it “Contents: Read and write”.', 'access')
+    throw new SyncError(tx().m.errors.tokenReadOnly, 'access')
   }
 }
 
@@ -70,15 +71,15 @@ export async function readSyncFile(r: RepoRef, etag?: string | null): Promise<Re
   const res = await req(url, { headers: headers(r, etag ? { 'If-None-Match': etag } : {}) })
   if (res.status === 304) return { status: 'unchanged' }
   if (res.status === 404) return { status: 'missing' }
-  if (res.status === 401) throw new SyncError('GitHub rejected the token — it may have expired. Create a new one and reconnect.', 'auth')
-  if (!res.ok) throw new SyncError(`GitHub answered ${res.status} while reading.`)
+  if (res.status === 401) throw new SyncError(tx().m.errors.tokenExpired, 'auth')
+  if (!res.ok) throw new SyncError(tx().f(tx().m.errors.githubStatusReading, { status: String(res.status) }))
   const body = await res.json()
   let text: string
   if (body.encoding === 'base64' && body.content) text = decodeUtf8(body.content)
   else {
     // Files over 1 MB come without content; fetch the raw bytes.
     const raw = await req(url, { headers: headers(r, { Accept: 'application/vnd.github.raw+json' }) })
-    if (!raw.ok) throw new SyncError(`GitHub answered ${raw.status} while reading.`)
+    if (!raw.ok) throw new SyncError(tx().f(tx().m.errors.githubStatusReading, { status: String(raw.status) }))
     text = await raw.text()
   }
   return { status: 'ok', sha: body.sha, etag: res.headers.get('ETag'), text }
@@ -95,9 +96,9 @@ export async function writeSyncFile(r: RepoRef, text: string, sha: string | null
       ...(sha ? { sha } : {}),
     }),
   })
-  if (res.status === 409 || res.status === 422) throw new SyncError('Changed on another device meanwhile.', 'conflict')
-  if (res.status === 401) throw new SyncError('GitHub rejected the token — it may have expired. Create a new one and reconnect.', 'auth')
-  if (res.status === 403 || res.status === 404) throw new SyncError('The token can’t write to the repository. Give it “Contents: Read and write”.', 'access')
-  if (!res.ok) throw new SyncError(`GitHub answered ${res.status} while saving.`)
+  if (res.status === 409 || res.status === 422) throw new SyncError(tx().m.errors.changedElsewhere, 'conflict')
+  if (res.status === 401) throw new SyncError(tx().m.errors.tokenExpired, 'auth')
+  if (res.status === 403 || res.status === 404) throw new SyncError(tx().m.errors.tokenCantWrite, 'access')
+  if (!res.ok) throw new SyncError(tx().f(tx().m.errors.githubStatusSaving, { status: String(res.status) }))
   return (await res.json()).content.sha
 }

@@ -406,3 +406,68 @@ text as-is (wrong marks in Amiri and system fonts); Tanzil's "Uthmani minimal" t
 reader of the mushaf expects); a fresh random pick on every load (changes on refresh and differs
 between devices); showing all five at once (too tall on a phone); auto-rotating slides (motion
 that distracts).
+
+---
+
+## ADR-024 | 2026-10-17 | accepted | Five interface languages: English, Arabic, French, Chinese, Spanish
+
+**Asked for:** the whole app in Arabic, French, Chinese and Spanish, with every text checked
+against the UX-writing principles of each language. The owner chose: translate *everything*
+(daily-card content included), Western digits in Arabic (Quran verse numbers keep ١٢٣), and an
+independent reviewer per language. Answers Q2 (S2-07), widened from Arabic to four languages.
+
+**Decision — architecture (`src/i18n/`, rules in `memory/10-localization.md`):**
+- **Typed catalogs, one file per screen per language.** English (`en/`) is the source and defines
+  the `Messages` type; each translation is typed against it, so a missing or extra key is a
+  compile error. English is bundled; the others load on demand (dynamic import), so English users
+  pay nothing.
+- **Intl does the formatting** — dates (`t.d` presets), times, numbers, percent, lists, relative
+  time, plurals (`Intl.PluralRules`: Arabic's six forms), weekday/language names, the Hijri date.
+  date-fns stays for date maths only. Arabic uses `ar-u-nu-latn` (Western digits).
+- **Whole sentences only.** Placeholders `{name}`; React nodes inside a sentence via `rich()`;
+  counts are plural objects, never "(s)". Lib code (no hooks) takes `t: I18n = tx()`.
+- **Direction:** `<html dir lang>` follows the setting (also set before first paint in
+  `index.html`); logical Tailwind utilities everywhere; pointing icons flip in RTL; the habit
+  heatmap stays LTR (time runs left→right like a chart axis).
+- **Fonts:** Arabic UI in Vazirmatn (self-hosted Arabic-subset woff2, 46 KB) — chosen over Noto
+  Sans Arabic (166 KB) for size and its balance with the Latin UI font; Chinese uses the system
+  fonts (a CJK web font is megabytes). Letter-spacing and italics are neutralised in Arabic and
+  Chinese by CSS.
+- **The setting (schema v7):** `Settings.language`, default `en`, **synced** across devices with
+  the other shared settings; onboarding preselects the browser's language. Existing data is never
+  translated — only text Itqan writes into data (the starter set, a birthday reminder's title) is
+  written in the language active at that moment.
+- **Quick add speaks the language too:** day, time and estimate words per language live in
+  `quickAddWords.ts` (code, not the translated catalogs — a wrong word files a task on the wrong
+  day), always with English. Matching ignores case, accents and Arabic diacritics/letter
+  variants, reads Arabic-Indic and full-width digits and Chinese numerals, and treats Chinese
+  characters as word edges (明天下午读书). Short forms that are ordinary words (French *mer*,
+  Spanish *mar*, Arabic أحد) are deliberately absent. Tested per language.
+
+**Decision — daily card content:**
+- **Quran meanings are never translated by us.** French, Spanish and Chinese show a published
+  translation — Hamidullah, Isa García, and Muhammad Makin (not Ma Jian: the dataset's Chinese is
+  Makin's, from quranenc.com) — generated from quran-json 3.1.2 by
+  `verify_daily.py --write-meanings` and checked word for word. Excerpts are cut by hand from that
+  text and tested to be a run of it. **Arabic shows the verse and hadith alone**, with no
+  translation under them.
+- Hadith meanings (translated from the Arabic), sayings, facts, names and word meanings are
+  translated per language in `src/content/i18n/`, **keyed by the English** — editing an English
+  item makes its translation stop matching, and the completeness test fails until it is
+  retranslated. A saying originally in the target language uses its real original wording.
+- French/Spanish/Chinese words in their own interface language get a short definition in that
+  language (as English words do in English).
+
+**Decision — quality process:** a style guide per language (address: *tu*, *tú*, 你, Arabic
+verbal nouns for actions; punctuation and spacing rules; a shared glossary) in
+`memory/10-localization.md`; automated checks in `src/i18n/__tests__/catalogs.test.ts`
+(completeness, no stale keys, placeholder parity, every plural form a count 0–1000 can hit,
+per-language typography, leftover English, the quick-add examples parse, daily content complete);
+then one translator and one *independent* reviewer per language, each reviewer checking against
+the guide plus the language's established style guides, with findings applied as exact edits.
+
+**Rejected:** a runtime i18n library (react-intl/i18next — Intl plus 200 lines covers it, typed);
+English-keyed message strings in code (no compile-time completeness); Arabic-Indic digits in the
+UI (the owner's choice); device-local language (the owner switches devices and expects the same
+app); machine-translating at runtime (offline-first, and quality); translating the Quran's meanings
+ourselves; translating the owner's data.

@@ -9,8 +9,10 @@ date and keep the text.
 **Q1. Should the week start on Saturday?** Defaulted to Saturday (ADR-009). Sunday or Monday are
 one tap away in Settings. *Owner: owner. Blocks: nothing.*
 
-**Q2. Arabic interface?** The UI is English (he wrote the brief in English). An Arabic/RTL UI is
-roughly a day of work if wanted. *Owner: owner. Blocks: S2-07.*
+**Q2. ~~Arabic interface?~~ ANSWERED 2026-10-17:** yes — and French, Chinese and Spanish too, with
+everything translated (daily card included), Western digits in Arabic, and an independent review
+per language. Built as ADR-024. Original text: The UI is English (he wrote the brief in English).
+An Arabic/RTL UI is roughly a day of work if wanted. *Owner: owner. Blocks: S2-07.*
 
 **Q3. Will you use it on more than one device, or share it soon?** Decides when Stage 4 (sync /
 accounts) is worth building. *Owner: owner. Blocks: Stage 4.*

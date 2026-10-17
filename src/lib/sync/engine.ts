@@ -1,3 +1,4 @@
+import { tx } from '../../i18n/core'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { migrate, SCHEMA_VERSION } from '../migrations'
@@ -116,14 +117,14 @@ const repoOf = (c: SyncConfig): RepoRef => ({ owner: c.owner, repo: c.repo, toke
 
 async function parseRemote(text: string, c: SyncConfig): Promise<Side> {
   let env: unknown
-  try { env = JSON.parse(text) } catch { throw new SyncError('The sync file is damaged (not JSON).') }
-  if (!isEnvelope(env)) throw new SyncError('The sync file is not an Itqan sync file.')
+  try { env = JSON.parse(text) } catch { throw new SyncError(tx().m.errors.syncNotJson) }
+  if (!isEnvelope(env)) throw new SyncError(tx().m.errors.syncNotItqan)
   const doc = JSON.parse(await decrypt(env, c.keyB64)) as RemoteDoc
   if (doc.app !== 'itqan-sync-doc' || typeof doc.entities !== 'object' || typeof doc.meta !== 'object') {
-    throw new SyncError('The sync file has an unexpected shape.')
+    throw new SyncError(tx().m.errors.syncShape)
   }
   if (doc.schemaVersion > SCHEMA_VERSION) {
-    throw new SyncError('Your other device runs a newer Itqan. Update this one first (on the laptop: run install_local.sh).')
+    throw new SyncError(tx().m.errors.syncNewer)
   }
   if (doc.schemaVersion < SCHEMA_VERSION) return { entities: upgradeEntities(doc.entities, doc.schemaVersion), meta: doc.meta }
   return { entities: doc.entities, meta: doc.meta }
@@ -142,7 +143,7 @@ export async function syncNow(): Promise<void> {
   useSync.setState({ status: 'syncing' })
   try {
     for (let attempt = 0; ; attempt++) {
-      if (attempt > 4) throw new SyncError('Could not settle with the other device; will retry shortly.', 'conflict')
+      if (attempt > 4) throw new SyncError(tx().m.errors.syncSettle, 'conflict')
       const remote = useSync.getState().remote
       const read = await readSyncFile(repoOf(c), cachedRemote && remote?.etag ? remote.etag : null)
 
@@ -221,7 +222,7 @@ export async function connect(owner: string, repo: string, token: string, passph
   if (read.status === 'ok') {
     let env: unknown
     try { env = JSON.parse(read.text) } catch { env = null }
-    if (!isEnvelope(env)) throw new SyncError('The repository has an itqan-sync.json that is not an Itqan sync file.')
+    if (!isEnvelope(env)) throw new SyncError(tx().m.errors.syncRepoFile)
     saltB64 = env.kdf.salt
     iterations = env.kdf.iterations
     keyB64 = await deriveKey(passphrase, saltB64, iterations)

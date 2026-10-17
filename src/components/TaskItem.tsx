@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
 import { ArrowRight, CalendarClock, Check, Flag, FolderKanban, ListChecks, OctagonAlert, Target, Timer, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
 import { addDaysKey, diffDays, prettyDay } from '../lib/date'
 import { useAreaMap, useToday } from '../lib/hooks'
@@ -35,6 +36,8 @@ export function Checkbox({ checked, onChange, color }: { checked: boolean; onCha
 }
 
 export function TaskItem({ task, showDate, hideProject, onToggled }: { task: Task; showDate?: boolean; hideProject?: boolean; onToggled?: (done: boolean) => void }) {
+  const t = useI18n()
+  const { m } = t
   const areas = useAreaMap()
   const today = useToday()
   const toggle = useStore((s) => s.toggleTask)
@@ -58,8 +61,8 @@ export function TaskItem({ task, showDate, hideProject, onToggled }: { task: Tas
   }
 
   const onDelete = () => {
-    const t = remove(task.id)
-    if (t) toast({ message: `Deleted “${t.title}”`, emoji: '🗑️', action: { label: 'Undo', run: () => restore(t) } })
+    const removed = remove(task.id)
+    if (removed) toast({ message: t.f(m.tasks.deleted, { title: removed.title }), emoji: '🗑️', action: { label: m.common.undo, run: () => restore(removed) } })
   }
 
   const onFocus = () => {
@@ -73,7 +76,7 @@ export function TaskItem({ task, showDate, hideProject, onToggled }: { task: Tas
         layout
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, x: -20, transition: { duration: 0.15 } }}
+        exit={{ opacity: 0, x: -20 * (t.dir === 'rtl' ? -1 : 1), transition: { duration: 0.15 } }}
       >
       <div
         draggable
@@ -89,21 +92,21 @@ export function TaskItem({ task, showDate, hideProject, onToggled }: { task: Tas
             {task.title}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-muted empty:hidden">
-            {!task.done && task.stage === 'doing' && <span className="rounded-md bg-sky-500/10 px-1.5 py-0.5 font-bold text-sky-500">Doing</span>}
-            {!task.done && task.blocked && <span className="inline-flex items-center gap-0.5 font-bold text-danger"><OctagonAlert size={11} /> Blocked</span>}
+            {!task.done && task.stage === 'doing' && <span className="rounded-md bg-sky-500/10 px-1.5 py-0.5 font-bold text-sky-500">{m.tasks.doing}</span>}
+            {!task.done && task.blocked && <span className="inline-flex items-center gap-0.5 font-bold text-danger"><OctagonAlert size={11} /> {m.tasks.blocked}</span>}
             {area && <AreaChip area={area} />}
             {task.priority > 0 && (
               <span className="inline-flex items-center gap-0.5 font-semibold" style={{ color: PRIORITY_COLOR[task.priority] }}>
-                <Flag size={11} fill="currentColor" /> P{task.priority}
+                <Flag size={11} fill="currentColor" /> {t.f(m.tasks.priority, { n: task.priority })}
               </span>
             )}
             {(showDate || overdue) && task.date && (
               <span className={cx('inline-flex items-center gap-1', overdue && 'font-semibold text-danger')}>
-                <CalendarClock size={11} /> {prettyDay(task.date, today)}
+                <CalendarClock size={11} /> {prettyDay(task.date, today, t)}
               </span>
             )}
-            {task.estimateMin && <span className="inline-flex items-center gap-1"><Timer size={11} />{task.estimateMin}m</span>}
-            {task.subtasks.length > 0 && <span className="inline-flex items-center gap-1"><ListChecks size={11} />{subDone}/{task.subtasks.length}</span>}
+            {task.estimateMin && <span className="inline-flex items-center gap-1"><Timer size={11} />{t.dur(task.estimateMin)}</span>}
+            {task.subtasks.length > 0 && <span className="inline-flex items-center gap-1"><ListChecks size={11} />{t.n(subDone)}/{t.n(task.subtasks.length)}</span>}
             {project && !hideProject && (
               <button onClick={(e) => { e.stopPropagation(); navigate('projects', project.id) }} className="inline-flex items-center gap-1 hover:text-accent">
                 <FolderKanban size={11} />{project.title}
@@ -113,13 +116,13 @@ export function TaskItem({ task, showDate, hideProject, onToggled }: { task: Tas
           </div>
         </div>
         <div className="flex shrink-0 items-center opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
-          {!task.done && <IconButton label="Focus on this" onClick={onFocus}><Timer size={15} /></IconButton>}
+          {!task.done && <IconButton label={m.tasks.focusOnThis} onClick={onFocus}><Timer size={15} /></IconButton>}
           {!task.done && (
-            <IconButton label="Move to tomorrow" onClick={() => move(task.id, addDaysKey(today, 1))}>
-              <ArrowRight size={15} />
+            <IconButton label={m.tasks.moveToTomorrow} onClick={() => move(task.id, addDaysKey(today, 1))}>
+              <ArrowRight size={15} className="rtl:-scale-x-100" />
             </IconButton>
           )}
-          <IconButton label="Delete" onClick={onDelete} className="hover:text-danger"><Trash2 size={15} /></IconButton>
+          <IconButton label={m.common.delete} onClick={onDelete} className="hover:text-danger"><Trash2 size={15} /></IconButton>
         </div>
       </div>
       </motion.div>

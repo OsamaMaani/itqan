@@ -108,21 +108,19 @@ export interface LevelInfo {
   into: number
   needed: number
   progress: number
-  title: string
+  /** Index into the level titles (`m.levels`): a new title every 3 levels, the last at level 31. */
+  rank: number
 }
 
-const TITLES = [
-  'Beginner', 'Apprentice', 'Steady', 'Committed', 'Disciplined', 'Focused',
-  'Consistent', 'Resilient', 'Expert', 'Master', 'Muttqin',
-]
+export const LEVEL_TITLES = 11
 
 export function levelInfo(xp: number): LevelInfo {
   let level = 1
   while (xpToReach(level + 1) <= xp) level++
   const into = xp - xpToReach(level)
   const needed = xpForNext(level)
-  const title = TITLES[Math.min(TITLES.length - 1, Math.floor((level - 1) / 3))]
-  return { level, into, needed, progress: into / needed, title }
+  const rank = Math.min(LEVEL_TITLES - 1, Math.floor((level - 1) / 3))
+  return { level, into, needed, progress: into / needed, rank }
 }
 
 /** Consecutive days with any activity, ending today (an empty today does not break it). */
@@ -136,13 +134,18 @@ export function activeStreak(events: XpEvent[], today: DateKey): number {
 
 // --- badges (game rewards; not to be confused with the owner's real Achievements) ------
 
+/** A badge's name and description are `m.badges[id]`. */
 export interface Badge {
-  id: string
+  id: BadgeId
   emoji: string
-  title: string
-  description: string
   unlocked: boolean
 }
+
+export type BadgeId =
+  | 'first-step' | 'tasks-50' | 'tasks-250' | 'streak-7' | 'streak-30' | 'streak-100' | 'active-14'
+  | 'focus-10h' | 'focus-100h' | 'focus-90' | 'goal-1' | 'goal-5' | 'review-4' | 'early' | 'owl'
+  | 'level-5' | 'level-10' | 'days-30' | 'memories-10' | 'ideas-25' | 'idea-done' | 'project-done'
+  | 'proud-10' | 'people-10' | 'people-50'
 
 export function badges(d: Data, today: DateKey): Badge[] {
   const ev = xpEvents(d)
@@ -162,34 +165,33 @@ export function badges(d: Data, today: DateKey): Badge[] {
   const memories = (d.memories ?? []).length
   const ideas = d.ideas ?? []
 
-  const a = (id: string, emoji: string, title: string, description: string, unlocked: boolean) =>
-    ({ id, emoji, title, description, unlocked })
+  const a = (id: BadgeId, emoji: string, unlocked: boolean): Badge => ({ id, emoji, unlocked })
 
   return [
-    a('first-step', '👣', 'First step', 'Complete your first task', tasksDone >= 1),
-    a('tasks-50', '✅', 'Getting things done', 'Complete 50 tasks', tasksDone >= 50),
-    a('tasks-250', '🏗️', 'Builder', 'Complete 250 tasks', tasksDone >= 250),
-    a('streak-7', '🔥', 'One week strong', 'Keep a habit for 7 days in a row', bestHabit >= 7),
-    a('streak-30', '🌙', 'A full month', 'Keep a habit for 30 days in a row', bestHabit >= 30),
-    a('streak-100', '💎', 'Unbreakable', 'Keep a habit for 100 days in a row', bestHabit >= 100),
-    a('active-14', '⚡', 'Momentum', 'Be active 14 days in a row', active >= 14),
-    a('focus-10h', '🎯', 'Deep worker', 'Log 10 hours of focus', focusMin >= 600),
-    a('focus-100h', '🧠', 'Scholar', 'Log 100 hours of focus', focusMin >= 6000),
-    a('focus-90', '🏔️', 'Flow state', 'Finish a 90-minute focus session', longFocus),
-    a('goal-1', '🏆', 'Goal getter', 'Complete a goal', goalsDone >= 1),
-    a('goal-5', '👑', 'Achiever', 'Complete 5 goals', goalsDone >= 5),
-    a('review-4', '📓', 'Reflective', 'Write 4 weekly reviews', reviews >= 4),
-    a('early', '🌅', 'Early bird', 'Finish a task before 7 AM', early),
-    a('owl', '🦉', 'Night owl', 'Start a focus session after 10 PM', owl),
-    a('level-5', '⭐', 'Rising', 'Reach level 5', lvl >= 5),
-    a('level-10', '🌟', 'Itqan', 'Reach level 10', lvl >= 10),
-    a('days-30', '🗓️', 'Regular', 'Use Itqan across 30 days', daysUsed >= 30),
-    a('memories-10', '📸', 'Storyteller', 'Save 10 memories', memories >= 10),
-    a('ideas-25', '💡', 'Idea machine', 'Capture 25 ideas', ideas.length >= 25),
-    a('idea-done', '🚀', 'From idea to reality', 'See an idea through to done', ideas.some((i) => i.status === 'done')),
-    a('project-done', '🏁', 'Shipped', 'Finish a project', (d.projects ?? []).some((p) => p.status === 'done')),
-    a('proud-10', '🏅', 'Proud', 'Record 10 achievements', (d.achievements ?? []).length >= 10),
-    a('people-10', '🫶', 'Good friend', 'Log 10 check-ins with people', (d.interactions ?? []).length >= 10),
-    a('people-50', '🤝', 'Connector', 'Log 50 check-ins with people', (d.interactions ?? []).length >= 50),
+    a('first-step', '👣', tasksDone >= 1),
+    a('tasks-50', '✅', tasksDone >= 50),
+    a('tasks-250', '🏗️', tasksDone >= 250),
+    a('streak-7', '🔥', bestHabit >= 7),
+    a('streak-30', '🌙', bestHabit >= 30),
+    a('streak-100', '💎', bestHabit >= 100),
+    a('active-14', '⚡', active >= 14),
+    a('focus-10h', '🎯', focusMin >= 600),
+    a('focus-100h', '🧠', focusMin >= 6000),
+    a('focus-90', '🏔️', longFocus),
+    a('goal-1', '🏆', goalsDone >= 1),
+    a('goal-5', '👑', goalsDone >= 5),
+    a('review-4', '📓', reviews >= 4),
+    a('early', '🌅', early),
+    a('owl', '🦉', owl),
+    a('level-5', '⭐', lvl >= 5),
+    a('level-10', '🌟', lvl >= 10),
+    a('days-30', '🗓️', daysUsed >= 30),
+    a('memories-10', '📸', memories >= 10),
+    a('ideas-25', '💡', ideas.length >= 25),
+    a('idea-done', '🚀', ideas.some((i) => i.status === 'done')),
+    a('project-done', '🏁', (d.projects ?? []).some((p) => p.status === 'done')),
+    a('proud-10', '🏅', (d.achievements ?? []).length >= 10),
+    a('people-10', '🫶', (d.interactions ?? []).length >= 10),
+    a('people-50', '🤝', (d.interactions ?? []).length >= 50),
   ]
 }

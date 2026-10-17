@@ -1,3 +1,4 @@
+import { tx, type I18n } from '../i18n/core'
 import { addDaysKey, dayOfWeek, diffDays, rangeKeys, weekStartKey } from './date'
 import type { DateKey, Habit, HabitLogs } from './types'
 
@@ -133,11 +134,11 @@ export function isDueToday(h: Habit, logs: HabitLogs, today: DateKey, weekStarts
   return isScheduled(h, today)
 }
 
-export function scheduleLabel(h: Habit): string {
+/** "Every day", "4× a week", "Mon · Wed · Fri" in the interface language. */
+export function scheduleLabel(h: Habit, t: I18n = tx()): string {
   const s = h.schedule
-  if (s.type === 'daily') return 'Every day'
-  if (s.type === 'weekly') return `${s.times}× a week`
-  const names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  if (s.days.length === 7) return 'Every day'
+  if (s.type === 'daily' || (s.type === 'days' && s.days.length === 7)) return t.m.habits.everyDay
+  if (s.type === 'weekly') return t.p(t.m.habits.timesAWeek, s.times)
+  const names = t.weekdays('short')
   return [...s.days].sort().map((d) => names[d]).join(' · ')
 }

@@ -1,17 +1,18 @@
-import { format } from 'date-fns'
 import { Check, Flame, Pencil, Plus, Trophy } from 'lucide-react'
 import { useState } from 'react'
 import { HabitEditor } from '../components/HabitEditor'
 import { Heatmap } from '../components/Heatmap'
 import { AreaChip, Button, Card, cx, EmptyState, IconButton, PageHeader } from '../components/ui'
+import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
-import { addDaysKey, fromKey } from '../lib/date'
+import { addDaysKey } from '../lib/date'
 import { amountOn, completionRate, isMetOn, isScheduled, scheduleLabel, streak } from '../lib/habits'
 import { areaHex, useAreaMap, useData, useToday } from '../lib/hooks'
 import { useStore } from '../lib/store'
 import type { Habit } from '../lib/types'
 
 export function HabitsPage() {
+  const { m } = useI18n()
   const d = useData()
   const [creating, setCreating] = useState(false)
   const habits = d.habits.filter((h) => !h.archived).sort((a, b) => a.order - b.order)
@@ -19,12 +20,12 @@ export function HabitsPage() {
   return (
     <div>
       <PageHeader
-        title="Habits"
-        subtitle="Small, consistent actions. Tap any day to check it off — you can fill in days you forgot."
-        right={<Button variant="primary" onClick={() => setCreating(true)}><Plus size={16} /> New habit</Button>}
+        title={m.nav.habits}
+        subtitle={m.habits.subtitle}
+        right={<Button variant="primary" onClick={() => setCreating(true)}><Plus size={16} /> {m.habits.newHabit}</Button>}
       />
       {habits.length === 0 ? (
-        <EmptyState emoji="🌱" title="No habits yet">Start with one you can do even on a bad day — 5 minutes of French, 1 page of Quran.</EmptyState>
+        <EmptyState emoji="🌱" title={m.habits.emptyTitle}>{m.habits.emptyBody}</EmptyState>
       ) : (
         <div className="space-y-4">{habits.map((h) => <HabitRow key={h.id} habit={h} />)}</div>
       )}
@@ -34,6 +35,8 @@ export function HabitsPage() {
 }
 
 function HabitRow({ habit }: { habit: Habit }) {
+  const t = useI18n()
+  const { m } = t
   const today = useToday()
   const logs = useStore((s) => s.habitLogs)
   const weekStartsOn = useStore((s) => s.settings.weekStartsOn)
@@ -61,18 +64,18 @@ function HabitRow({ habit }: { habit: Habit }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h3 className="truncate text-lg font-bold">{habit.name}</h3>
-            <IconButton label="Edit habit" onClick={() => setEditing(true)}><Pencil size={14} /></IconButton>
+            <IconButton label={m.habits.editHabit} onClick={() => setEditing(true)}><Pencil size={14} /></IconButton>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
             <AreaChip area={area} />
-            <span>{scheduleLabel(habit)}</span>
-            {(target > 1 || habit.unit) && <span>· {target} {habit.unit}/day</span>}
+            <span>{scheduleLabel(habit, t)}</span>
+            {(target > 1 || habit.unit) && <span>· {t.f(m.habits.targetPerDay, { target, unit: habit.unit })}</span>}
           </div>
         </div>
         <div className="flex w-full justify-around gap-5 border-t border-border pt-3 text-center sm:w-auto sm:justify-start sm:border-0 sm:pt-0">
-          <Stat icon={<Flame size={14} fill="currentColor" />} value={st.current} label={`${st.unit} streak`} className="text-gold" />
-          <Stat icon={<Trophy size={14} />} value={st.best} label="best" className="text-accent" />
-          <Stat value={`${Math.round(rate30 * 100)}%`} label="30 days" />
+          <Stat icon={<Flame size={14} fill="currentColor" />} value={t.n(st.current)} label={st.unit === 'week' ? m.habits.weekStreak : m.habits.dayStreak} className="text-gold" />
+          <Stat icon={<Trophy size={14} />} value={t.n(st.best)} label={m.habits.best} className="text-accent" />
+          <Stat value={t.pct(rate30)} label={m.habits.last30} />
         </div>
       </div>
 
@@ -86,12 +89,12 @@ function HabitRow({ habit }: { habit: Habit }) {
               <button
                 key={k}
                 onClick={() => toggle(k)}
-                title={`${format(fromKey(k), 'EEE, MMM d')}${amt ? ` — ${amt} ${habit.unit}` : ''}`}
+                title={t.f(amt ? m.habits.dayTipAmount : m.habits.dayTip, { date: t.d(k, 'weekdayShort'), amount: amt, unit: habit.unit })}
                 className={cx('flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl py-2 text-[10px] font-bold transition hover:scale-105 sm:w-11 sm:flex-none', !sched && 'opacity-40', k === today && 'ring-2 ring-accent/40')}
                 style={met ? { background: hex, color: 'white' } : { background: 'var(--surface-2)', color: 'var(--muted)' }}
               >
-                {format(fromKey(k), 'EEE')}
-                <span className="grid size-5 place-items-center">{met ? <Check size={15} strokeWidth={3} /> : <span className="text-xs">{format(fromKey(k), 'd')}</span>}</span>
+                {t.d(k, 'weekdayName')}
+                <span className="grid size-5 place-items-center">{met ? <Check size={15} strokeWidth={3} /> : <span className="text-xs">{t.d(k, 'day')}</span>}</span>
               </button>
             )
           })}
@@ -103,7 +106,7 @@ function HabitRow({ habit }: { habit: Habit }) {
             weekStartsOn={weekStartsOn}
             color={hex}
             value={(k) => (isScheduled(habit, k) || habit.schedule.type === 'weekly' ? Math.min(1, amountOn(logs, habit.id, k) / target) : null)}
-            label={(k) => `${format(fromKey(k), 'EEE, MMM d')}: ${amountOn(logs, habit.id, k)} ${habit.unit}`}
+            label={(k) => t.f(m.habits.heatTip, { date: t.d(k, 'weekdayShort'), amount: amountOn(logs, habit.id, k), unit: habit.unit })}
           />
         </div>
       </div>

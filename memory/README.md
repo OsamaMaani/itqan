@@ -17,6 +17,7 @@ directory and understand the project completely.
 | `07-data-model.md` | Every persisted shape, and the migration procedure |
 | `08-design-system.md` | Tokens, components, motion and copy rules |
 | `09-workflow.md` | How every session works: the four phases and which model runs what |
+| `10-localization.md` | How interface text works in code, how each language is written, the glossary |
 | `status.json` | Machine-readable state — drives `dashboard/index.html` |
 
 ## Maintenance rules

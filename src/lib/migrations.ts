@@ -1,12 +1,12 @@
 import { DEFAULT_SETTINGS, emptyData } from './seed'
-import type { Data, Settings } from './types'
+import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types'
 
 /**
  * Persisted-data schema version. Bump it whenever a persisted shape in types.ts changes,
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 6
+export const SCHEMA_VERSION = 7
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -41,6 +41,12 @@ const steps: Record<number, Step> = {
   5: (d) => {
     const settings = (d.settings as Record<string, unknown> | undefined) ?? {}
     return { ...d, settings: { ...settings, daily: { ...DEFAULT_SETTINGS.daily, ...((settings.daily as object) ?? {}) } } }
+  },
+  // 6 → 7 (2026-10-17): interface language (ADR-024). Existing data keeps English — nothing
+  // changes on screen until the owner picks another language.
+  6: (d) => {
+    const settings = (d.settings as Record<string, unknown> | undefined) ?? {}
+    return { ...d, settings: { ...settings, language: settings.language ?? 'en' } }
   },
 }
 
@@ -83,5 +89,6 @@ export function normalize(d: Record<string, unknown>): Data {
 /** Saved settings over the defaults; nested objects are merged too, so a missing key gets its default. */
 function normalizeSettings(raw: unknown): Settings {
   const s = (raw && typeof raw === 'object' ? raw : {}) as Partial<Settings>
-  return { ...DEFAULT_SETTINGS, ...s, daily: { ...DEFAULT_SETTINGS.daily, ...(s.daily ?? {}) } }
+  const language = UI_LANGUAGES.includes(s.language as UiLanguage) ? (s.language as UiLanguage) : DEFAULT_SETTINGS.language
+  return { ...DEFAULT_SETTINGS, ...s, daily: { ...DEFAULT_SETTINGS.daily, ...(s.daily ?? {}) }, language }
 }

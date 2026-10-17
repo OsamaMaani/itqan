@@ -1,4 +1,3 @@
-import { format } from 'date-fns'
 import { AnimatePresence, motion } from 'motion/react'
 import { ChevronDown, Flame, Plus, Sparkles, Target, Timer, Zap } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
@@ -7,8 +6,10 @@ import { HabitTile } from '../components/HabitTile'
 import { QuickAdd } from '../components/QuickAdd'
 import { TaskItem } from '../components/TaskItem'
 import { Button, Card, cx, EmptyState, ProgressBar, ProgressRing, SectionTitle } from '../components/ui'
+import { tx } from '../i18n/core'
+import { rich, useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
-import { fromKey, greeting, hijri } from '../lib/date'
+import { fromKey, greetingKey, toKey } from '../lib/date'
 import { goalPace, goalProgress } from '../lib/goals'
 import { isDueToday, isMetOn } from '../lib/habits'
 import { enabledKinds } from '../lib/daily'
@@ -23,11 +24,11 @@ import { checkIn } from '../lib/connections'
 import { Avatar } from './Connections'
 import { nextAction, projectProgress } from '../lib/projects'
 
-const GROUPS: { key: TimeOfDay; label: string; emoji: string }[] = [
-  { key: 'morning', label: 'Morning', emoji: '🌅' },
-  { key: 'afternoon', label: 'Afternoon', emoji: '☀️' },
-  { key: 'evening', label: 'Evening', emoji: '🌙' },
-  { key: 'anytime', label: 'Anytime', emoji: '✨' },
+const GROUPS: { key: TimeOfDay; emoji: string }[] = [
+  { key: 'morning', emoji: '🌅' },
+  { key: 'afternoon', emoji: '☀️' },
+  { key: 'evening', emoji: '🌙' },
+  { key: 'anytime', emoji: '✨' },
 ]
 
 const MOODS = ['😞', '😕', '😐', '🙂', '😄']
@@ -38,6 +39,8 @@ const DailyCard = lazy(() => import('../components/DailyCard'))
 const byOrder = (a: Task, b: Task) => b.priority - a.priority || a.order - b.order
 
 export function TodayPage() {
+  const t = useI18n()
+  const { m } = t
   const today = useToday()
   const d = useData()
   const { level, todayXp, streak } = useProgress()
@@ -66,7 +69,7 @@ export function TodayPage() {
   }, [ratio, total])
 
   const note = d.dayNotes[today] ?? { intention: '', mood: 0, reflection: '' }
-  const focusToday = d.focusSessions.filter((f) => format(new Date(f.startedAt), 'yyyy-MM-dd') === today)
+  const focusToday = d.focusSessions.filter((f) => toKey(new Date(f.startedAt)) === today)
     .reduce((s, f) => s + f.minutes, 0)
   const activeGoals = useMemo(
     () => d.goals.filter((g) => g.status === 'active')
@@ -88,16 +91,18 @@ export function TodayPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-muted">
-            {format(date, 'EEEE, MMMM d')}
-            {d.settings.showHijri && <span className="opacity-70"> · {hijri(date)}</span>}
+            {t.d(date, 'full', true)}
+            {d.settings.showHijri && <span className="opacity-70"> · {t.hijri(date)}</span>}
           </p>
           <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">
-            {greeting()}{d.settings.name ? <>, <span className="text-gradient">{d.settings.name}</span></> : ''}
+            {d.settings.name
+              ? rich(m.today.greetingWithName, { greeting: m.today.greeting[greetingKey()], name: <span className="text-gradient">{d.settings.name}</span> })
+              : m.today.greeting[greetingKey()]}
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <Pill icon={<Flame size={15} fill="currentColor" />} className="text-gold" label={`${streak} day${streak === 1 ? '' : 's'}`} title="Active-day streak" />
-          <Pill icon={<Zap size={15} fill="currentColor" />} className="text-accent" label={`+${todayXp} XP`} title="XP earned today" />
+          <Pill icon={<Flame size={15} fill="currentColor" />} className="text-gold" label={t.p(m.today.streakDays, streak)} title={m.today.streakTitle} />
+          <Pill icon={<Zap size={15} fill="currentColor" />} className="text-accent" label={t.f(m.today.xpToday, { n: todayXp })} title={m.today.xpTitle} />
         </div>
       </div>
 
@@ -106,30 +111,30 @@ export function TodayPage() {
         <Card className="flex items-center gap-5 p-5">
           <ProgressRing value={ratio} size={96} stroke={10}>
             <div className="text-center">
-              <div className="text-2xl font-extrabold tabular">{Math.round(ratio * 100)}%</div>
+              <div className="text-2xl font-extrabold tabular">{t.pct(ratio)}</div>
             </div>
           </ProgressRing>
           <div className="min-w-0">
-            <div className="text-sm font-semibold text-muted">Today</div>
-            <div className="text-xl font-bold">{completed} of {total} done</div>
+            <div className="text-sm font-semibold text-muted">{m.today.progressLabel}</div>
+            <div className="text-xl font-bold">{t.f(m.today.doneOf, { done: completed, total })}</div>
             <div className="mt-2 text-xs text-muted">
-              {ratio === 1 && total > 0 ? 'Everything done. Masha’Allah! 🎉' : total === 0 ? 'Add a task or habit to begin.' : `${total - completed} left — one at a time.`}
+              {ratio === 1 && total > 0 ? m.today.allDone : total === 0 ? m.today.begin : t.p(m.today.left, total - completed)}
             </div>
           </div>
         </Card>
 
         <Card className="p-5">
           <div className="mb-2 flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-sm font-semibold text-muted"><Sparkles size={14} /> Intention for today</span>
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-muted"><Sparkles size={14} /> {m.today.intention}</span>
             <div className="flex gap-0.5">
-              {MOODS.map((m, i) => (
+              {MOODS.map((mood, i) => (
                 <button
-                  key={m}
+                  key={mood}
                   onClick={() => setDayNote(today, { mood: note.mood === i + 1 ? 0 : ((i + 1) as 1 | 2 | 3 | 4 | 5) })}
                   className={cx('grid size-7 place-items-center rounded-lg text-base transition hover:scale-110', note.mood === i + 1 ? 'bg-accent-soft' : 'opacity-40 hover:opacity-100')}
-                  title="How do you feel?"
+                  title={m.today.moodTitle}
                 >
-                  {m}
+                  {mood}
                 </button>
               ))}
             </div>
@@ -137,7 +142,7 @@ export function TodayPage() {
           <textarea
             value={note.intention}
             onChange={(e) => setDayNote(today, { intention: e.target.value })}
-            placeholder="What would make today a good day?"
+            placeholder={m.today.intentionPlaceholder}
             rows={2}
             className="w-full resize-none bg-transparent text-lg font-semibold leading-snug outline-none placeholder:font-medium placeholder:text-muted/60"
           />
@@ -154,30 +159,30 @@ export function TodayPage() {
           {overdue.length > 0 && (
             <Card className="border-danger/30 p-2">
               <div className="flex items-center justify-between px-3 py-1.5">
-                <span className="text-xs font-bold uppercase tracking-wider text-danger">Overdue · {overdue.length}</span>
-                <Button size="sm" variant="ghost" onClick={() => overdue.forEach((t) => moveTask(t.id, today))}>Move all to today</Button>
+                <span className="text-xs font-bold uppercase tracking-wider text-danger">{t.f(m.today.overdue, { n: overdue.length })}</span>
+                <Button size="sm" variant="ghost" onClick={() => overdue.forEach((x) => moveTask(x.id, today))}>{m.today.moveAll}</Button>
               </div>
               <AnimatePresence initial={false}>
-                {overdue.map((t) => <TaskItem key={t.id} task={t} showDate />)}
+                {overdue.map((x) => <TaskItem key={x.id} task={x} showDate />)}
               </AnimatePresence>
             </Card>
           )}
 
           {open.length === 0 && done.length === 0 ? (
-            <EmptyState emoji="🌤️" title="A clear day">Add what matters most today. Small, specific tasks are easier to start.</EmptyState>
+            <EmptyState emoji="🌤️" title={m.today.emptyTitle}>{m.today.emptyBody}</EmptyState>
           ) : (
-            GROUPS.map(({ key, label, emoji }) => {
-              const items = open.filter((t) => t.timeOfDay === key)
+            GROUPS.map(({ key, emoji }) => {
+              const items = open.filter((x) => x.timeOfDay === key)
               if (!items.length) return null
-              const mins = items.reduce((s, t) => s + (t.estimateMin ?? 0), 0)
+              const mins = items.reduce((sum, x) => sum + (x.estimateMin ?? 0), 0)
               return (
                 <Card key={key} className="p-2">
                   <div className="flex items-center justify-between px-3 py-1.5">
-                    <span className="text-xs font-bold uppercase tracking-wider text-muted">{emoji} {label} · {items.length}</span>
-                    {mins > 0 && <span className="text-[11px] text-muted">~{mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`}</span>}
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted">{emoji} {t.f(m.today.groupCount, { label: m.today.groups[key], n: items.length })}</span>
+                    {mins > 0 && <span className="text-[11px] text-muted">{t.f(m.today.estimate, { duration: t.dur(mins) })}</span>}
                   </div>
                   <AnimatePresence initial={false}>
-                    {items.map((t) => <TaskItem key={t.id} task={t} />)}
+                    {items.map((x) => <TaskItem key={x.id} task={x} />)}
                   </AnimatePresence>
                 </Card>
               )
@@ -187,14 +192,14 @@ export function TodayPage() {
           {done.length > 0 && (
             <div>
               <button onClick={() => setShowDone((s) => !s)} className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider text-muted hover:text-text">
-                <ChevronDown size={14} className={cx('transition', !showDone && '-rotate-90')} />
-                Completed · {done.length}
+                <ChevronDown size={14} className={cx('transition', !showDone && '-rotate-90 rtl:rotate-90')} />
+                {t.f(m.today.completed, { n: done.length })}
               </button>
               <AnimatePresence>
                 {showDone && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                     <Card className="mt-2 p-2">
-                      {done.map((t) => <TaskItem key={t.id} task={t} />)}
+                      {done.map((x) => <TaskItem key={x.id} task={x} />)}
                     </Card>
                   </motion.div>
                 )}
@@ -208,12 +213,12 @@ export function TodayPage() {
           {wide && daily}
 
           <section>
-            <SectionTitle right={<button onClick={() => navigate('habits')} className="text-xs font-semibold text-accent hover:underline">All habits</button>}>
-              Habits · {habitsMet}/{habits.length}
+            <SectionTitle right={<button onClick={() => navigate('habits')} className="text-xs font-semibold text-accent hover:underline">{m.today.allHabits}</button>}>
+              {t.f(m.today.habits, { met: habitsMet, total: habits.length })}
             </SectionTitle>
             {habits.length === 0 ? (
-              <EmptyState emoji="🌱" title="No habits for today">
-                <button className="font-semibold text-accent" onClick={() => navigate('habits')}>Create one</button> — Quran, French, reading…
+              <EmptyState emoji="🌱" title={m.today.noHabits}>
+                {rich(m.today.noHabitsBody, { create: <button className="font-semibold text-accent" onClick={() => navigate('habits')}>{m.today.createOne}</button> })}
               </EmptyState>
             ) : (
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
@@ -225,12 +230,12 @@ export function TodayPage() {
           <PinnedProjects />
 
           <section>
-            <SectionTitle right={<button onClick={() => navigate('goals')} className="text-xs font-semibold text-accent hover:underline">All goals</button>}>
-              Goals in motion
+            <SectionTitle right={<button onClick={() => navigate('goals')} className="text-xs font-semibold text-accent hover:underline">{m.today.allGoals}</button>}>
+              {m.today.goalsTitle}
             </SectionTitle>
             {activeGoals.length === 0 ? (
-              <EmptyState emoji="🎯" title="No active goals">
-                <button className="font-semibold text-accent" onClick={() => navigate('goals')}>Set one</button> to give your days a direction.
+              <EmptyState emoji="🎯" title={m.today.noGoals}>
+                {rich(m.today.noGoalsBody, { set: <button className="font-semibold text-accent" onClick={() => navigate('goals')}>{m.today.setOne}</button> })}
               </EmptyState>
             ) : (
               <Card className="divide-y divide-border">
@@ -243,13 +248,13 @@ export function TodayPage() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                           <span className="truncate text-sm font-semibold">{g.title}</span>
-                          <span className="text-xs font-bold tabular" style={{ color: hex }}>{Math.round(p * 100)}%</span>
+                          <span className="text-xs font-bold tabular" style={{ color: hex }}>{t.pct(p)}</span>
                         </div>
                         <ProgressBar value={p} color={hex} className="mt-1.5" />
                         {pace.daysLeft !== null && (
                           <div className="mt-1 text-[11px] text-muted">
-                            {pace.daysLeft >= 0 ? `${pace.daysLeft} days left` : 'Past deadline'}
-                            {pace.perDay !== null && g.kind === 'numeric' && ` · ${fmt(pace.perDay)} ${g.unit}/day to finish`}
+                            {pace.daysLeft >= 0 ? t.p(m.today.daysLeft, pace.daysLeft) : m.today.pastDeadline}
+                            {pace.perDay !== null && g.kind === 'numeric' && ` · ${t.f(m.today.perDay, { amount: fmt(pace.perDay), unit: g.unit })}`}
                           </div>
                         )}
                       </div>
@@ -266,10 +271,10 @@ export function TodayPage() {
           <Card className="flex items-center gap-4 p-4">
             <div className="grid size-11 place-items-center rounded-xl bg-accent-soft text-accent"><Timer size={20} /></div>
             <div className="flex-1">
-              <div className="text-sm font-semibold">{focusToday} min focused today</div>
-              <div className="text-xs text-muted">Level {level.level} · {level.title} — {level.needed - level.into} XP to next</div>
+              <div className="text-sm font-semibold">{t.p(m.today.focusedToday, focusToday)}</div>
+              <div className="text-xs text-muted">{t.f(m.today.levelLine, { n: level.level, title: m.levels[level.rank], xp: level.needed - level.into })}</div>
             </div>
-            <Button size="sm" variant="primary" onClick={() => navigate('focus')}><Plus size={14} /> Focus</Button>
+            <Button size="sm" variant="primary" onClick={() => navigate('focus')}><Plus size={14} /> {m.nav.focus}</Button>
           </Card>
         </div>
       </div>
@@ -278,6 +283,8 @@ export function TodayPage() {
 }
 
 function PinnedProjects() {
+  const t = useI18n()
+  const { m } = t
   const projects = useStore((s) => s.projects)
   const tasks = useStore((s) => s.tasks)
   const areas = useAreaMap()
@@ -285,22 +292,22 @@ function PinnedProjects() {
   if (!pinned.length) return null
   return (
     <section>
-      <SectionTitle right={<button onClick={() => navigate('projects')} className="text-xs font-semibold text-accent hover:underline">All projects</button>}>Projects</SectionTitle>
+      <SectionTitle right={<button onClick={() => navigate('projects')} className="text-xs font-semibold text-accent hover:underline">{m.today.allProjects}</button>}>{m.nav.projects}</SectionTitle>
       <Card className="divide-y divide-border">
         {pinned.map((p) => {
           const hex = areaHex(p.areaId ? areas.get(p.areaId) : null)
           const progress = projectProgress(p, tasks)
           const next = nextAction(p, tasks)
           return (
-            <button key={p.id} onClick={() => navigate('projects', p.id)} className="flex w-full items-center gap-3 p-3 text-left">
+            <button key={p.id} onClick={() => navigate('projects', p.id)} className="flex w-full items-center gap-3 p-3 text-start">
               <div className="grid size-9 shrink-0 place-items-center rounded-xl text-lg" style={{ background: `${hex}1f` }}>{p.emoji}</div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate text-sm font-semibold">{p.title}</span>
-                  <span className="text-xs font-bold tabular" style={{ color: hex }}>{Math.round(progress * 100)}%</span>
+                  <span className="text-xs font-bold tabular" style={{ color: hex }}>{t.pct(progress)}</span>
                 </div>
                 <ProgressBar value={progress} color={hex} className="mt-1.5" />
-                {next && <div className="mt-1 truncate text-[11px] text-muted">Next: {next.title}</div>}
+                {next && <div className="mt-1 truncate text-[11px] text-muted">{t.f(m.today.next, { title: next.title })}</div>}
               </div>
             </button>
           )
@@ -311,6 +318,8 @@ function PinnedProjects() {
 }
 
 function ComingUp() {
+  const t = useI18n()
+  const { m } = t
   const today = useToday()
   const reminders = useStore((s) => s.reminders)
   const memories = useStore((s) => s.memories)
@@ -329,14 +338,14 @@ function ComingUp() {
     <section className="space-y-3">
       {soon.length > 0 && (
         <>
-          <SectionTitle right={<button onClick={() => navigate('reminders')} className="text-xs font-semibold text-accent hover:underline">All reminders</button>}>Coming up</SectionTitle>
+          <SectionTitle right={<button onClick={() => navigate('reminders')} className="text-xs font-semibold text-accent hover:underline">{m.today.allReminders}</button>}>{m.today.comingUp}</SectionTitle>
           <Card className="divide-y divide-border">
             {soon.map(({ r, occ, days }) => (
-              <button key={r.id} onClick={() => navigate('reminders')} className="flex w-full items-center gap-3 p-3 text-left">
+              <button key={r.id} onClick={() => navigate('reminders')} className="flex w-full items-center gap-3 p-3 text-start">
                 <span className="text-xl">{r.emoji || '🔔'}</span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold">{r.title}</span>
-                  <span className={cx('text-[11px]', days < 0 ? 'font-semibold text-danger' : days === 0 ? 'font-semibold text-accent' : 'text-muted')}>{whenText(r, occ, now)}</span>
+                  <span className={cx('text-[11px]', days < 0 ? 'font-semibold text-danger' : days === 0 ? 'font-semibold text-accent' : 'text-muted')}>{whenText(r, occ, now, t)}</span>
                 </span>
               </button>
             ))}
@@ -345,15 +354,15 @@ function ComingUp() {
       )}
       {reach.length > 0 && (
         <>
-          <SectionTitle right={<button onClick={() => navigate('connections')} className="text-xs font-semibold text-accent hover:underline">All people</button>}>Reach out</SectionTitle>
+          <SectionTitle right={<button onClick={() => navigate('connections')} className="text-xs font-semibold text-accent hover:underline">{m.today.allPeople}</button>}>{m.today.reachOut}</SectionTitle>
           <Card className="divide-y divide-border">
             {reach.map(({ c, ci }) => (
-              <button key={c.id} onClick={() => navigate('connections', c.id)} className="flex w-full items-center gap-3 p-3 text-left">
+              <button key={c.id} onClick={() => navigate('connections', c.id)} className="flex w-full items-center gap-3 p-3 text-start">
                 <Avatar c={c} size={34} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold">{c.name}</span>
                   <span className={cx('text-[11px]', ci.state === 'overdue' ? 'font-semibold text-danger' : 'font-semibold text-accent')}>
-                    {ci.state === 'overdue' ? `Overdue by ${-(ci.days ?? 0)}d` : 'Check in today'}
+                    {ci.state === 'overdue' ? t.p(m.today.overdueBy, -(ci.days ?? 0)) : m.today.checkInToday}
                   </span>
                 </span>
               </button>
@@ -363,12 +372,12 @@ function ComingUp() {
       )}
       {otd.length > 0 && (
         <Card className="relative overflow-hidden p-4">
-          <div className="absolute -right-6 -top-6 size-24 rounded-full bg-gradient-accent opacity-15 blur-2xl" />
-          <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-accent">On this day</div>
-          {otd.slice(0, 2).map((m) => (
-            <button key={m.id} onClick={() => navigate('memories')} className="flex w-full items-center gap-3 py-1 text-left">
-              <span className="text-2xl">{m.emoji}</span>
-              <span><span className="block text-sm font-semibold">{m.title}</span><span className="text-[11px] text-muted">{m.date.slice(0, 4)}</span></span>
+          <div className="absolute -end-6 -top-6 size-24 rounded-full bg-gradient-accent opacity-15 blur-2xl" />
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-accent">{m.today.onThisDay}</div>
+          {otd.slice(0, 2).map((mem) => (
+            <button key={mem.id} onClick={() => navigate('memories')} className="flex w-full items-center gap-3 py-1 text-start">
+              <span className="text-2xl">{mem.emoji}</span>
+              <span><span className="block text-sm font-semibold">{mem.title}</span><span className="text-[11px] text-muted">{t.d(mem.date, 'year')}</span></span>
             </button>
           ))}
         </Card>
@@ -386,6 +395,7 @@ function Pill({ icon, label, className, title }: { icon: React.ReactNode; label:
   )
 }
 
-export function fmt(n: number): string {
-  return n >= 10 ? Math.ceil(n).toString() : (Math.ceil(n * 10) / 10).toString()
+/** A per-day pace, rounded up (10+ to whole units, below that to one decimal), in the interface language. */
+export function fmt(n: number, t = tx()): string {
+  return t.n(n >= 10 ? Math.ceil(n) : Math.ceil(n * 10) / 10)
 }

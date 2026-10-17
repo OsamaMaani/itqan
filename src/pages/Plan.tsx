@@ -1,11 +1,11 @@
-import { format } from 'date-fns'
 import { AnimatePresence } from 'motion/react'
 import { ChevronLeft, ChevronRight, Inbox } from 'lucide-react'
 import { useState } from 'react'
 import { QuickAdd } from '../components/QuickAdd'
 import { TaskItem } from '../components/TaskItem'
 import { Button, Card, cx, IconButton, PageHeader } from '../components/ui'
-import { addDaysKey, fromKey, weekDays } from '../lib/date'
+import { useI18n } from '../i18n/react'
+import { addDaysKey, weekDays } from '../lib/date'
 import { useData, useToday } from '../lib/hooks'
 import { useStore } from '../lib/store'
 import type { DateKey, Task } from '../lib/types'
@@ -13,35 +13,37 @@ import type { DateKey, Task } from '../lib/types'
 const sort = (a: Task, b: Task) => Number(a.done) - Number(b.done) || b.priority - a.priority || a.order - b.order
 
 export function PlanPage() {
+  const t = useI18n()
+  const { m } = t
   const d = useData()
   const today = useToday()
   const [offset, setOffset] = useState(0)
   const days = weekDays(addDaysKey(today, offset * 7), d.settings.weekStartsOn)
-  const inbox = d.tasks.filter((t) => t.date === null && !t.done).sort(sort)
+  const inbox = d.tasks.filter((x) => x.date === null && !x.done).sort(sort)
 
   return (
     <div>
       <PageHeader
-        title="Plan"
-        subtitle={<><span className="hidden sm:inline">Drag tasks between days. </span><span className="sm:hidden">Tap a task to change its day. </span>Unscheduled tasks wait in the Inbox.</>}
+        title={m.nav.plan}
+        subtitle={<><span className="hidden sm:inline">{m.plan.subtitleDesktop}</span><span className="sm:hidden">{m.plan.subtitleTouch}</span></>}
         right={
           <div className="flex items-center gap-1">
-            <IconButton label="Previous week" onClick={() => setOffset((o) => o - 1)}><ChevronLeft size={18} /></IconButton>
-            <Button size="sm" variant={offset === 0 ? 'soft' : 'outline'} onClick={() => setOffset(0)}>This week</Button>
-            <IconButton label="Next week" onClick={() => setOffset((o) => o + 1)}><ChevronRight size={18} /></IconButton>
+            <IconButton label={m.plan.previousWeek} onClick={() => setOffset((o) => o - 1)}><ChevronLeft size={18} className="rtl:-scale-x-100" /></IconButton>
+            <Button size="sm" variant={offset === 0 ? 'soft' : 'outline'} onClick={() => setOffset(0)}>{m.plan.thisWeek}</Button>
+            <IconButton label={m.plan.nextWeek} onClick={() => setOffset((o) => o + 1)}><ChevronRight size={18} className="rtl:-scale-x-100" /></IconButton>
           </div>
         }
       />
       <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
-        <DayColumn day={null} title="Inbox" subtitle="Someday / unscheduled" tasks={inbox} icon={<Inbox size={16} />} />
+        <DayColumn day={null} title={m.plan.inbox} subtitle={m.plan.inboxSubtitle} tasks={inbox} icon={<Inbox size={16} />} />
         <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
           {days.map((k) => (
             <DayColumn
               key={k}
               day={k}
-              title={format(fromKey(k), 'EEEE')}
-              subtitle={format(fromKey(k), 'MMM d')}
-              tasks={d.tasks.filter((t) => t.date === k).sort(sort)}
+              title={t.d(k, 'weekday', true)}
+              subtitle={t.d(k, 'short')}
+              tasks={d.tasks.filter((x) => x.date === k).sort(sort)}
               highlight={k === today}
               past={k < today}
             />
@@ -61,10 +63,11 @@ function DayColumn({ day, title, subtitle, tasks, highlight, past, icon }: {
   past?: boolean
   icon?: React.ReactNode
 }) {
+  const t = useI18n()
   const move = useStore((s) => s.moveTask)
   const [over, setOver] = useState(false)
-  const done = tasks.filter((t) => t.done).length
-  const mins = tasks.filter((t) => !t.done).reduce((s, t) => s + (t.estimateMin ?? 0), 0)
+  const done = tasks.filter((x) => x.done).length
+  const mins = tasks.filter((x) => !x.done).reduce((s, x) => s + (x.estimateMin ?? 0), 0)
 
   return (
     <Card
@@ -86,17 +89,17 @@ function DayColumn({ day, title, subtitle, tasks, highlight, past, icon }: {
             <div className="text-[11px] text-muted">{subtitle}</div>
           </div>
         </div>
-        <div className="text-right text-[11px] text-muted tabular">
-          {tasks.length > 0 && <div>{done}/{tasks.length}</div>}
-          {mins > 0 && <div>~{mins >= 60 ? `${Math.floor(mins / 60)}h${mins % 60 ? ` ${mins % 60}m` : ''}` : `${mins}m`}</div>}
+        <div className="text-end text-[11px] text-muted tabular">
+          {tasks.length > 0 && <div>{t.n(done)}/{t.n(tasks.length)}</div>}
+          {mins > 0 && <div>~{t.dur(mins)}</div>}
         </div>
       </div>
       <div className="flex-1">
         <AnimatePresence initial={false}>
-          {tasks.map((t) => <TaskItem key={t.id} task={t} />)}
+          {tasks.map((x) => <TaskItem key={x.id} task={x} />)}
         </AnimatePresence>
       </div>
-      <QuickAdd defaultDate={day} placeholder="Add…" className="mt-1 border-dashed bg-transparent [&_input]:h-9 sm:[&_input]:text-sm" />
+      <QuickAdd defaultDate={day} placeholder={t.m.plan.addPlaceholder} className="mt-1 border-dashed bg-transparent [&_input]:h-9 sm:[&_input]:text-sm" />
     </Card>
   )
 }

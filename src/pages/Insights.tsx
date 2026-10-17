@@ -1,17 +1,18 @@
-import { format } from 'date-fns'
 import { motion } from 'motion/react'
 import { CheckCircle2, Clock, Flame, Lock, Trophy, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Heatmap } from '../components/Heatmap'
 import { Card, cx, PageHeader, ProgressBar, Segmented, SectionTitle } from '../components/ui'
+import { useI18n } from '../i18n/react'
 import { AREA_HEX } from '../lib/colors'
-import { addDaysKey, fromKey, rangeKeys, todayKey } from '../lib/date'
+import { addDaysKey, rangeKeys, todayKey } from '../lib/date'
 import { badges as computeBadges, xpByDay } from '../lib/gamification'
 import { completionRate, isMetOn, streak } from '../lib/habits'
 import { useData, useProgress, useToday } from '../lib/hooks'
-import { fmtMin } from './Focus'
 
 export function InsightsPage() {
+  const t = useI18n()
+  const { m } = t
   const d = useData()
   const today = useToday()
   const { events, total, level, streak: active } = useProgress()
@@ -46,31 +47,31 @@ export function InsightsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Insights"
-        subtitle="Where your time and energy went — and how far you've come."
-        right={<Segmented value={range} onChange={setRange} options={[{ value: 14, label: '14d' }, { value: 30, label: '30d' }, { value: 90, label: '90d' }]} />}
+        title={m.nav.insights}
+        subtitle={m.insights.subtitle}
+        right={<Segmented value={range} onChange={setRange} options={[14, 30, 90].map((n) => ({ value: n as 14 | 30 | 90, label: t.f(m.insights.rangeShort, { n }) }))} />}
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]">
         <Card className="relative col-span-2 overflow-hidden p-5 lg:col-span-1">
-          <div className="absolute -right-6 -top-6 size-32 rounded-full bg-gradient-accent opacity-20 blur-2xl" />
-          <div className="text-xs font-bold uppercase tracking-wider text-muted">Level</div>
+          <div className="absolute -end-6 -top-6 size-32 rounded-full bg-gradient-accent opacity-20 blur-2xl" />
+          <div className="text-xs font-bold uppercase tracking-wider text-muted">{m.insights.level}</div>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-5xl font-extrabold text-gradient tabular">{level.level}</span>
-            <span className="font-bold">{level.title}</span>
+            <span className="text-5xl font-extrabold text-gradient tabular">{t.n(level.level)}</span>
+            <span className="font-bold">{m.levels[level.rank]}</span>
           </div>
           <ProgressBar value={level.progress} className="mt-3" height={8} />
-          <div className="mt-1.5 text-xs text-muted tabular">{level.into} / {level.needed} XP · {total.toLocaleString()} XP total</div>
+          <div className="mt-1.5 text-xs text-muted tabular">{t.f(m.insights.levelProgress, { into: level.into, needed: level.needed, total })}</div>
         </Card>
-        <StatCard icon={<CheckCircle2 size={18} />} value={tasksDone.toLocaleString()} label="tasks completed" />
-        <StatCard icon={<Clock size={18} />} value={fmtMin(focusMin)} label="focused, all time" />
-        <StatCard icon={<Trophy size={18} />} value={`${bestStreak}`} label="best habit streak" />
-        <StatCard icon={<Flame size={18} />} value={`${active}`} label="active days in a row" />
+        <StatCard icon={<CheckCircle2 size={18} />} value={t.n(tasksDone)} label={m.insights.tasksCompleted} />
+        <StatCard icon={<Clock size={18} />} value={t.dur(focusMin)} label={m.insights.focusedAllTime} />
+        <StatCard icon={<Trophy size={18} />} value={t.n(bestStreak)} label={m.insights.bestStreak} />
+        <StatCard icon={<Flame size={18} />} value={t.n(active)} label={m.insights.activeDays} />
       </div>
 
       <Card className="p-5">
-        <SectionTitle right={<span className="text-xs font-semibold text-muted">{rangeXp.toLocaleString()} XP in {range} days</span>}>
-          <span className="inline-flex items-center gap-1.5"><Zap size={13} /> XP per day</span>
+        <SectionTitle right={<span className="text-xs font-semibold text-muted">{t.p(m.insights.xpInRange, range, { xp: rangeXp })}</span>}>
+          <span className="inline-flex items-center gap-1.5"><Zap size={13} /> {m.insights.xpPerDay}</span>
         </SectionTitle>
         <div className="flex h-40 items-end gap-[3px]">
           {days.map((k, i) => {
@@ -84,27 +85,27 @@ export function InsightsPage() {
                   transition={{ delay: i * 0.008, type: 'spring', bounce: 0.2 }}
                 />
                 <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-text px-2 py-1 text-[11px] font-semibold text-bg group-hover:block">
-                  {format(fromKey(k), 'EEE MMM d')} · {v} XP
+                  {t.f(m.insights.xpTip, { date: t.d(k, 'weekdayShort'), xp: v })}
                 </div>
               </div>
             )
           })}
         </div>
         <div className="mt-2 flex justify-between text-[10px] font-semibold text-muted">
-          <span>{format(fromKey(from), 'MMM d')}</span><span>Today</span>
+          <span>{t.d(from, 'short')}</span><span>{m.time.today}</span>
         </div>
       </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="p-5">
-          <SectionTitle>Balance across areas</SectionTitle>
-          {areaStats.length === 0 ? <p className="text-sm text-muted">Create areas in Settings to see your balance.</p> : (
+          <SectionTitle>{m.insights.balance}</SectionTitle>
+          {areaStats.length === 0 ? <p className="text-sm text-muted">{m.insights.noAreas}</p> : (
             <div className="space-y-3.5">
               {areaStats.map(({ a, tasks, habitDays, focus, score }) => (
                 <div key={a.id}>
                   <div className="mb-1 flex items-center justify-between text-sm">
                     <span className="font-semibold">{a.emoji} {a.name}</span>
-                    <span className="text-xs text-muted tabular">{tasks} tasks · {habitDays} habit days · {fmtMin(focus)}</span>
+                    <span className="text-xs text-muted tabular">{t.f(m.insights.areaLine, { tasks: t.p(m.insights.tasks, tasks), habitDays: t.p(m.insights.habitDays, habitDays), focus: t.dur(focus) })}</span>
                   </div>
                   <ProgressBar value={score / maxScore} color={AREA_HEX[a.color]} height={8} />
                 </div>
@@ -114,15 +115,15 @@ export function InsightsPage() {
         </Card>
 
         <Card className="p-5">
-          <SectionTitle>Habit consistency · {range}d</SectionTitle>
-          {d.habits.length === 0 ? <p className="text-sm text-muted">No habits yet.</p> : (
+          <SectionTitle>{t.f(m.insights.consistency, { n: range })}</SectionTitle>
+          {d.habits.length === 0 ? <p className="text-sm text-muted">{m.insights.noHabits}</p> : (
             <div className="space-y-3.5">
               {d.habits.filter((h) => !h.archived).map((h) => {
                 const r = completionRate(h, d.habitLogs, from, today, today, d.settings.weekStartsOn)
                 const a = d.areas.find((x) => x.id === h.areaId)
                 return (
                   <div key={h.id}>
-                    <div className="mb-1 flex justify-between text-sm"><span className="font-semibold">{h.emoji} {h.name}</span><span className="font-bold tabular">{Math.round(r * 100)}%</span></div>
+                    <div className="mb-1 flex justify-between text-sm"><span className="font-semibold">{h.emoji} {h.name}</span><span className="font-bold tabular">{t.pct(r)}</span></div>
                     <ProgressBar value={r} color={a ? AREA_HEX[a.color] : undefined} height={8} />
                   </div>
                 )
@@ -133,19 +134,19 @@ export function InsightsPage() {
       </div>
 
       <Card className="p-5">
-        <SectionTitle>Activity · last 6 months</SectionTitle>
-        <Heatmap end={today} weeks={26} weekStartsOn={d.settings.weekStartsOn} cell={14} value={(k) => Math.min(1, (byDay[k] ?? 0) / 120)} label={(k) => `${format(fromKey(k), 'EEE, MMM d')}: ${byDay[k] ?? 0} XP`} />
+        <SectionTitle>{m.insights.activity}</SectionTitle>
+        <Heatmap end={today} weeks={26} weekStartsOn={d.settings.weekStartsOn} cell={14} value={(k) => Math.min(1, (byDay[k] ?? 0) / 120)} label={(k) => t.f(m.insights.activityTip, { date: t.d(k, 'weekdayShort'), xp: byDay[k] ?? 0 })} />
       </Card>
 
       <div>
-        <SectionTitle>Badges · {unlocked}/{badges.length}</SectionTitle>
+        <SectionTitle>{t.f(m.insights.badges, { unlocked, total: badges.length })}</SectionTitle>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {badges.map((b) => (
             <Card key={b.id} className={cx('relative p-4 text-center transition', !b.unlocked && 'opacity-50 grayscale')}>
-              {!b.unlocked && <Lock size={12} className="absolute right-3 top-3 text-muted" />}
+              {!b.unlocked && <Lock size={12} className="absolute end-3 top-3 text-muted" />}
               <div className="text-3xl">{b.emoji}</div>
-              <div className="mt-2 text-sm font-bold">{b.title}</div>
-              <div className="mt-0.5 text-[11px] leading-tight text-muted">{b.description}</div>
+              <div className="mt-2 text-sm font-bold">{m.badges[b.id].title}</div>
+              <div className="mt-0.5 text-[11px] leading-tight text-muted">{m.badges[b.id].desc}</div>
             </Card>
           ))}
         </div>

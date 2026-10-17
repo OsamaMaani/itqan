@@ -3,11 +3,14 @@ import { useState } from 'react'
 import { GoalCard } from '../components/GoalCard'
 import { GoalEditor } from '../components/GoalEditor'
 import { Button, EmptyState, PageHeader, Segmented } from '../components/ui'
+import { useI18n } from '../i18n/react'
 import { goalProgress } from '../lib/goals'
 import { useData } from '../lib/hooks'
 import type { Goal } from '../lib/types'
 
 export function GoalsPage() {
+  const t = useI18n()
+  const { m } = t
   const d = useData()
   const [tab, setTab] = useState<Goal['status']>('active')
   const [creating, setCreating] = useState(false)
@@ -20,23 +23,23 @@ export function GoalsPage() {
   return (
     <div>
       <PageHeader
-        title="Goals"
-        subtitle={active.length ? `${active.length} active · ${Math.round(avg * 100)}% average progress` : 'Your long-term objectives — what all the daily work is for.'}
-        right={<Button variant="primary" onClick={() => setCreating(true)}><Plus size={16} /> New goal</Button>}
+        title={m.nav.goals}
+        subtitle={active.length ? t.f(m.goals.subtitleActive, { n: active.length, avg: t.pct(avg) }) : m.goals.subtitleEmpty}
+        right={<Button variant="primary" onClick={() => setCreating(true)}><Plus size={16} /> {m.goals.newGoal}</Button>}
       />
       <Segmented
         className="mb-5"
         value={tab}
         onChange={setTab}
         options={[
-          { value: 'active', label: `Active · ${counts.active}` },
-          { value: 'paused', label: `Paused · ${counts.paused}` },
-          { value: 'done', label: `Achieved · ${counts.done}` },
+          { value: 'active', label: t.f(m.goals.tabs.active, { n: counts.active }) },
+          { value: 'paused', label: t.f(m.goals.tabs.paused, { n: counts.paused }) },
+          { value: 'done', label: t.f(m.goals.tabs.done, { n: counts.done }) },
         ]}
       />
       {list.length === 0 ? (
-        <EmptyState emoji={tab === 'done' ? '🏆' : '🎯'} title={tab === 'done' ? 'No goals achieved yet' : 'Nothing here'}>
-          {tab === 'active' ? 'A good goal is specific and measurable: “Finish 12 modules by December”, not “study more”.' : tab === 'done' ? 'Your first one is closer than it looks.' : 'Paused goals wait here without nagging you.'}
+        <EmptyState emoji={tab === 'done' ? '🏆' : '🎯'} title={tab === 'done' ? m.goals.emptyDoneTitle : m.goals.emptyTitle}>
+          {tab === 'active' ? m.goals.emptyActive : tab === 'done' ? m.goals.emptyDone : m.goals.emptyPaused}
         </EmptyState>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

@@ -1,3 +1,4 @@
+import { tx, type I18n } from '../i18n/core'
 import { addDaysKey, diffDays, toKey } from './date'
 import type { Contact, DateKey, Interaction, InteractionKind } from './types'
 
@@ -10,26 +11,22 @@ import type { Contact, DateKey, Interaction, InteractionKind } from './types'
  * - The **next check-in** is last contact + rhythm, pushed to the snooze date if later.
  */
 
-export const CADENCES: { days: number; label: string }[] = [
-  { days: 7, label: 'Every week' },
-  { days: 14, label: 'Every 2 weeks' },
-  { days: 30, label: 'Every month' },
-  { days: 90, label: 'Every 3 months' },
-  { days: 180, label: 'Every 6 months' },
-  { days: 365, label: 'Every year' },
-]
+/** Check-in rhythms offered, in days. */
+export const CADENCES = [7, 14, 30, 90, 180, 365]
 
-export function cadenceLabel(days: number | null): string {
-  if (!days) return 'No rhythm'
-  return CADENCES.find((c) => c.days === days)?.label ?? `Every ${days} days`
+/** "Every week", "Every 3 months"… in the interface language. */
+export function cadenceLabel(days: number | null, t: I18n = tx()): string {
+  const c = t.m.connections.cadence
+  if (!days) return c.none
+  if (days % 365 === 0) return t.p(c.years, days / 365)
+  if (days === 180 || days === 90 || days === 30) return t.p(c.months, days / 30)
+  if (days % 7 === 0) return t.p(c.weeks, days / 7)
+  return t.p(c.days, days)
 }
 
-export const KIND_LABEL: Record<InteractionKind, { label: string; emoji: string }> = {
-  call: { label: 'Call', emoji: '📞' },
-  message: { label: 'Message', emoji: '💬' },
-  meet: { label: 'Met up', emoji: '🤝' },
-  email: { label: 'Email', emoji: '✉️' },
-  other: { label: 'Other', emoji: '✨' },
+/** A check-in's kind; its name is `m.connections.kinds[kind]`. */
+export const KIND_EMOJI: Record<InteractionKind, string> = {
+  call: '📞', message: '💬', meet: '🤝', email: '✉️', other: '✨',
 }
 
 export function interactionsOf(contactId: string, all: Interaction[]): Interaction[] {

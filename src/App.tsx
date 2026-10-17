@@ -5,6 +5,8 @@ import { MobileHeader, MobileNav, Sidebar } from './components/Shell'
 import { TaskEditor } from './components/TaskEditor'
 import { TimerWatcher } from './components/TimerWatcher'
 import { Toaster } from './components/Toaster'
+import { tx } from './i18n/core'
+import { useDocumentLanguage } from './i18n/react'
 import { celebrate } from './lib/celebrate'
 import { useMediaQuery, useProgress } from './lib/hooks'
 import { navigate, ROUTES, useRoute, useRouteParam, type Route } from './lib/router'
@@ -40,6 +42,7 @@ export default function App() {
   const [newTask, setNewTask] = useState(false)
   const theme = useStore((s) => s.settings.theme)
   const systemDark = useMediaQuery('(prefers-color-scheme: dark)')
+  useDocumentLanguage()
 
   useEffect(() => {
     const dark = theme === 'dark' || (theme === 'system' && systemDark)
@@ -105,10 +108,11 @@ function useLevelUp() {
   useEffect(() => {
     if (prev.current !== null && level.level > prev.current) {
       celebrate.levelUp()
-      toast({ emoji: '⭐', message: `Level ${level.level} — ${level.title}!` }, 6000)
+      const t = tx()
+      toast({ emoji: '⭐', message: t.f(t.m.app.levelUp, { n: level.level, title: t.m.levels[level.rank] }) }, 6000)
     }
     prev.current = level.level
-  }, [level.level, level.title])
+  }, [level.level, level.rank])
 }
 
 /** Data lives only in this browser (ADR-002), so nudge for a backup every two weeks. */
@@ -121,7 +125,8 @@ function useBackupReminder() {
       const first = s.tasks.reduce((m, t) => Math.min(m, new Date(t.createdAt).getTime()), Date.now())
       const days = (Date.now() - Math.max(last, first)) / 86_400_000
       if (days >= 14) {
-        toast({ emoji: '💾', message: last ? 'It has been 2 weeks since your last backup' : 'Your data lives only in this browser', action: { label: 'Back up', run: () => navigate('settings') } }, 10000)
+        const { m } = tx()
+        toast({ emoji: '💾', message: last ? m.app.backupDue : m.app.backupNever, action: { label: m.app.backUp, run: () => navigate('settings') } }, 10000)
       }
     }, 3000)
     return () => clearTimeout(t)

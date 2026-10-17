@@ -132,3 +132,25 @@ describe('v5 → v6 (daily card settings)', () => {
     expect(d.settings.daily.wordLevel).toBe('B1')
   })
 })
+
+describe('v6 → v7 (interface language)', () => {
+  it('keeps English for existing data and changes nothing else', () => {
+    const v6 = {
+      tasks: [{ id: 't', title: 'Read', stage: 'todo', blocked: false, projectId: null }],
+      settings: { name: 'Sam', onboarded: true, daily: { verse: false, hadith: true, word: true, wisdom: true, fact: true, meaning: false, wordLanguage: 'es', wordLevel: 'B2' } },
+    }
+    const d = migrate(v6, 6)
+    expect(d.settings.language).toBe('en')
+    expect(d.settings.daily).toEqual(v6.settings.daily)
+    expect(d.settings.name).toBe('Sam')
+    expect(d.tasks).toEqual(v6.tasks)
+  })
+  it('keeps a language already chosen, and falls back to English for anything unknown', () => {
+    expect(migrate({ settings: { language: 'ar' } }, 6).settings.language).toBe('ar')
+    expect(migrate({ settings: { language: 'xx' } }, SCHEMA_VERSION).settings.language).toBe('en')
+  })
+  it('a v6 backup restores in English', () => {
+    const b = { app: 'itqan', schemaVersion: 6, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [], settings: { name: 'Sam' } } }
+    expect(parseBackup(JSON.stringify(b)).settings.language).toBe('en')
+  })
+})

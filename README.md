@@ -12,8 +12,8 @@ browser, it works offline, and you can install it as an app on desktop or phone.
 - **Today**: a progress ring, an intention and mood for the day, tasks grouped by morning,
   afternoon and evening, overdue tasks you can move to today in one click, habits you complete
   with a tap, the goals in progress and the Hijri date.
-- **Daily card** on Today: a Quran verse and a hadith in Arabic (with the English meaning if you
-  want it), a word of the day with an example (French, English, German, Spanish or Chinese, A1–C2),
+- **Daily card** on Today: a Quran verse and a hadith in Arabic (with their meaning in your language
+  if you want it), a word of the day with an example (French, English, German, Spanish or Chinese, A1–C2),
   a piece of wisdom from psychology, medicine and biology, and a fact. A new one of each every day,
   the same on all your devices. On a phone it folds to one line. Each part can be switched off in
   Settings.
@@ -53,6 +53,9 @@ browser, it works offline, and you can install it as an app on desktop or phone.
   area, day, priority, time of day and estimate are filled in for you.
 - **Fun**: XP, levels, badges, confetti, and sounds you can turn off. It follows your
   system's light/dark setting, and you can override it.
+- **Five languages**: English, العربية (right to left), Français, 简体中文 and Español — the whole
+  app, the daily card and quick add (`demain`, `غدا`, `明天下午`, `mañana` all work). Choose in
+  Settings; the choice follows you to your other devices.
 - **Your data**: JSON backup and restore, with a reminder every two weeks.
 
 ## Use it on your computer (no server, works offline)
@@ -114,7 +117,7 @@ npm run dev        # http://localhost:5173
 ## Tech
 
 React 19, TypeScript, Vite 8, Tailwind CSS 4, Zustand, Motion, date-fns, vite-plugin-pwa,
-Vitest. There's no backend. See `memory/01-architecture.md`.
+Vitest, and the browser's `Intl` for five languages (`src/i18n/`). There's no backend. See `memory/01-architecture.md`.
 
 ## Sources and credits
 
@@ -123,7 +126,11 @@ Vitest. There's no backend. See `memory/01-architecture.md`.
   [quran-json](https://github.com/risan/quran-json) dataset.
 - Hadith: [fawazahmed0/hadith-api](https://github.com/fawazahmed0/hadith-api) (sunnah.com
   numbering, grades by al-Albani). `scripts/verify_daily.py` checks the app's text against both.
-- Arabic font: [Amiri Quran](https://github.com/aliftype/amiri) (SIL Open Font License).
+- Meanings of the Quran in other languages, through the same dataset: French — Muhammad
+  Hamidullah, Spanish — Muhammad Isa García (both from tanzil.net), Chinese — Muhammad Makin
+  (quranenc.com).
+- Arabic fonts: [Amiri Quran](https://github.com/aliftype/amiri) and
+  [Vazirmatn](https://github.com/rastikerdar/vazirmatn) (both SIL Open Font License).
 
 ## For contributors (human or AI)
 

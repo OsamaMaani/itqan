@@ -31,6 +31,10 @@ describe('entities', () => {
     const out = fromEntities(toEntities(remote), emptyData())
     expect(out.settings.daily).toEqual(remote.settings.daily)
   })
+  it('the interface language follows you to the other device', () => {
+    const remote = { ...data(), settings: { ...data().settings, language: 'fr' as const } }
+    expect(fromEntities(toEntities(remote), emptyData()).settings.language).toBe('fr')
+  })
   it('an empty device has no user data', () => {
     expect(hasUserData(toEntities(emptyData()))).toBe(false)
     expect(hasUserData(toEntities(data()))).toBe(true)
