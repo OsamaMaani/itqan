@@ -390,7 +390,8 @@ function Pill({ icon, label, className, title }: { icon: React.ReactNode; label:
   return (
     <div title={title} className={cx('flex items-center gap-1.5 rounded-full border border-border bg-surface/80 px-3 py-1.5 text-sm font-bold', className)}>
       {icon}
-      <span className="text-text tabular">{label}</span>
+      {/* bdi: "+5 XP" keeps its sign in front in right-to-left languages */}
+      <bdi className="text-text tabular">{label}</bdi>
     </div>
   )
 }

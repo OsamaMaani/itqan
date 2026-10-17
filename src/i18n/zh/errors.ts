@@ -19,8 +19,8 @@ export const errors: Messages['errors'] = {
   githubStatusReading: '读取时 GitHub 返回了 {status}。',
   githubStatusSaving: '保存时 GitHub 返回了 {status}。',
   repoPublic: '{repo} 是公开仓库。请先将其设为私有——即使已加密，你的数据也不能放在公开仓库中。',
-  tokenReadOnly: '该令牌只能读取，不能写入。请授予它“Contents：读写”权限。',
+  tokenReadOnly: '该令牌只能读取，不能写入。请授予它“Contents: Read and write”（读写）权限。',
   tokenExpired: 'GitHub 拒绝了该令牌——它可能已过期。请新建一个令牌并重新连接。',
-  changedElsewhere: '其间已在另一台设备上更改。',
-  tokenCantWrite: '该令牌无法写入仓库。请授予它“Contents：读写”权限。',
+  changedElsewhere: '在此期间，另一台设备上已有更改。',
+  tokenCantWrite: '该令牌无法写入仓库。请授予它“Contents: Read and write”（读写）权限。',
 }

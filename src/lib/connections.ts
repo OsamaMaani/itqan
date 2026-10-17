@@ -18,10 +18,12 @@ export const CADENCES = [7, 14, 30, 90, 180, 365]
 export function cadenceLabel(days: number | null, t: I18n = tx()): string {
   const c = t.m.connections.cadence
   if (!days) return c.none
-  if (days % 365 === 0) return t.p(c.years, days / 365)
-  if (days === 180 || days === 90 || days === 30) return t.p(c.months, days / 30)
-  if (days % 7 === 0) return t.p(c.weeks, days / 7)
-  return t.p(c.days, days)
+  // Exactly one unit has its own message: Chinese has no singular form, so a plural can't say “every week”.
+  const per = (unit: keyof typeof c.every, n: number) => (n === 1 ? c.every[unit] : t.p(c[unit], n))
+  if (days % 365 === 0) return per('years', days / 365)
+  if (days === 180 || days === 90 || days === 30) return per('months', days / 30)
+  if (days % 7 === 0) return per('weeks', days / 7)
+  return per('days', days)
 }
 
 /** A check-in's kind; its name is `m.connections.kinds[kind]`. */

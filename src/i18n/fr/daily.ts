@@ -29,7 +29,7 @@ export const daily: Messages['daily'] = {
   hadithNumber: '{collection} {n}',
   grades: { sahih: 'Sahih', hasan: 'Hassan', hasanSahih: 'Hassan sahih' },
   graded: '{where} · {grade} (al-Albani)',
-  narratedBy: 'd’après {name}',
+  narratedBy: 'rapporté par {name}',
   saidBy: '— {name}',
   saidByIn: '— {name}, {source}',
   factSource: 'Source\u00a0: {source}',

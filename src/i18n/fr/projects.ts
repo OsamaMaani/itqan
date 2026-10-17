@@ -2,7 +2,7 @@ import type { Messages } from '../core'
 
 export const projects: Messages['projects'] = {
   subtitleCount: '{n} en cours',
-  subtitleEmpty: 'Des travaux plus conséquents, découpés en tâches.',
+  subtitleEmpty: 'De plus gros chantiers, découpés en tâches.',
   newProject: 'Nouveau projet',
   filter: { current: 'En cours', 'on-hold': 'En pause', done: 'Terminés', archived: 'Archivés' },
   filterCount: '{label} · {n}',
@@ -17,8 +17,8 @@ export const projects: Messages['projects'] = {
   noTasksYet: 'Aucune tâche pour l’instant',
   nextLabel: 'Ensuite\u00a0:',
   dueToday: 'Échéance aujourd’hui',
-  daysLeft: { one: '{n} jour restant', other: '{n} jours restants' },
-  daysLate: { one: '{n} jour de retard', other: '{n} jours de retard' },
+  daysLeft: { one: '{n}\u00a0jour restant', other: '{n}\u00a0jours restants' },
+  daysLate: { one: '{n}\u00a0jour de retard', other: '{n}\u00a0jours de retard' },
   blocked: 'Bloquées\u00a0: {n}',
 
   notFound: 'Projet introuvable',
@@ -29,6 +29,7 @@ export const projects: Messages['projects'] = {
   unpinnedToast: 'Retiré d’Aujourd’hui',
   editProject: 'Modifier le projet',
   deleteProject: 'Supprimer le projet',
+  deleteConfirmEmpty: 'Supprimer «\u202f{title}\u202f» et ses mises à jour\u202f?',
   deleteConfirm: {
     one: 'Supprimer «\u202f{title}\u202f» et ses mises à jour\u202f? {n} tâche est conservée, simplement sans projet.',
     other: 'Supprimer «\u202f{title}\u202f» et ses mises à jour\u202f? Ses {n} tâches sont conservées, simplement sans projet.',
@@ -38,7 +39,7 @@ export const projects: Messages['projects'] = {
   dueOn: 'échéance le {date}',
   noDeadline: 'pas d’échéance',
   focused: 'de concentration',
-  estimatedLeft: 'reste à faire (estimé)',
+  estimatedLeft: 'temps restant estimé',
   nextAction: 'Prochaine action',
   startAction: 'Commencer',
   tasksHeading: { one: 'Tâches · {n} à faire', other: 'Tâches · {n} à faire' },

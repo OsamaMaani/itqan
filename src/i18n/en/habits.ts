@@ -8,6 +8,7 @@ export const habits = {
   editHabit: 'Edit habit',
   /** {target} is a number, {unit} is the unit the owner typed (pages, min…). */
   targetPerDay: '{target} {unit}/day',
+  /** Label under the current-streak number on a habit card; must read right under any number (1, 2, 11…). */
   dayStreak: 'day streak',
   weekStreak: 'week streak',
   best: 'best',

@@ -16,7 +16,7 @@ export const common: Messages['common'] = {
   more: '更多',
   search: '搜索',
   all: '全部',
-  none: '无',
+  none: { task: '无', goal: '无', project: '无', priority: '无', area: '无' },
   other: '其他',
   optional: '可选',
   loading: '加载中…',

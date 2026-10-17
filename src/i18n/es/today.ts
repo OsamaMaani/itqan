@@ -42,7 +42,7 @@ export const today: Messages['today'] = {
   next: 'Siguiente: {title}',
   comingUp: 'Lo que viene',
   allReminders: 'Todos los recordatorios',
-  reachOut: 'Ponte en contacto',
+  reachOut: 'Por contactar',
   allPeople: 'Todas las personas',
   overdueBy: { one: 'Con {n} día de retraso', other: 'Con {n} días de retraso' },
   checkInToday: 'Contacta hoy',

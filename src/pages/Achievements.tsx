@@ -117,7 +117,7 @@ export function AchievementsPage() {
               {(summary.previousYearCount > 0 || summary.count > 0) && (
                 <span className={cx('inline-flex items-center gap-1 font-semibold', delta > 0 ? 'text-accent' : delta < 0 ? 'text-muted' : '')}>
                   {delta >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                  {delta === 0 ? t.f(L.sameAsYear, { year: String(year - 1) }) : t.f(L.deltaVs, { delta: `${delta > 0 ? '+' : ''}${t.n(delta)}`, year: String(year - 1) })}
+                  {delta === 0 ? t.f(L.sameAsYear, { year: String(year - 1) }) : t.f(L.deltaVs, { delta: t.n(delta, { signDisplay: 'exceptZero' }), year: String(year - 1) })}
                 </span>
               )}
             </div>
@@ -411,7 +411,7 @@ function AchievementEditor({ value, onClose }: { value: Achievement | Partial<Dr
           {goals.length > 0 && (
             <div><Label hint={t.m.common.optional}>{L.goal}</Label>
               <Select value={d.goalId ?? ''} onChange={(e) => set('goalId', e.target.value || null)}>
-                <option value="">{t.m.common.none}</option>
+                <option value="">{t.m.common.none.goal}</option>
                 {goals.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
               </Select>
             </div>
@@ -419,7 +419,7 @@ function AchievementEditor({ value, onClose }: { value: Achievement | Partial<Dr
           {projects.length > 0 && (
             <div><Label hint={t.m.common.optional}>{L.project}</Label>
               <Select value={d.projectId ?? ''} onChange={(e) => set('projectId', e.target.value || null)}>
-                <option value="">{t.m.common.none}</option>
+                <option value="">{t.m.common.none.project}</option>
                 {projects.map((p) => <option key={p.id} value={p.id}>{p.emoji} {p.title}</option>)}
               </Select>
             </div>

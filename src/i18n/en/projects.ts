@@ -34,6 +34,8 @@ export const projects = {
   editProject: 'Edit project',
   deleteProject: 'Delete project',
   /** {title} is the project’s name; {n} is how many tasks belong to it (they are kept). */
+  /** Deleting a project that has no tasks. */
+  deleteConfirmEmpty: 'Delete “{title}” and its updates?',
   deleteConfirm: {
     one: 'Delete “{title}” and its updates? Its {n} task is kept, just without a project.',
     other: 'Delete “{title}” and its updates? Its {n} tasks are kept, just without a project.',

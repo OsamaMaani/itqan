@@ -16,7 +16,7 @@ export const settings: Messages['settings'] = {
     focusMinutes: 'Concentration (min)',
     breakMinutes: 'Pause (min)',
     sounds: 'Sons',
-    showHijri: 'Afficher la date de l’Hégire',
+    showHijri: 'Afficher la date hégirienne',
   },
 
   daily: {
@@ -60,7 +60,7 @@ export const settings: Messages['settings'] = {
   data: {
     title: 'Tes données',
     intro: 'Tout est stocké en privé dans ce navigateur — pas de compte, pas de serveur. Cela veut aussi dire que {warning}, alors télécharge une sauvegarde de temps en temps.',
-    warning: 'effacer les données du navigateur les supprime',
+    warning: 'vider les données du navigateur efface tout',
     lastBackup: 'Dernière sauvegarde\u00a0: {date}.',
     noBackup: 'Tu n’as encore fait aucune sauvegarde.',
     download: 'Télécharger une sauvegarde',
@@ -81,7 +81,7 @@ export const settings: Messages['settings'] = {
     newTask: 'Nouvelle tâche',
     goTo: 'Ouvrir {pages}',
     closeDialog: 'Fermer une fenêtre',
-    install: 'Installer Itqan comme une application\u00a0: dans Chrome ou Edge, utilise l’icône d’installation dans la barre d’adresse. Sur un téléphone, utilise {addToHome}. L’application fonctionne ensuite hors ligne.',
+    install: 'Pour installer Itqan comme application\u00a0: dans Chrome ou Edge, utilise l’icône d’installation dans la barre d’adresse. Sur un téléphone, utilise {addToHome}. L’application fonctionne ensuite hors ligne.',
     addToHome: 'Ajouter à l’écran d’accueil',
   },
 }

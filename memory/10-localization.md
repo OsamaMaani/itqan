@@ -47,7 +47,19 @@ src/i18n/
    `/** comment */` above any message whose placeholders or context aren't obvious — translators
    see only the catalog.
 10. **`common`** holds words that mean exactly the same everywhere (Save, Cancel, Delete…). If the
-    word could be translated differently in another context, give it its own key.
+    word could be translated differently in another context, give it its own key. "None" in a
+    picker is `common.none.<thing>`: French and Spanish agree it in gender (Aucune tâche, Aucun objectif).
+11. **Lessons from the S2-23 review** — each was a real bug in some language:
+    - *Exactly one* is not a plural form. Chinese has only `other`, and French `one` also covers 0,
+      so "every week" (vs "every 2 weeks") needs its own message (`connections.cadence.every`).
+      Likewise a count of 0 that reads oddly gets its own message (`projects.deleteConfirmEmpty`).
+    - A label shown under a bare number (`habits.dayStreak`) must read right under any number —
+      word it so it doesn't agree with the count, or make it a plural and pass the count.
+    - A sign at the start of a string ("+5 XP", "+10%") jumps to the far side in RTL: wrap the
+      text in `<bdi>` or `dir="ltr"`, or format signed numbers with `t.n(x, { signDisplay: 'exceptZero' })`
+      (Intl adds the direction mark in Arabic).
+    - Labels of English-only UIs (GitHub's token page) stay in English, with a gloss in brackets,
+      so the person can find them. Their words are in the test's `KEEP_LATIN`.
 
 ### Adding a string
 

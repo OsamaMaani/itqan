@@ -16,7 +16,7 @@ export const seed: Messages['seed'] = {
   },
   tasks: {
     tour: 'Descubre Itqan: pulsa Ctrl+K (o el botón +) para añadir una tarea',
-    editGoals: 'Edita los objetivos de inicio para que coincidan con tus libros, cursos y metas reales',
+    editGoals: 'Edita los objetivos de ejemplo para que coincidan con tus libros, cursos y metas reales',
     focus: 'Prueba una sesión de concentración de 25 minutos',
     gym: 'Sesión de gimnasio',
   },

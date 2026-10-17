@@ -23,7 +23,7 @@ export const ideas: Messages['ideas'] = {
   tasks: 'المهام',
   task: 'مهمة',
   projectCreated: 'أُنشئ مشروع من فكرتك',
-  moveTo: { exploring: 'نقل إلى الاستكشاف', doing: 'نقل إلى التنفيذ', done: 'نقل إلى المتحققة' },
+  moveTo: { exploring: 'نقل إلى «قيد الاستكشاف»', doing: 'نقل إلى «قيد التنفيذ»', done: 'نقل إلى «تحققت»' },
   madeReal: 'أصبحت الفكرة واقعًا · +20 XP',
   goalCreated: 'أُنشئ هدف من فكرتك',
 

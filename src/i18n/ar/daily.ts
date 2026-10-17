@@ -11,7 +11,7 @@ export const daily: Messages['daily'] = {
   },
   fields: {
     Psychology: 'علم النفس', Medicine: 'الطب', Biology: 'الأحياء', Neuroscience: 'علم الأعصاب', Learning: 'التعلّم',
-    Science: 'العلوم', Character: 'الأخلاق', History: 'التاريخ', Proverb: 'مثل',
+    Science: 'العلوم', Character: 'الأخلاق', History: 'التاريخ', Proverb: 'مَثَل',
   },
   wordQualifier: '{language} {level}',
   pos: {

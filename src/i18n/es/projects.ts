@@ -30,6 +30,7 @@ export const projects: Messages['projects'] = {
   unpinnedToast: 'Quitado de Hoy',
   editProject: 'Editar proyecto',
   deleteProject: 'Eliminar proyecto',
+  deleteConfirmEmpty: '¿Eliminar «{title}» y sus actualizaciones?',
   deleteConfirm: {
     one: '¿Eliminar «{title}» y sus actualizaciones? Su tarea se conserva, pero sin proyecto.',
     other: '¿Eliminar «{title}» y sus actualizaciones? Sus {n} tareas se conservan, pero sin proyecto.',

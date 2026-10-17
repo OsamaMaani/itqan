@@ -2,10 +2,10 @@ import type { Messages } from '../core'
 
 export const seed: Messages['seed'] = {
   areas: { quran: 'Coran', french: 'Français', gym: 'Sport', books: 'Livres', courses: 'Cours', life: 'Vie' },
-  habits: { quran: 'Réviser le Coran', french: 'Pratiquer le français', read: 'Lire', gym: 'Salle de sport', course: 'Étudier le cours' },
+  habits: { quran: 'Réviser le Coran', french: 'Pratiquer le français', read: 'Lire', gym: 'Salle de sport', course: 'Étudier mon cours' },
   units: { min: 'min', pages: 'pages', juz: 'juz', modules: 'modules' },
   goals: {
-    quran: { title: 'Faire une révision complète du Coran', why: 'Garder ce que j’ai mémorisé solide et proche de mon cœur.' },
+    quran: { title: 'Faire une révision complète du Coran', why: 'Consolider ce que j’ai mémorisé et le garder proche de mon cœur.' },
     french: {
       title: 'Atteindre le niveau B1 en français',
       why: 'Parler avec assurance, pas seulement réussir un examen.',

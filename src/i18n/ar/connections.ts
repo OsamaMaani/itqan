@@ -3,6 +3,7 @@ import type { Messages } from '../core'
 export const connections: Messages['connections'] = {
   cadence: {
     none: 'بلا إيقاع',
+    every: { days: 'كل يوم', weeks: 'كل أسبوع', months: 'كل شهر', years: 'كل سنة' },
     days: { zero: 'كل {n} يوم', one: 'كل يوم', two: 'كل يومين', few: 'كل {n} أيام', many: 'كل {n} يومًا', other: 'كل {n} يوم' },
     weeks: { zero: 'كل {n} أسبوع', one: 'كل أسبوع', two: 'كل أسبوعين', few: 'كل {n} أسابيع', many: 'كل {n} أسبوعًا', other: 'كل {n} أسبوع' },
     months: { zero: 'كل {n} شهر', one: 'كل شهر', two: 'كل شهرين', few: 'كل {n} أشهر', many: 'كل {n} شهرًا', other: 'كل {n} شهر' },

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { birthdayReminderDate, checkIn, lastContact, nextBirthday, parseBirthday } from '../connections'
+import { i18nFor, registerCatalog } from '../../i18n/core'
+import { messages as zh } from '../../i18n/zh'
+import { birthdayReminderDate, cadenceLabel, checkIn, lastContact, nextBirthday, parseBirthday } from '../connections'
 import type { Contact, Interaction } from '../types'
 
 const c = (p: Partial<Contact>): Contact => ({
@@ -56,5 +58,17 @@ describe('birthdays', () => {
   it('a birthday without a year makes a reminder that does not count years', () => {
     expect(birthdayReminderDate('03-12', today)).toEqual({ date: '2026-03-12', countYears: false })
     expect(birthdayReminderDate('1998-03-12', today)).toEqual({ date: '1998-03-12', countYears: true })
+  })
+})
+
+describe('cadence labels', () => {
+  it('names one unit without a number, larger counts with one', () => {
+    expect([7, 14, 30, 90, 365, 3, 1, null].map((d) => cadenceLabel(d)))
+      .toEqual(['Every week', 'Every 2 weeks', 'Every month', 'Every 3 months', 'Every year', 'Every 3 days', 'Every day', 'No rhythm'])
+  })
+  it('says “every week” in a language with no singular form', () => {
+    registerCatalog('zh', zh)
+    const t = i18nFor('zh')
+    expect([7, 14, 30, 365].map((d) => cadenceLabel(d, t))).toEqual(['每周', '每 2 周', '每月', '每年'])
   })
 })

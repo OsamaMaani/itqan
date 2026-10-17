@@ -3,7 +3,7 @@ import type { Messages } from '../core'
 export const ideas: Messages['ideas'] = {
   // The counts are not plurals in the source: "Abiertas: 1" reads right for any number.
   subtitleCount: 'Abiertas: {open} · Hechas realidad: {done}',
-  subtitleEmpty: 'Atrapa cada idea ahora; decide qué hacer con ella después.',
+  subtitleEmpty: 'Anota cada idea ahora; decide qué hacer con ella después.',
   capturePlaceholder: 'Tengo una idea…  (Enter para guardar)',
   saveIdea: 'Guardar idea',
   emptyTitle: 'Una caja de ideas vacía',

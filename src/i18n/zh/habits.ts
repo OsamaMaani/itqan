@@ -35,7 +35,7 @@ export const habits: Messages['habits'] = {
     xTimesAWeek: '每周 X 次',
     timesPerWeek: '次/周',
     dailyTarget: '每日目标',
-    targetHint: '保持为 1 即是简单打卡',
+    targetHint: '保持 1 即为简单打卡',
     unitPlaceholder: '单位（页、分钟、卷…）',
   },
 }

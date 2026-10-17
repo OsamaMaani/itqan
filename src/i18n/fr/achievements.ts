@@ -8,8 +8,8 @@ export const achievements: Messages['achievements'] = {
   },
   impact: { small: 'Petite victoire', notable: 'Notable', major: 'Majeure' },
   finished: 'Terminé\u00a0: {title}',
-  streakDays: { one: '{name}\u00a0: {n} jour d’affilée', other: '{name}\u00a0: {n} jours d’affilée' },
-  streakWeeks: { one: '{name}\u00a0: {n} semaine d’affilée', other: '{name}\u00a0: {n} semaines d’affilée' },
+  streakDays: { one: '{name}\u00a0: {n}\u00a0jour d’affilée', other: '{name}\u00a0: {n}\u00a0jours d’affilée' },
+  streakWeeks: { one: '{name}\u00a0: {n}\u00a0semaine d’affilée', other: '{name}\u00a0: {n}\u00a0semaines d’affilée' },
   focusHours: { one: '{n}\u00a0heure de concentration profonde', other: '{n}\u00a0heures de concentration profonde' },
   exportTitle: 'Réussites {year}',
   exportEmpty: '(aucune pour l’instant)',
@@ -31,10 +31,10 @@ export const achievements: Messages['achievements'] = {
   searchPlaceholder: 'Rechercher dans les réussites',
   categoryChip: '{category} · {n}',
   emptyYearTitle: 'Rien d’enregistré pour {year} pour l’instant',
-  emptyYearBody: 'Promotions, certificats, un juz terminé, une course, une conversation difficile bien menée — grande ou petite, note-la. Le toi de demain te remerciera.',
+  emptyYearBody: 'Promotions, certificats, un juz terminé, une course, une conversation difficile bien menée — grande ou petite, note-la. Un jour, tu te remercieras.',
   noMatch: 'Aucun résultat',
   removeHighlight: 'Retirer des temps forts',
-  highlight: 'Mettre en avant',
+  highlight: 'Ajouter aux temps forts',
 
   editor: {
     title: 'Réussite',

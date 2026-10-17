@@ -1,7 +1,7 @@
 import type { Messages } from '../core'
 
 export const ideas: Messages['ideas'] = {
-  subtitleCount: '{open} en cours · {done} réalisées',
+  subtitleCount: 'À concrétiser\u00a0: {open} · Réalisées\u00a0: {done}',
   subtitleEmpty: 'Note chaque idée sur le moment\u202f; décide plus tard quoi en faire.',
   capturePlaceholder: 'J’ai une idée…  (Entrée pour enregistrer)',
   saveIdea: 'Enregistrer l’idée',
@@ -16,9 +16,9 @@ export const ideas: Messages['ideas'] = {
     now: 'à l’instant',
     minutes: { one: 'il y a {n}\u00a0minute', other: 'il y a {n}\u00a0minutes' },
     hours: { one: 'il y a {n}\u00a0heure', other: 'il y a {n}\u00a0heures' },
-    days: { one: 'il y a {n} jour', other: 'il y a {n} jours' },
-    months: { one: 'il y a {n} mois', other: 'il y a {n} mois' },
-    years: { one: 'il y a {n} an', other: 'il y a {n} ans' },
+    days: { one: 'il y a {n}\u00a0jour', other: 'il y a {n}\u00a0jours' },
+    months: { one: 'il y a {n}\u00a0mois', other: 'il y a {n}\u00a0mois' },
+    years: { one: 'il y a {n}\u00a0an', other: 'il y a {n}\u00a0ans' },
   },
   tasks: 'Tâches',
   task: 'Tâche',

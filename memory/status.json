@@ -4,7 +4,7 @@
   "updated": "2026-10-17",
   "current_stage": 4,
   "next_actions": [
-    "In Settings → Profile, pick your interface language (it follows you to your other devices). If a phrase reads oddly in Arabic, French, Chinese or Spanish, note it — S2-23 is the review pass.",
+    "In Settings → Profile, pick your interface language (it follows you to your other devices). All four translations have had their independent review (S2-23); if a phrase still reads oddly, note it.",
     "On the laptop: git pull, then re-run scripts/install_local.sh (it installs new dependencies itself now). Then open Itqan on the iPhone once so it updates (data format v6) and syncs again.",
     "Look at the new daily card on Today; in Settings → Daily card, choose the word's language and level and switch off anything you don't want.",
     "Record this year's achievements so far; check the suggestions Itqan offers."
@@ -298,7 +298,7 @@
           "id": "S2-23",
           "title": "Independent review of each translation against its language guide (memory/10-localization.md), then fixes",
           "module": "settings",
-          "status": "todo"
+          "status": "done"
         }
       ]
     },
@@ -522,6 +522,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-17",
+      "entry": "S2-23: independent review of every translation against its language guide, one reviewer for the screens and one for the daily-card content per language, language by language — Arabic 87 fixes, French 53, Chinese 56, Spanish 59 (meaning, calques, grammar, glossary consistency, hadith checked against the Arabic, Chinese-word definitions that were only synonyms, Spain-only words in Spanish, one Quran excerpt re-cut). Code fixes the reviewers found: signed numbers (“+5 XP”) kept their sign in front in right-to-left; “None” in pickers per thing picked (gender in French/Spanish); “every week” no longer “every 1 week” in Chinese (tested); a project with no tasks gets its own delete confirmation; habit streak labels read right under any number; GitHub’s English-only labels quoted as they are; the English of Bukhari 3559 now says “Among the best of you”. Rules added to memory/10-localization.md."
+    },
     {
       "date": "2026-10-17",
       "entry": "S2-07: Itqan in English, Arabic (right to left), French, Chinese and Spanish (ADR-024, schema v7) — every screen, quick add (day words per language, tested), and the daily card (published Quran meanings for French/Spanish/Chinese, verified; hadith, wisdom, facts and 1,000 word meanings translated). Automated translation checks for completeness, placeholders, plural forms, typography and leftover English all pass. The independent per-language review was stopped before it finished and is follow-up S2-23."

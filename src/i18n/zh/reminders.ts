@@ -15,9 +15,9 @@ export const reminders: Messages['reminders'] = {
   repeat: { none: '不重复', daily: '每天', weekly: '每周', monthly: '每月', yearly: '每年' },
 
   title: '提醒',
-  subtitle: '重要的日子和不能忘的事——还有桌面通知。',
+  subtitle: '重要的日子和不能忘的事——支持桌面通知。',
   addAll: '全部添加到日历',
-  addAllHint: '把所有提醒添加到手机或电脑的日历中，并带有提醒',
+  addAllHint: '把所有提醒加入手机或电脑的日历，到时日历会提醒你',
   newReminder: '新提醒',
   templates: {
     birthday: '生日',

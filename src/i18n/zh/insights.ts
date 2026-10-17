@@ -18,7 +18,7 @@ export const insights: Messages['insights'] = {
   tasks: { other: '{n} 个任务' },
   habitDays: { other: '习惯 {n} 天' },
   consistency: '习惯坚持度 · {n} 天',
-  noHabits: '还没有习惯。',
+  noHabits: '还没有习惯',
   activity: '活跃度 · 近 6 个月',
   activityTip: '{date}：{xp} XP',
   badges: '徽章 · {unlocked}/{total}',

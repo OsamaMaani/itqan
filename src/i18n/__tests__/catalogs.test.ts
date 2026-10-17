@@ -122,6 +122,8 @@ const KEEP_LATIN = new Set([
   'GitHub', 'Itqan', 'XP', 'HSK', 'CEFR', 'iPhone', 'iOS', 'Android', 'Chrome', 'Safari', 'Ctrl', 'Cmd', 'Esc', 'Enter', 'Tab',
   'PWA', 'ICS', 'iCalendar', 'DELETE', 'Shift', 'Alt', 'Linux', 'Mac', 'Windows', 'URL', 'ID', 'PAT', 'Pages', 'K', 'N', 'P',
   'A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'AM', 'PM', 'Contents', 'Read', 'Write', 'Fine', 'grained', 'token', 'tokens', 'repo', 'itqan', 'data',
+  // GitHub's token page is English-only: its labels are quoted as they appear there.
+  'and', 'write', 'Only', 'select', 'repositories',
 ])
 
 describe.each(LANGS)('%s catalog', (lang) => {

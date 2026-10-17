@@ -4,7 +4,7 @@ export const achievements: Messages['achievements'] = {
   categories: {
     career: 'Carrera profesional', education: 'Estudios', learning: 'Aprendizaje y certificados', health: 'Salud y forma física',
     faith: 'Fe', languages: 'Idiomas', projects: 'Proyectos y creación', personal: 'Crecimiento personal',
-    family: 'Familia y amigos', creative: 'Creatividad', finance: 'Finanzas', community: 'Comunidad y solidaridad',
+    family: 'Familia y amistades', creative: 'Creatividad', finance: 'Finanzas', community: 'Comunidad y solidaridad',
   },
   impact: { small: 'Pequeña victoria', notable: 'Notable', major: 'Importante' },
   finished: 'Terminado: {title}',

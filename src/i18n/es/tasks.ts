@@ -27,6 +27,6 @@ export const tasks: Messages['tasks'] = {
     todo: 'Por hacer',
     steps: 'Pasos',
     addStep: 'Añadir un paso',
-    notesPlaceholder: 'Algo que merezca la pena recordar',
+    notesPlaceholder: 'Algo que valga la pena recordar',
   },
 }

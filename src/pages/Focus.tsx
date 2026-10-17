@@ -102,14 +102,14 @@ export function FocusPage() {
                 <div>
                   <Label>{m.focus.task}</Label>
                   <Select value={taskId ?? ''} onChange={(e) => setTaskId(e.target.value || null)}>
-                    <option value="">{m.common.none}</option>
+                    <option value="">{m.common.none.task}</option>
                     {openTasks.map((x) => <option key={x.id} value={x.id}>{x.title}</option>)}
                   </Select>
                 </div>
                 <div>
                   <Label>{m.common.goal}</Label>
                   <Select value={goalId ?? ''} onChange={(e) => setGoalId(e.target.value || null)}>
-                    <option value="">{m.common.none}</option>
+                    <option value="">{m.common.none.goal}</option>
                     {activeGoals.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
                   </Select>
                 </div>

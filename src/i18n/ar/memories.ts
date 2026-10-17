@@ -14,7 +14,7 @@ export const memories: Messages['memories'] = {
   onThisDay: 'في مثل هذا اليوم',
   yearsAgo: { zero: 'هذا العام', one: 'قبل سنة', two: 'قبل سنتين', few: 'قبل {n} سنوات', many: 'قبل {n} سنة', other: 'قبل {n} سنة' },
   onThisDayMeta: '{ago} · {year}',
-  rememberThis: 'أتذكر هذا؟',
+  rememberThis: 'هل تذكر هذا؟',
   anotherMemory: 'ذكرى أخرى',
   rediscoverMeta: '{date} · {ago}',
   searchPlaceholder: 'البحث في الذكريات',

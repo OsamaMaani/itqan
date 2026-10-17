@@ -43,6 +43,7 @@ export const projects: Messages['projects'] = {
   unpinnedToast: 'أُزيل من صفحة اليوم',
   editProject: 'تعديل المشروع',
   deleteProject: 'حذف المشروع',
+  deleteConfirmEmpty: 'حذف «{title}» وتحديثاته؟',
   deleteConfirm: {
     zero: 'حذف «{title}» وتحديثاته؟',
     one: 'حذف «{title}» وتحديثاته؟ ستبقى مهمته، لكن بلا مشروع.',
@@ -144,7 +145,7 @@ export const projects: Messages['projects'] = {
     progress: 'التقدم',
     modeTasks: 'من مهامه',
     modeManual: 'سأحدده يدويًا',
-    start: 'البداية',
+    start: 'تاريخ البدء',
     deadline: 'الموعد النهائي',
     servesGoal: 'يخدم هدفًا',
   },

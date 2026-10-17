@@ -40,7 +40,7 @@ export const achievements: Messages['achievements'] = {
   addAchievement: 'إضافة إنجاز',
   yearTab: '{year} · {n}',
   yearInReview: 'حصاد {year}',
-  countLabel: { zero: 'إنجاز', one: 'إنجاز', two: 'إنجازان', few: 'إنجازات', many: 'إنجازًا', other: 'إنجاز' },
+  countLabel: { zero: 'إنجازات', one: 'إنجاز', two: 'إنجازان', few: 'إنجازات', many: 'إنجازًا', other: 'إنجاز' },
   majorCount: {
     zero: 'لا إنجازات كبيرة',
     one: 'إنجاز كبير واحد',

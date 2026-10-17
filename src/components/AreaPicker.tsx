@@ -13,7 +13,7 @@ export function AreaPicker({ value, onChange }: { value: string | null; onChange
         onClick={() => onChange(null)}
         className={cx('rounded-lg border px-2.5 py-1 text-xs font-semibold transition', value === null ? 'border-text/30 bg-surface-2' : 'border-border text-muted hover:bg-surface-2')}
       >
-        {m.common.none}
+        {m.common.none.area}
       </button>
       {areas.map((a) => {
         const hex = AREA_HEX[a.color]

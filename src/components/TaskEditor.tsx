@@ -116,7 +116,7 @@ export function TaskEditor({ open, onClose, task, defaults }: {
               value={d.priority}
               onChange={(v) => set('priority', v)}
               options={[
-                { value: 0, label: m.common.none },
+                { value: 0, label: m.common.none.priority },
                 { value: 1, label: t.f(m.tasks.priority, { n: 1 }) },
                 { value: 2, label: t.f(m.tasks.priority, { n: 2 }) },
                 { value: 3, label: t.f(m.tasks.priority, { n: 3 }) },

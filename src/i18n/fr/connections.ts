@@ -3,10 +3,11 @@ import type { Messages } from '../core'
 export const connections: Messages['connections'] = {
   cadence: {
     none: 'Sans rythme',
-    days: { one: 'Tous les jours', other: 'Tous les {n} jours' },
-    weeks: { one: 'Toutes les semaines', other: 'Toutes les {n} semaines' },
-    months: { one: 'Tous les mois', other: 'Tous les {n} mois' },
-    years: { one: 'Tous les ans', other: 'Tous les {n} ans' },
+    every: { days: 'Tous les jours', weeks: 'Toutes les semaines', months: 'Tous les mois', years: 'Tous les ans' },
+    days: { one: 'Tous les jours', other: 'Tous les {n}\u00a0jours' },
+    weeks: { one: 'Toutes les semaines', other: 'Toutes les {n}\u00a0semaines' },
+    months: { one: 'Tous les mois', other: 'Tous les {n}\u00a0mois' },
+    years: { one: 'Tous les ans', other: 'Tous les {n}\u00a0ans' },
   },
   kinds: { call: 'Appel', message: 'Message', meet: 'Rencontre', email: 'E-mail', other: 'Autre' },
 
@@ -15,18 +16,18 @@ export const connections: Messages['connections'] = {
   due: {
     noRhythm: 'Aucun rythme défini',
     lastTalked: 'Dernier échange\u00a0: {when}',
-    overdueBy: { one: 'En retard de {n} jour', other: 'En retard de {n} jours' },
+    overdueBy: { one: 'En retard de {n}\u00a0jour', other: 'En retard de {n}\u00a0jours' },
     today: 'Prendre des nouvelles aujourd’hui',
     tomorrow: 'Prochaine prise de nouvelles demain',
-    inDays: { one: 'Prochaine prise de nouvelles dans {n} jour', other: 'Prochaine prise de nouvelles dans {n} jours' },
+    inDays: { one: 'Prochaine prise de nouvelles dans {n}\u00a0jour', other: 'Prochaine prise de nouvelles dans {n}\u00a0jours' },
   },
   last: {
-    never: 'jamais noté',
+    never: 'aucun échange noté',
     today: 'dernier échange aujourd’hui',
     yesterday: 'dernier échange hier',
-    daysAgo: { one: 'dernier échange il y a {n} jour', other: 'dernier échange il y a {n} jours' },
-    monthsAgo: { one: 'dernier échange il y a {n} mois', other: 'dernier échange il y a {n} mois' },
-    yearsAgo: { one: 'dernier échange il y a {n} an', other: 'dernier échange il y a {n} ans' },
+    daysAgo: { one: 'dernier échange il y a {n}\u00a0jour', other: 'dernier échange il y a {n}\u00a0jours' },
+    monthsAgo: { one: 'dernier échange il y a {n}\u00a0mois', other: 'dernier échange il y a {n}\u00a0mois' },
+    yearsAgo: { one: 'dernier échange il y a {n}\u00a0an', other: 'dernier échange il y a {n}\u00a0ans' },
   },
 
   list: {
@@ -63,7 +64,7 @@ export const connections: Messages['connections'] = {
     snoozedToast: 'Reporté d’une semaine',
     rhythmLabel: 'Rythme des prises de nouvelles',
     birthdayToday: 'Anniversaire aujourd’hui\u202f!',
-    birthdayIn: { one: 'Anniversaire dans {n} jour', other: 'Anniversaire dans {n} jours' },
+    birthdayIn: { one: 'Anniversaire dans {n}\u00a0jour', other: 'Anniversaire dans {n}\u00a0jours' },
     about: 'À propos',
     phone: 'Téléphone',
     email: 'E-mail',
@@ -116,6 +117,6 @@ export const connections: Messages['connections'] = {
     howWeMetPlaceholder: 'ex. Faculté d’ingénierie, 2017',
     tagsHint: 'séparées par des virgules',
     tagsPlaceholder: 'sport, français, mentor',
-    notesPlaceholder: 'Prénoms des enfants, choses préférées, idées de cadeaux…',
+    notesPlaceholder: 'Prénoms des enfants, goûts, idées de cadeaux…',
   },
 }

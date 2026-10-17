@@ -1,6 +1,8 @@
 export const connections = {
   cadence: {
     none: 'No rhythm',
+    /** A rhythm of exactly one unit (“Every week”, not “Every 1 week”); larger counts use the plurals below. */
+    every: { days: 'Every day', weeks: 'Every week', months: 'Every month', years: 'Every year' },
     days: { one: 'Every day', other: 'Every {n} days' },
     weeks: { one: 'Every week', other: 'Every {n} weeks' },
     months: { one: 'Every month', other: 'Every {n} months' },

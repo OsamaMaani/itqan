@@ -29,6 +29,7 @@ export const projects: Messages['projects'] = {
   unpinnedToast: '已从今天移除',
   editProject: '编辑项目',
   deleteProject: '删除项目',
+  deleteConfirmEmpty: '删除“{title}”及其动态？',
   deleteConfirm: {
     other: '删除“{title}”及其动态？其中的 {n} 个任务会保留，只是不再属于任何项目。',
   },
@@ -104,7 +105,7 @@ export const projects: Messages['projects'] = {
     progress: '进度',
     modeTasks: '根据任务计算',
     modeManual: '由我手动设定',
-    start: '开始',
+    start: '开始日期',
     deadline: '截止日期',
     servesGoal: '服务的目标',
   },

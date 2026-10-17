@@ -2,10 +2,10 @@ import type { Messages } from '../core'
 
 export const memories: Messages['memories'] = {
   subtitleCount: { one: '{n} moment conservé', other: '{n} moments conservés' },
-  subtitleEmpty: 'Les moments qui valent d’être gardés — grands et petits.',
+  subtitleEmpty: 'Les moments qui méritent d’être gardés — grands et petits.',
   newMemory: 'Nouveau souvenir',
   onThisDay: 'Ce jour-là',
-  yearsAgo: { one: 'Il y a un an', other: 'Il y a {n} ans' },
+  yearsAgo: { one: 'Il y a un an', other: 'Il y a {n}\u00a0ans' },
   onThisDayMeta: '{ago} · {year}',
   rememberThis: 'Tu te souviens\u202f?',
   anotherMemory: 'Un autre souvenir',

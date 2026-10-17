@@ -46,7 +46,7 @@ export const reminders: Messages['reminders'] = {
     iphoneTitle: 'En el iPhone, deja que Calendario te avise',
     iphoneBody: 'Toca «{button}»: el Calendario del iPhone te avisará aunque Itqan esté cerrado. Después, añade los recordatorios nuevos con el botón de calendario de cada uno.',
     openTitle: 'Los avisos aparecen con Itqan abierto',
-    openBody: 'Las notificaciones de escritorio con la app cerrada llegan con la app local instalada.',
+    openBody: 'Las notificaciones de escritorio con la app cerrada requieren instalar la app local.',
     allowBrowser: 'Permitir notificaciones del navegador',
   },
 

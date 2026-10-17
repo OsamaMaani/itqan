@@ -5,6 +5,6 @@ export const store: Messages['store'] = {
   newProject: 'مشروع جديد',
   birthday: 'عيد ميلاد {name}',
   checkInTitle: 'تواصل مع {name}',
-  checkInBody: 'مرّ وقت — رسالة قصيرة تكفي.',
+  checkInBody: 'مضى وقت منذ آخر تواصل — تكفي رسالة قصيرة.',
   notificationsWork: 'الإشعارات تعمل ✓',
 }

@@ -26,7 +26,7 @@ export const today: Messages['today'] = {
   habits: '习惯 · {met}/{total}',
   allHabits: '全部习惯',
   noHabits: '今天没有习惯',
-  noHabitsBody: '{create}，比如古兰经、法语、阅读',
+  noHabitsBody: '{create}，比如古兰经、法语、阅读等',
   createOne: '创建一个',
   goalsTitle: '进行中的目标',
   allGoals: '全部目标',

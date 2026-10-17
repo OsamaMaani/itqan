@@ -4,6 +4,7 @@ import type { Messages } from '../core'
 export const connections: Messages['connections'] = {
   cadence: {
     none: 'Sin ritmo',
+    every: { days: 'Cada día', weeks: 'Cada semana', months: 'Cada mes', years: 'Cada año' },
     days: { one: 'Cada día', other: 'Cada {n} días' },
     weeks: { one: 'Cada semana', other: 'Cada {n} semanas' },
     months: { one: 'Cada mes', other: 'Cada {n} meses' },
@@ -11,7 +12,7 @@ export const connections: Messages['connections'] = {
   },
   kinds: { call: 'Llamada', message: 'Mensaje', meet: 'En persona', email: 'Correo', other: 'Otro' },
 
-  circles: { family: 'Familia', friend: 'Amigos', university: 'Universidad', work: 'Trabajo', mentor: 'Mentores', other: 'Otros' },
+  circles: { family: 'Familia', friend: 'Amistades', university: 'Universidad', work: 'Trabajo', mentor: 'Mentores', other: 'Otros' },
 
   due: {
     noRhythm: 'Sin ritmo fijado',
@@ -37,8 +38,8 @@ export const connections: Messages['connections'] = {
     subtitleEmpty: 'Las personas que importan, y un recordatorio amable para seguir en contacto.',
     addPerson: 'Añadir persona',
     emptyTitle: 'Añade a las personas que quieres',
-    emptyBody: 'Familia, amigos, compañeros de la universidad y del trabajo. Elige cada cuánto quieres contactar con cada persona: Itqan te dirá cuándo toca.',
-    reachOut: 'Ponte en contacto · {n}',
+    emptyBody: 'Familia, amistades, compañeros de la universidad y del trabajo. Elige cada cuánto quieres contactar con cada persona: Itqan te dirá cuándo toca.',
+    reachOut: 'Por contactar · {n}',
     checkedIn: 'Contacto hecho',
     snoozeWeek: 'Posponer una semana',
     snoozedToast: '{name}: dentro de una semana',
@@ -80,7 +81,7 @@ export const connections: Messages['connections'] = {
   },
 
   birthday: {
-    removed: 'Recordatorio de cumpleaños quitado',
+    removed: 'Recordatorio de cumpleaños eliminado',
     added: 'Te avisaré el mismo día y una semana antes',
     reminding: 'Con aviso',
     remindMe: 'Avisarme',

@@ -159,7 +159,7 @@ export const EXCERPTS: Record<string, string> = {
   "64:16-16": "Tengan temor de Dios tanto como puedan. Escuchen y obedezcan [la revelación], y hagan caridad, porque es lo mejor para ustedes mismos",
   "2:185-185": "Dios desea facilitarles las cosas y no dificultárselas",
   "9:105-105": "Diles [¡oh, Mujámmad!, a los hipócritas]: \"Obren como quieran, pero sepan que Dios, Su Mensajero y los creyentes verán sus obras\"",
-  "2:195-195": "sino que hagan el bien, porque Dios ama a los que hacen el bien",
+  "2:195-195": "hagan el bien, porque Dios ama a los que hacen el bien",
   "28:77-77": "y no te olvides que también puedes disfrutar de lo que Dios ha hecho lícito en esta vida. Sé generoso [con tu prójimo] como Dios lo es contigo",
   "5:8-8": "Que el rencor que sienten no les conduzca a obrar injustamente. Sean justos y equitativos, porque eso es lo más cercano a la piedad",
   "24:22-22": "y [es mejor] que los perdonen y los disculpen. ¿Acaso no aman ser perdonados por Dios?",

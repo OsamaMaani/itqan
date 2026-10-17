@@ -223,7 +223,7 @@ export const TEXT: DailyTranslation = {
     "Twilight of the Idols, 1889":
       "أفول الأصنام، 1889",
     "Thinking, Fast and Slow, 2011":
-      "التفكير، السريع والبطيء، 2011",
+      "التفكير السريع والبطيء، 2011",
     "On Becoming a Person, 1961":
       "On Becoming a Person، 1961",
     "Flow, 1990":
@@ -396,7 +396,7 @@ export const TEXT: DailyTranslation = {
     "Life is short, the art long, opportunity fleeting, experiment treacherous, judgement difficult.":
       "العمر قصير، والصناعة طويلة، والوقت ضيق، والتجربة خطر، والقضاء عسر.",
     "As to diseases, make a habit of two things — to help, or at least to do no harm.":
-      "اجعل لنفسك في الأمراض عادة من أمرين — أن تنفع، أو على الأقل ألا تضر.",
+      "اجعل من عادتك في الأمراض أمرين — أن تنفع، أو على الأقل ألا تضر.",
     "Wherever the art of medicine is loved, there is also a love of humanity.":
       "حيثما وُجد حب فن الطب، وُجد معه حب الإنسانية.",
     "All things are poison, and nothing is without poison; only the dose makes a thing not a poison.":
@@ -466,7 +466,7 @@ export const TEXT: DailyTranslation = {
     "Paris ne s’est pas fait en un jour. — Paris was not built in a day.":
       "Paris ne s’est pas fait en un jour. — باريس لم تُبنَ في يوم واحد.",
     "Fall seven times, stand up eight.":
-      "اسقط سبع مرات، وانهض ثماني.",
+      "اسقط سبع مرات، وانهض ثمانيًا.",
     "The best time to plant a tree was twenty years ago. The second best time is now.":
       "أفضل وقت لغرس شجرة كان قبل عشرين عامًا. وثاني أفضل وقت هو الآن.",
     "Poco a poco se va lejos. — Little by little, one goes far.":
@@ -476,11 +476,11 @@ export const TEXT: DailyTranslation = {
     "In a study of new daily habits, it took 66 days on average for a habit to feel automatic — anywhere from 18 to 254 days — and missing a single day did not derail it.":
       "في دراسة عن عادات يومية جديدة، احتاجت العادة إلى 66 يومًا في المتوسط لتصبح تلقائية — بين 18 و254 يومًا — ولم يُفسدها تفويت يوم واحد.",
     "Spreading study over several days beats cramming the same hours into one sitting. The spacing effect is one of the most replicated findings in psychology.":
-      "توزيع المذاكرة على عدة أيام يتفوق على حشر الساعات نفسها في جلسة واحدة. وأثر التباعد من أكثر النتائج تكرارًا في علم النفس.",
+      "توزيع المذاكرة على عدة أيام يتفوق على حشر الساعات نفسها في جلسة واحدة. وأثر التباعد من أكثر نتائج علم النفس ثبوتًا عند إعادة التجارب.",
     "Recalling something from memory strengthens it more than re-reading it. Students who practised recall remembered far more a week later than students who re-studied.":
       "استرجاع المعلومة من الذاكرة يقوّيها أكثر من إعادة قراءتها. فالطلاب الذين تدربوا على الاسترجاع تذكروا بعد أسبوع أكثر بكثير ممن أعادوا المذاكرة.",
     "Without review, much of what we learn is forgotten within a day. Each well-timed review flattens the “forgetting curve”.":
-      "دون مراجعة، يُنسى كثير مما نتعلمه في غضون يوم. وكل مراجعة في وقتها المناسب تُسطّح «منحنى النسيان».",
+      "دون مراجعة، يُنسى كثير مما نتعلمه في غضون يوم. وكل مراجعة في وقتها المناسب تخفّف انحدار «منحنى النسيان».",
     "Plans in the form “When X happens, I will do Y” make people noticeably more likely to follow through — a medium-to-large effect across 94 studies.":
       "الخطط التي تأتي في صيغة «إذا حدث س، فسأفعل ص» تجعل الناس أكثر التزامًا بالتنفيذ بشكل ملحوظ — بأثر متوسط إلى كبير عبر 94 دراسة.",
     "People are more likely to start working on a goal after a “fresh start” — a new week, a new month, a birthday or a new year.":
@@ -490,9 +490,9 @@ export const TEXT: DailyTranslation = {
     "A car-wash card needing 10 stamps with 2 already given was completed far more often (34%) than a card needing 8 stamps (19%). Feeling that you have started helps you finish.":
       "بطاقة غسيل سيارات تحتاج إلى 10 أختام مُنح منها ختمان مسبقًا اكتملت أكثر بكثير (34%) من بطاقة تحتاج إلى 8 أختام (19%). الشعور بأنك بدأت يساعدك على الإنهاء.",
     "In nearly 12,000 diary entries from 238 professionals, the most common event on people’s best days was simply making progress in meaningful work.":
-      "في نحو 12,000 مدخلة يوميات كتبها 238 مهنيًا، كان أكثر ما يتكرر في أفضل أيامهم هو ببساطة إحراز تقدم في عمل ذي معنى.",
+      "في نحو 12,000 تدوينة يومية كتبها 238 مهنيًا، كان أكثر ما يتكرر في أفضل أيامهم هو ببساطة إحراز تقدم في عمل ذي معنى.",
     "Students asked when they would finish their thesis finished later, on average, than even their own “worst case” estimate. Plan for longer than feels necessary.":
-      "الطلاب الذين سُئلوا متى سينهون أطروحاتهم أنهوها في المتوسط بعد موعد أسوأ تقديراتهم نفسها. خطّط لمدة أطول مما يبدو لازمًا.",
+      "الطلاب الذين سُئلوا متى سينهون أطروحاتهم أنهوها في المتوسط بعد الموعد الذي توقعوه هم أنفسهم في «أسوأ الاحتمالات». خطّط لمدة أطول مما يبدو لازمًا.",
     "We judge an experience mostly by its peak and its end. People preferred a longer cold-water trial if its last 30 seconds were slightly warmer.":
       "نحكم على التجربة غالبًا من ذروتها ونهايتها. فقد فضّل المشاركون تجربة ماء بارد أطول إذا كانت آخر 30 ثانية منها أدفأ قليلًا.",
     "Information you produce yourself — completing a word, answering a question — is remembered better than the same information simply read.":
@@ -520,7 +520,7 @@ export const TEXT: DailyTranslation = {
     "About half of people counting basketball passes in a video failed to notice a person in a gorilla suit walking through the scene.":
       "نحو نصف من كانوا يعدّون تمريرات كرة السلة في مقطع فيديو لم ينتبهوا إلى شخص يرتدي زي غوريلا يعبر المشهد.",
     "Naming the ink colour of a word like “RED” printed in blue is slow, because reading is so automatic that it gets in the way.":
-      "تسمية لون الحبر لكلمة مثل «أحمر» مطبوعة بالأزرق بطيئة، لأن القراءة تلقائية إلى حد أنها تعترض الطريق.",
+      "تسمية لون الحبر لكلمة مثل «أحمر» مطبوعة بالأزرق بطيئة، لأن القراءة صارت تلقائية إلى حد أنها تتداخل مع التسمية.",
     "We tend to like things more simply because we have seen them more often — the mere-exposure effect.":
       "نميل إلى حب الأشياء أكثر لمجرد أننا رأيناها أكثر — وهذا هو أثر التعرض المجرد.",
     "In Stanford experiments, people came up with more creative ideas while walking than while sitting, and the boost lasted for a while after they sat down.":
@@ -572,13 +572,13 @@ export const TEXT: DailyTranslation = {
     "About 90% of the body’s serotonin is made in the gut, not the brain.":
       "يُنتَج نحو 90% من السيروتونين في الجسم في الأمعاء، لا في الدماغ.",
     "Your body has about 30 trillion human cells and a similar number of bacteria. The old claim of “ten bacteria for every cell” was wrong.":
-      "في جسمك نحو 30 تريليون خلية بشرية وعدد مماثل تقريبًا من البكتيريا. أما الزعم القديم بأن هناك «عشر بكتيريا مقابل كل خلية» فكان خاطئًا.",
+      "في جسمك نحو 30 تريليون خلية بشرية وعدد مماثل تقريبًا من البكتيريا. أما الزعم القديم بأن هناك «عشر خلايا بكتيرية مقابل كل خلية» فكان خاطئًا.",
     "Red blood cells live about 120 days, and your body makes around two million new ones every second.":
       "تعيش خلايا الدم الحمراء نحو 120 يومًا، ويصنع جسمك قرابة مليوني خلية جديدة منها كل ثانية.",
     "Your heart beats about 100,000 times a day.":
       "ينبض قلبك نحو 100,000 مرة في اليوم.",
     "Your kidneys filter about 180 litres of blood plasma a day and return almost all of it; only one or two litres leave as urine.":
-      "تُرشّح كليتاك نحو 180 لترًا من بلازما الدم يوميًا وتعيد معظمها؛ ولا يخرج منها في البول إلا لتر أو لتران.",
+      "تُرشّح كليتاك نحو 180 لترًا من بلازما الدم يوميًا وتعيد امتصاصها كلها تقريبًا؛ ولا يخرج منها في البول إلا لتر أو لتران.",
     "The liver can grow back to its full size even after most of it — up to about two-thirds — has been removed.":
       "يستطيع الكبد أن ينمو من جديد إلى حجمه الكامل حتى بعد استئصال معظمه — ما يصل إلى نحو الثلثين.",
     "The lining of the small intestine renews itself every three to five days.":
@@ -598,7 +598,7 @@ export const TEXT: DailyTranslation = {
     "Uncoiled, the DNA in a single human cell would stretch about two metres.":
       "لو فُكّ الحمض النووي في خلية بشرية واحدة لامتد نحو مترين.",
     "Mitochondria, the power plants of the cell, have their own DNA — and you almost always inherit it from your mother alone.":
-      "للميتوكوندريا، محطات الطاقة في الخلية، حمض نووي خاص بها — وتكاد ترثه دائمًا من أمك وحدها.",
+      "للميتوكوندريا، محطات الطاقة في الخلية، حمض نووي خاص بها — وأنت ترثه في جميع الحالات تقريبًا من أمك وحدها.",
     "The adult human body is roughly 50–60% water.":
       "يتكون جسم الإنسان البالغ من الماء بنسبة 50–60% تقريبًا.",
     "Cells break down and recycle their own worn-out parts, a process called autophagy. Its discovery won the 2016 Nobel Prize in Physiology or Medicine.":
@@ -610,11 +610,11 @@ export const TEXT: DailyTranslation = {
     "In 2019, bacteria resistant to antibiotics directly caused about 1.27 million deaths worldwide.":
       "في عام 2019، تسببت البكتيريا المقاومة للمضادات الحيوية مباشرة في نحو 1.27 مليون وفاة حول العالم.",
     "Adults need seven or more hours of sleep a night, regularly, for the best health.":
-      "يحتاج البالغون إلى سبع ساعات نوم أو أكثر كل ليلة، بانتظام، لأفضل صحة.",
+      "يحتاج البالغون إلى سبع ساعات نوم أو أكثر كل ليلة، بانتظام، لينعموا بأفضل صحة.",
     "Caffeine’s half-life in healthy adults is about five hours, so an afternoon coffee can still be working at bedtime.":
-      "يبلغ عمر النصف للكافيين لدى البالغين الأصحاء نحو خمس ساعات، لذا قد تظل قهوة العصر تعمل عند موعد النوم.",
+      "يبلغ عمر النصف للكافيين لدى البالغين الأصحاء نحو خمس ساعات، لذا قد يبقى مفعول قهوة العصر قائمًا عند موعد النوم.",
     "Caffeine taken even six hours before bed cut sleep by more than an hour in one controlled study.":
-      "الكافيين المتناول حتى قبل النوم بست ساعات قلّص النوم بأكثر من ساعة في إحدى الدراسات المضبوطة.",
+      "في إحدى الدراسات المضبوطة، قلّص الكافيين النوم بأكثر من ساعة، حتى حين كان تناوله قبل موعد النوم بست ساعات.",
     "The WHO recommends 150–300 minutes of moderate activity a week for adults, plus muscle-strengthening on two or more days.":
       "توصي منظمة الصحة العالمية بأن يمارس البالغون 150–300 دقيقة من النشاط المعتدل أسبوعيًا، إضافة إلى تمارين تقوية العضلات يومين أو أكثر.",
     "In a review of studies with over 220,000 people, each extra 1,000 steps a day was linked to about a 15% lower risk of death from any cause.":
@@ -630,7 +630,7 @@ export const TEXT: DailyTranslation = {
     "Your skin makes vitamin D when sunlight’s UVB rays reach it.":
       "يصنع جلدك فيتامين د حين تصله الأشعة فوق البنفسجية من النوع B في ضوء الشمس.",
     "One blood donation can help up to three people, once it is separated into red cells, plasma and platelets.":
-      "يمكن لتبرع واحد بالدم أن يساعد ما يصل إلى ثلاثة أشخاص، بعد فصله إلى خلايا حمراء وبلازما وصفائح.",
+      "يمكن لتبرع واحد بالدم أن يساعد ما يصل إلى ثلاثة أشخاص، بعد فصله إلى خلايا حمراء وبلازما وصفائح دموية.",
     "The Hippocratic Oath never says “first, do no harm”. The closest line is in Hippocrates’ Epidemics: “to help, or at least to do no harm”.":
       "قسم أبقراط لا يقول أبدًا «أولًا، لا تُلحق ضررًا». وأقرب عبارة إليه في كتاب أبقراط «أبيذيميا»: «أن تنفع، أو على الأقل ألا تضر».",
     "In 1847 Ignaz Semmelweis made doctors wash their hands in chlorinated lime; deaths of new mothers on his ward fell from about 18% to around 2%.":
@@ -670,7 +670,7 @@ export const TEXT: DailyTranslation = {
     "Tardigrades — tiny “water bears” — survived exposure to open space on a satellite in 2007.":
       "نجت بطيئات المشية — «دببة الماء» الدقيقة — من التعرض للفضاء المفتوح على متن قمر صناعي عام 2007.",
     "Botanically, bananas are berries and strawberries are not.":
-      "الموز من الناحية النباتية ثمرة عنبية، والفراولة ليست كذلك.",
+      "يُعدّ الموز من الناحية النباتية ثمرة لُبّية (berry)، أما الفراولة فلا.",
     "Sealed honey keeps almost indefinitely: it holds so little water and is so acidic that microbes cannot grow in it.":
       "العسل المحكم الإغلاق يبقى صالحًا إلى أجل غير محدود تقريبًا: فهو قليل الماء جدًا وحمضي إلى حد لا تستطيع الميكروبات النمو فيه.",
     "Honeybees tell each other the direction and distance of food with a “waggle dance”.":

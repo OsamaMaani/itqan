@@ -200,7 +200,7 @@ function ProjectDetail({ id }: { id: string }) {
           </IconButton>
           <IconButton label={L.editProject} onClick={() => setEditing(true)}><Pencil size={16} /></IconButton>
           <IconButton label={L.deleteProject} className="hover:text-danger" onClick={() => {
-            if (confirm(t.p(L.deleteConfirm, tasks.length, { title: p.title }))) { remove(p.id); navigate('projects') }
+            if (confirm(tasks.length ? t.p(L.deleteConfirm, tasks.length, { title: p.title }) : t.f(L.deleteConfirmEmpty, { title: p.title }))) { remove(p.id); navigate('projects') }
           }}><Trash2 size={16} /></IconButton>
         </div>
       </div>
@@ -364,7 +364,7 @@ function ProgressPanel({ p, progress, hex, done, total, expected }: { p: Project
           />
           <div className="flex flex-wrap gap-1.5">
             {[10, 25].map((n) => (
-              <button key={n} onClick={() => commit(Math.min(100, p.manualProgress + n))} className="rounded-lg bg-surface-2 px-2.5 py-1 text-xs font-semibold text-muted hover:text-text">{t.f(L.plusPct, { pct: t.pct(n / 100) })}</button>
+              <button key={n} onClick={() => commit(Math.min(100, p.manualProgress + n))} dir="ltr" className="rounded-lg bg-surface-2 px-2.5 py-1 text-xs font-semibold text-muted hover:text-text">{t.f(L.plusPct, { pct: t.pct(n / 100) })}</button>
             ))}
             <button onClick={() => commit(100)} className="rounded-lg bg-surface-2 px-2.5 py-1 text-xs font-semibold text-muted hover:text-text">{t.pct(1)}</button>
           </div>

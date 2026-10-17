@@ -1,7 +1,7 @@
 import type { Messages } from '../core'
 
 export const ideas: Messages['ideas'] = {
-  subtitleCount: '{open} 个进行中 · {done} 个已实现',
+  subtitleCount: '{open} 个待实现 · {done} 个已实现',
   subtitleEmpty: '先把每个想法记下来，之后再决定怎么处理。',
   capturePlaceholder: '我有个想法…（按 Enter 保存）',
   saveIdea: '保存想法',
@@ -13,7 +13,7 @@ export const ideas: Messages['ideas'] = {
   showDropped: '显示已放弃的想法 · {n}',
   hideDropped: '隐藏已放弃的想法 · {n}',
   age: {
-    now: '不到一分钟前',
+    now: '刚刚',
     minutes: { other: '{n} 分钟前' },
     hours: { other: '{n} 小时前' },
     days: { other: '{n} 天前' },

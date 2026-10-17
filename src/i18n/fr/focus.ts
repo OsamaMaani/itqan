@@ -15,7 +15,7 @@ export const focus: Messages['focus'] = {
   pause: 'Mettre en pause',
   resume: 'Reprendre',
   finish: 'Terminer',
-  finishTitle: 'Arrêter et enregistrer les minutes déjà faites',
+  finishTitle: 'Arrêter et enregistrer le temps déjà passé',
   discard: 'Abandonner',
   thisWeek: 'Cette semaine',
   weekByArea: 'Cette semaine par domaine',

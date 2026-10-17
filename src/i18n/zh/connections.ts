@@ -3,6 +3,7 @@ import type { Messages } from '../core'
 export const connections: Messages['connections'] = {
   cadence: {
     none: '不设频率',
+    every: { days: '每天', weeks: '每周', months: '每月', years: '每年' },
     days: { other: '每 {n} 天' },
     weeks: { other: '每 {n} 周' },
     months: { other: '每 {n} 个月' },
@@ -67,7 +68,7 @@ export const connections: Messages['connections'] = {
     about: '关于',
     phone: '电话',
     email: '邮箱',
-    howWeMet: '如何认识',
+    howWeMet: '相识经过',
     remindersAbout: '关于{name}的提醒',
     history: '历史 · {n}',
     log: '记录',
@@ -86,7 +87,7 @@ export const connections: Messages['connections'] = {
 
   log: {
     toast: '已与{name}联系 · +{xp} XP',
-    title: '与{name}的联系',
+    title: '记录与{name}的联系',
     save: '保存联系记录',
     how: '方式',
     when: '日期',

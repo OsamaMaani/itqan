@@ -2,7 +2,7 @@ import type { Messages } from '../core'
 
 export const review: Messages['review'] = {
   title: 'Bilan de la semaine',
-  subtitle: 'Quinze minutes honnêtes par semaine gardent tes objectifs dans la bonne direction.',
+  subtitle: 'Quinze minutes honnêtes par semaine suffisent pour garder le cap sur tes objectifs.',
   previousWeek: 'Semaine précédente',
   nextWeek: 'Semaine suivante',
   weekRange: '{start} – {end}',

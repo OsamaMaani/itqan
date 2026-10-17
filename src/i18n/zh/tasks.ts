@@ -26,6 +26,6 @@ export const tasks: Messages['tasks'] = {
     todo: '待办',
     steps: '步骤',
     addStep: '添加步骤',
-    notesPlaceholder: '值得记下的任何事',
+    notesPlaceholder: '值得记下的事',
   },
 }

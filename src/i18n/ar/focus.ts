@@ -23,7 +23,7 @@ export const focus: Messages['focus'] = {
   noSessionsTitle: 'لا جلسات بعد',
   noSessionsBody: 'أول 25 دقيقة هي الأصعب. ابدأ بخطوة صغيرة.',
   deleteSession: 'حذف الجلسة',
-  focusDoneNotify: 'انتهى التركيز — {n} د. خذ استراحة.',
+  focusDoneNotify: 'انتهت جلسة التركيز ({n} د). خذ استراحة.',
   breakOverNotify: 'انتهت الاستراحة. هل أنت مستعد للجلسة التالية؟',
   focusLogged: {
     zero: 'لم تُسجَّل أي دقيقة تركيز',
