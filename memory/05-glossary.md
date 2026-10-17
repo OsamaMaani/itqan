@@ -46,4 +46,7 @@ The vocabulary is fixed. Use these words in code, UI and memory alike.
 | **Rhythm** | How often to check in with a person. | `cadenceDays` |
 | **Check-in** | A logged call, message, meetup or email with a person. | `Interaction` |
 | **Reach out** | People overdue, due today or within 2 days. | `checkIn()` |
+| **Daily card** | The card on Today with one verse, hadith, word, piece of wisdom and fact a day (ADR-023). | `DailyCard`, `Settings.daily` |
+| **Verse / Hadith / Word / Wisdom / Fact** | The five kinds on the daily card. "Wisdom" = a saying or proverb, never a hadith. | `DailyKind` |
+| **Word of the day** | A word in the chosen language and CEFR level, with an example. | `Word`, `WordPack` |
 | **DateKey** | A local-time day as `yyyy-MM-dd`. Never UTC. | `DateKey` |

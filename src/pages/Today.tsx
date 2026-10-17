@@ -1,7 +1,7 @@
 import { format } from 'date-fns'
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronDown, Flame, Plus, Quote, Sparkles, Target, Timer, Zap } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronDown, Flame, Plus, Sparkles, Target, Timer, Zap } from 'lucide-react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { GoalLogButton } from '../components/GoalCard'
 import { HabitTile } from '../components/HabitTile'
 import { QuickAdd } from '../components/QuickAdd'
@@ -11,11 +11,11 @@ import { celebrate } from '../lib/celebrate'
 import { fromKey, greeting, hijri } from '../lib/date'
 import { goalPace, goalProgress } from '../lib/goals'
 import { isDueToday, isMetOn } from '../lib/habits'
-import { areaHex, useAreaMap, useData, useProgress, useToday } from '../lib/hooks'
+import { enabledKinds } from '../lib/daily'
+import { areaHex, useAreaMap, useData, useMediaQuery, useProgress, useToday } from '../lib/hooks'
 import { navigate } from '../lib/router'
 import { useStore } from '../lib/store'
 import type { Task, TimeOfDay } from '../lib/types'
-import { wisdomFor } from '../lib/wisdom'
 import { onThisDay } from './Memories'
 import { upcoming } from './Reminders'
 import { whenText } from '../lib/reminders'
@@ -32,6 +32,9 @@ const GROUPS: { key: TimeOfDay; label: string; emoji: string }[] = [
 
 const MOODS = ['😞', '😕', '😐', '🙂', '😄']
 
+// Its content (verses, hadith, words…) loads as a separate chunk, so Today itself stays light.
+const DailyCard = lazy(() => import('../components/DailyCard'))
+
 const byOrder = (a: Task, b: Task) => b.priority - a.priority || a.order - b.order
 
 export function TodayPage() {
@@ -42,6 +45,7 @@ export function TodayPage() {
   const moveTask = useStore((s) => s.moveTask)
   const areas = useAreaMap()
   const [showDone, setShowDone] = useState(false)
+  const wide = useMediaQuery('(min-width: 1024px)')
 
   const todays = d.tasks.filter((t) => t.date === today)
   const overdue = d.tasks.filter((t) => !t.done && t.date !== null && t.date < today).sort(byOrder)
@@ -64,7 +68,6 @@ export function TodayPage() {
   const note = d.dayNotes[today] ?? { intention: '', mood: 0, reflection: '' }
   const focusToday = d.focusSessions.filter((f) => format(new Date(f.startedAt), 'yyyy-MM-dd') === today)
     .reduce((s, f) => s + f.minutes, 0)
-  const wisdom = wisdomFor(today)
   const activeGoals = useMemo(
     () => d.goals.filter((g) => g.status === 'active')
       .map((g) => ({ g, p: goalProgress(g, d.goalLogs), pace: goalPace(g, d.goalLogs, today) }))
@@ -74,6 +77,10 @@ export function TodayPage() {
   )
 
   const date = fromKey(today)
+  // Phone: a folded line under the intention. Laptop: the top of the side column, so tasks stay put.
+  const daily = enabledKinds(d.settings.daily).length > 0 && (
+    <Suspense fallback={<Card className="h-12">{null}</Card>}><DailyCard /></Suspense>
+  )
 
   return (
     <div className="space-y-6">
@@ -95,7 +102,7 @@ export function TodayPage() {
       </div>
 
       {/* Hero row */}
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_1.4fr_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_1.4fr]">
         <Card className="flex items-center gap-5 p-5">
           <ProgressRing value={ratio} size={96} stroke={10}>
             <div className="text-center">
@@ -136,11 +143,7 @@ export function TodayPage() {
           />
         </Card>
 
-        <Card className="relative overflow-hidden p-5">
-          <Quote size={72} className="absolute -bottom-3 -right-2 text-accent opacity-[0.07]" />
-          <p className="text-[15px] font-medium leading-relaxed">{wisdom.text}</p>
-          <p className="mt-2 text-xs font-semibold text-muted">— {wisdom.source}</p>
-        </Card>
+        {!wide && daily}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
@@ -202,6 +205,8 @@ export function TodayPage() {
 
         {/* Side column */}
         <div className="space-y-6">
+          {wide && daily}
+
           <section>
             <SectionTitle right={<button onClick={() => navigate('habits')} className="text-xs font-semibold text-accent hover:underline">All habits</button>}>
               Habits · {habitsMet}/{habits.length}

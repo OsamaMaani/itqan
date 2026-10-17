@@ -12,6 +12,7 @@ export const DEFAULT_SETTINGS: Settings = {
   showHijri: true,
   lastBackupAt: null,
   onboarded: false,
+  daily: { verse: true, hadith: true, word: true, wisdom: true, fact: true, meaning: true, wordLanguage: 'fr', wordLevel: 'B1' },
 }
 
 export function emptyData(): Data {

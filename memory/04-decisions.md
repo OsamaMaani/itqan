@@ -125,6 +125,7 @@ Pending the owner's confirmation (Q1).
 rotates hadith, Quran verses and classical proverbs (paraphrased, `wisdom.ts`); onboarding opens
 with "Bismillah".
 **Reasoning:** Quran revision is part of the owner's daily life and the app's name is a hadith term.
+*(2026-10-17: the single daily line is superseded by the daily card, ADR-023.)*
 
 ---
 
@@ -345,3 +346,63 @@ so "Achievements" means only real accomplishments. Recording one is +5 XP; 10 un
 **Rejected:** generating achievements automatically without asking (it is a record of what the
 owner is proud of — they choose); photos/certificates as files (localStorage limits, ADR-014 —
 links instead).
+
+---
+
+## ADR-023 | 2026-10-17 | accepted | The daily card: a verse, a hadith, a word, wisdom and a fact
+
+**Asked for:** on Today, a Quran verse and a hadith each day — in Arabic — plus high-value
+sayings (psychology, medicine, biology), a fact, and a French B1 word with an example; switchable
+in Settings, with the word's language (French, English, German, Spanish, Chinese) and level
+(A1–C2) chosen there; and none of it may crowd the phone layout. Supersedes the single "daily
+wisdom" line of ADR-011 (`wisdom.ts`, removed; its lines moved into the new sets).
+
+**Decision — content (bundled, offline, `src/content/`):**
+- **Verses (118 passages)**: Arabic is the KFGQPC Uthmani text (quranenc.com, via the
+  `quran-json` 3.1.2 dataset), English is Saheeh International. KFGQPC encodes the "open" tanween
+  with private code points (U+0657 / U+065E / U+0656) that every other font draws as *different
+  marks*; they are mapped to Standard Unicode U+08F0–U+08F2. The mapping was proven against the
+  Tanzil text on all 6,236 ayahs (tanween sequence identical in every one). Hizb markers removed.
+  Curated to stand alone (patience, knowledge, effort, mercy, gratitude, creation, health,
+  Quran revision); excerpts are cut on word boundaries and labelled "from …".
+- **Hadith (102)**: Arabic is the Prophet's words ﷺ copied out of the cited hadith
+  (fawazahmed0/hadith-api, sunnah.com numbering; Muslim by Fu'ad Abd al-Baqi's number). Only
+  al-Bukhari and Muslim, or hadith al-Albani grades sahih or hasan — the grade is shown. Ibn Majah
+  224 ("seeking knowledge is an obligation", in that wording) was dropped: graded very weak. The
+  itqan hadith (al-Bayhaqi, hasan per al-Albani) is the one entry not in the verifier's sources and
+  is marked `checked: false`. English is a plain rendering of the Arabic shown.
+- **Wisdom (81)** and **facts (115)**: each names its author/work or study. Known misattributions
+  and non-replicating findings are deliberately absent (listed at the top of each file).
+- **Words**: 30+ per level per language (French B1: 90, with the B1 connectors used in an oral
+  presentation), every noun with its article, every example with an English translation, pinyin
+  for Chinese. Chinese levels map to HSK 1–6 (shown as "B1 · ≈HSK 3").
+- **`scripts/verify_daily.py`** re-downloads the sources and checks every Arabic verse and hadith
+  word for word, every verse's English against Saheeh International, and every grade. It is
+  negative-tested (a changed word, a wrong number, a wrong grade and a non-SI word are all caught)
+  and refuses to pass if it parsed nothing. Run it after any content change (not in CI: network).
+
+**Decision — selection:** `pickForDay(items, day, salt)` in `src/lib/daily.ts` (pure, tested):
+each item once per cycle of `items.length` days, a new shuffled order every cycle, never the same
+item two days running, derived only from the DateKey — so laptop and iPhone show the same verse.
+
+**Decision — presentation:** one card, one kind at a time behind five icon tabs (arrow keys
+work). **Laptop:** the top of Today's side column — tasks do not move down. **Phone:** a single
+folded line under the intention (icon, label, one-line preview); tapping opens it, and open/folded
+is remembered per device (localStorage, like ADR-022's dismissals). Arabic in **Amiri Quran**,
+self-hosted, Arabic subset, woff2 only (45 KB); end-of-ayah marks with Arabic-Indic numbers kept
+with their last word. "Say it" buttons use the device's own speech voices and appear only when a
+voice for the language exists. The card's content is a lazy chunk (41 KB gzip); each language's
+words load only when chosen.
+
+**Decision — settings (schema v6):** `Settings.daily` — five switches, "English meaning under the
+Arabic", word language and level; default all on, French B1. Synced as part of `settings:shared`
+(one last-writer-wins bundle, as before: a phone still on v5 during the upgrade window can reset
+the choices to defaults, never data).
+
+**Rejected:** fetching from Quran/hadith APIs at runtime (offline-first and private, ADR-002/012);
+bundling the whole Quran (2 MB, and random ayahs out of context read badly); typing Arabic by hand
+(one wrong mark in the Quran is not acceptable — everything is copied and verified); the KFGQPC
+text as-is (wrong marks in Amiri and system fonts); Tanzil's "Uthmani minimal" text (drops marks a
+reader of the mushaf expects); a fresh random pick on every load (changes on refresh and differs
+between devices); showing all five at once (too tall on a phone); auto-rotating slides (motion
+that distracts).

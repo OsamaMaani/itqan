@@ -28,6 +28,10 @@ script in `index.html` to avoid a flash.
 Plus Jakarta Sans Variable, self-hosted. Headings `font-extrabold tracking-tight`; section
 labels `text-[13px] uppercase tracking-wider text-muted`; numbers use `.tabular`.
 
+**Arabic** (Quran, hadith, Arabic sayings): `font-quran` = Amiri Quran, self-hosted Arabic subset,
+`dir="rtl" lang="ar"`, `leading-[2]` so stacked marks never collide. Never set Quranic text in
+the UI font or a system font — they draw open tanween and small high letters wrongly (ADR-023).
+
 ## Shape and depth
 
 Cards `rounded-2xl`, modals `rounded-3xl` (bottom sheet on phones), buttons `rounded-xl`.
@@ -64,6 +68,9 @@ Shadows are near-invisible; the primary button gets a coloured glow.
   nothing waits for the previous page to leave. Do not reintroduce `AnimatePresence mode="wait"`
   around routes.
 - **Touch has no HTML5 drag** — every drag interaction needs a tap alternative (◀ ▶ on board cards).
+- **Daily content never pushes tasks down** (ADR-023): on a laptop the daily card heads the side
+  column; on a phone it is one folded line until tapped. Add new "of the day" content there, as a
+  tab, not as another card.
 - Verify any UI change at 375 px (iPhone), 768 px and 1280 px, light and dark, including its dialogs.
 
 ## Copy
