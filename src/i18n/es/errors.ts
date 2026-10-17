@@ -1,0 +1,26 @@
+import type { Messages } from '../core'
+
+export const errors: Messages['errors'] = {
+  notJson: 'Ese archivo no es un JSON válido.',
+  notBackup: 'Ese archivo no es una copia de seguridad de Itqan.',
+  newerBackup: 'Esta copia de seguridad es de una versión más reciente de Itqan. Actualiza la app primero.',
+  damagedBackup: 'La copia de seguridad está dañada: falta «{field}».',
+  wrongPassphrase: 'Frase de contraseña incorrecta: no coincide con la que usaste en tu otro dispositivo.',
+  syncNotJson: 'El archivo de sincronización está dañado (no es JSON).',
+  syncNotItqan: 'El archivo de sincronización no es de Itqan.',
+  syncShape: 'El archivo de sincronización tiene una estructura inesperada.',
+  syncNewer: 'Tu otro dispositivo usa una versión más reciente de Itqan. Actualiza primero este (en el portátil: ejecuta install_local.sh).',
+  syncSettle: 'No se pudo llegar a un acuerdo con el otro dispositivo; se reintentará en breve.',
+  syncRepoFile: 'El repositorio tiene un itqan-sync.json que no es un archivo de sincronización de Itqan.',
+  offline: 'Sin conexión: se sincronizará cuando vuelva la conexión.',
+  tokenRejected: 'GitHub ha rechazado el token. Comprueba que lo has copiado entero y que no ha caducado.',
+  cantSeeRepo: 'No se puede ver {repo}. Revisa los nombres y que el token tenga acceso a este repositorio.',
+  githubStatus: 'GitHub ha respondido con el código {status}.',
+  githubStatusReading: 'GitHub ha respondido con el código {status} al leer.',
+  githubStatusSaving: 'GitHub ha respondido con el código {status} al guardar.',
+  repoPublic: '{repo} es público. Hazlo privado primero: tus datos no deben estar en un repositorio público, aunque estén cifrados.',
+  tokenReadOnly: 'El token puede leer pero no escribir. Dale el permiso «Contents: Read and write».',
+  tokenExpired: 'GitHub ha rechazado el token: puede que haya caducado. Crea uno nuevo y vuelve a conectar.',
+  changedElsewhere: 'Ha cambiado en otro dispositivo mientras tanto.',
+  tokenCantWrite: 'El token no puede escribir en el repositorio. Dale el permiso «Contents: Read and write».',
+}

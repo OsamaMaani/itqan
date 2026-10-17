@@ -1,0 +1,25 @@
+import type { Messages } from '../core'
+
+export const insights: Messages['insights'] = {
+  subtitle: '你的时间和精力花在了哪里——以及你已经走了多远。',
+  rangeShort: '{n} 天',
+  level: '等级',
+  levelProgress: '{into} / {needed} XP · 累计 {total} XP',
+  tasksCompleted: '已完成任务',
+  focusedAllTime: '累计专注',
+  bestStreak: '习惯最长连续天数',
+  activeDays: '连续活跃天数',
+  xpPerDay: '每日 XP',
+  xpInRange: { other: '{n} 天共 {xp} XP' },
+  xpTip: '{date} · {xp} XP',
+  balance: '各领域平衡',
+  noAreas: '在设置中创建领域，即可查看平衡情况。',
+  areaLine: '{tasks} · {habitDays} · {focus}',
+  tasks: { other: '{n} 个任务' },
+  habitDays: { other: '习惯 {n} 天' },
+  consistency: '习惯坚持度 · {n} 天',
+  noHabits: '还没有习惯。',
+  activity: '活跃度 · 近 6 个月',
+  activityTip: '{date}：{xp} XP',
+  badges: '徽章 · {unlocked}/{total}',
+}

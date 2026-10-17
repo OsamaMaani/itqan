@@ -463,8 +463,11 @@ verbal nouns for actions; punctuation and spacing rules; a shared glossary) in
 `memory/10-localization.md`; automated checks in `src/i18n/__tests__/catalogs.test.ts`
 (completeness, no stale keys, placeholder parity, every plural form a count 0–1000 can hit,
 per-language typography, leftover English, the quick-add examples parse, daily content complete);
-then one translator and one *independent* reviewer per language, each reviewer checking against
-the guide plus the language's established style guides, with findings applied as exact edits.
+then one translator per language. **Not yet done:** the planned *independent* reviewer per
+language (checking against the guide and the language's established style guides) was started
+but stopped before it finished, at the owner's request to ship what was complete — the
+translations so far pass only the automated checks. A native-speaker or reviewer pass per
+language is the follow-up (S2-23).
 
 **Rejected:** a runtime i18n library (react-intl/i18next — Intl plus 200 lines covers it, typed);
 English-keyed message strings in code (no compile-time completeness); Arabic-Indic digits in the

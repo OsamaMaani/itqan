@@ -1,0 +1,26 @@
+import type { Messages } from '../core'
+
+export const errors: Messages['errors'] = {
+  notJson: 'Ce fichier n’est pas un JSON valide.',
+  notBackup: 'Ce fichier n’est pas une sauvegarde Itqan.',
+  newerBackup: 'Cette sauvegarde vient d’une version plus récente d’Itqan. Mets d’abord l’application à jour.',
+  damagedBackup: 'La sauvegarde est endommagée\u00a0: il manque «\u202f{field}\u202f».',
+  wrongPassphrase: 'Phrase secrète incorrecte — elle ne correspond pas à celle utilisée sur ton autre appareil.',
+  syncNotJson: 'Le fichier de synchronisation est endommagé (ce n’est pas du JSON).',
+  syncNotItqan: 'Ce fichier de synchronisation ne vient pas d’Itqan.',
+  syncShape: 'Le fichier de synchronisation a une structure inattendue.',
+  syncNewer: 'Ton autre appareil utilise une version plus récente d’Itqan. Mets d’abord celui-ci à jour (sur l’ordinateur portable\u00a0: lance install_local.sh).',
+  syncSettle: 'Impossible de se mettre d’accord avec l’autre appareil\u202f; nouvel essai dans un instant.',
+  syncRepoFile: 'Le dépôt contient un fichier itqan-sync.json qui n’est pas un fichier de synchronisation Itqan.',
+  offline: 'Hors ligne — la synchronisation reprendra au retour de la connexion.',
+  tokenRejected: 'GitHub a refusé le jeton. Vérifie que tu l’as copié en entier et qu’il n’a pas expiré.',
+  cantSeeRepo: 'Impossible de voir {repo}. Vérifie les noms, et que le jeton a bien accès à ce dépôt.',
+  githubStatus: 'GitHub a répondu {status}.',
+  githubStatusReading: 'GitHub a répondu {status} pendant la lecture.',
+  githubStatusSaving: 'GitHub a répondu {status} pendant l’enregistrement.',
+  repoPublic: '{repo} est public. Rends-le d’abord privé — tes données ne doivent pas se trouver dans un dépôt public, même chiffrées.',
+  tokenReadOnly: 'Le jeton peut lire mais pas écrire. Donne-lui «\u202fContents\u00a0: Read and write\u202f».',
+  tokenExpired: 'GitHub a refusé le jeton — il a peut-être expiré. Crée-en un nouveau et reconnecte-toi.',
+  changedElsewhere: 'Modifié entre-temps sur un autre appareil.',
+  tokenCantWrite: 'Le jeton ne peut pas écrire dans le dépôt. Donne-lui «\u202fContents\u00a0: Read and write\u202f».',
+}

@@ -4,6 +4,7 @@
   "updated": "2026-10-17",
   "current_stage": 4,
   "next_actions": [
+    "In Settings → Profile, pick your interface language (it follows you to your other devices). If a phrase reads oddly in Arabic, French, Chinese or Spanish, note it — S2-23 is the review pass.",
     "On the laptop: git pull, then re-run scripts/install_local.sh (it installs new dependencies itself now). Then open Itqan on the iPhone once so it updates (data format v6) and syncs again.",
     "Look at the new daily card on Today; in Settings → Daily card, choose the word's language and level and switch off anything you don't want.",
     "Record this year's achievements so far; check the suggestions Itqan offers."
@@ -282,14 +283,21 @@
         },
         {
           "id": "S2-07",
-          "title": "Arabic interface with RTL (if Q2 says yes)",
+          "title": "Five interface languages: English, Arabic (RTL), French, Chinese, Spanish (ADR-024)",
           "module": "settings",
-          "status": "todo"
+          "status": "done",
+          "critical": true
         },
         {
           "id": "S2-12",
           "title": "Photos in memories (IndexedDB storage + backup) — if Q7 says yes",
           "module": "memories",
+          "status": "todo"
+        },
+        {
+          "id": "S2-23",
+          "title": "Independent review of each translation against its language guide (memory/10-localization.md), then fixes",
+          "module": "settings",
           "status": "todo"
         }
       ]
@@ -478,8 +486,8 @@
     },
     {
       "id": "Q2",
-      "title": "Arabic interface?",
-      "blocks": "S2-07",
+      "title": "~~Arabic interface?~~ answered: five languages (ADR-024)",
+      "blocks": "—",
       "owner": "Owner"
     },
     {
@@ -514,6 +522,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-17",
+      "entry": "S2-07: Itqan in English, Arabic (right to left), French, Chinese and Spanish (ADR-024, schema v7) — every screen, quick add (day words per language, tested), and the daily card (published Quran meanings for French/Spanish/Chinese, verified; hadith, wisdom, facts and 1,000 word meanings translated). Automated translation checks for completeness, placeholders, plural forms, typography and leftover English all pass. The independent per-language review was stopped before it finished and is follow-up S2-23."
+    },
     {
       "date": "2026-10-17",
       "entry": "S2-00 follow-up: install_local.sh now runs `npm ci` whenever package-lock.json is newer than npm's record of the last install, so `git pull` + the script is the whole update — before, a pull that added a package (ADR-023's font) broke the build until a manual `npm install`. `npm ci`, not `npm install`: it never rewrites tracked files that would block the next pull. Checked: up to date → skipped; changed lockfile → installed; checkout stays clean."

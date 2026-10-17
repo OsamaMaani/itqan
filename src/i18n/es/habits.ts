@@ -1,0 +1,42 @@
+import type { Messages } from '../core'
+
+export const habits: Messages['habits'] = {
+  everyDay: 'Todos los días',
+  timesAWeek: { one: '{n} vez por semana', other: '{n} veces por semana' },
+  subtitle: 'Acciones pequeñas y constantes. Toca cualquier día para marcarlo; también puedes completar los días que se te olvidaron.',
+  newHabit: 'Nuevo hábito',
+  emptyTitle: 'Aún no hay hábitos',
+  emptyBody: 'Empieza por uno que puedas cumplir incluso en un mal día: 5 minutos de francés, 1 página de Corán.',
+  editHabit: 'Editar hábito',
+  targetPerDay: '{target} {unit}/día',
+  dayStreak: 'días de racha',
+  weekStreak: 'semanas de racha',
+  best: 'récord',
+  last30: '30 días',
+  dayTip: '{date}',
+  dayTipAmount: '{date} — {amount} {unit}',
+  heatTip: '{date}: {amount} {unit}',
+  tile: {
+    done: 'Hecho',
+    tapToComplete: 'Toca para completar',
+    progress: '{amount}/{target} {unit}',
+    thisWeek: '{met}/{times} esta semana',
+    // "Días de racha: {n}" reads right for any count (the source is not a plural).
+    streakDays: 'Días de racha: {n}',
+    streakWeeks: 'Semanas de racha: {n}',
+  },
+  editor: {
+    editTitle: 'Editar hábito',
+    newTitle: 'Nuevo hábito',
+    create: 'Crear hábito',
+    deleteConfirm: '¿Eliminar «{name}» y todo su historial?',
+    namePlaceholder: 'p. ej., Repasar el Corán',
+    howOften: 'Frecuencia',
+    specificDays: 'Días concretos',
+    xTimesAWeek: 'X veces por semana',
+    timesPerWeek: 'veces por semana',
+    dailyTarget: 'Meta diaria',
+    targetHint: 'deja 1 para marcarlo sin más',
+    unitPlaceholder: 'unidad (páginas, min, juz…)',
+  },
+}
