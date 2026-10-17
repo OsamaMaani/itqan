@@ -28,6 +28,12 @@ script in `index.html` to avoid a flash.
 Plus Jakarta Sans Variable, self-hosted. Headings `font-extrabold tracking-tight`; section
 labels `text-[13px] uppercase tracking-wider text-muted`; numbers use `.tabular`.
 
+**Interface languages (ADR-024):** Arabic UI text uses Vazirmatn (self-hosted Arabic subset,
+in the `--font-sans` stack after Plus Jakarta Sans); Chinese uses the system CJK fonts. In Arabic
+and Chinese, `tracking-*` and `italic` are neutralised by CSS — never add per-language classes.
+Layout uses logical utilities (`ms-/me-/ps-/pe-/start-/end-/text-start`) so it mirrors in RTL;
+pointing icons get `rtl:-scale-x-100`.
+
 **Arabic** (Quran, hadith, Arabic sayings): `font-quran` = Amiri Quran, self-hosted Arabic subset,
 `dir="rtl" lang="ar"`, `leading-[2]` so stacked marks never collide. Never set Quranic text in
 the UI font or a system font — they draw open tanween and small high letters wrongly (ADR-023).
@@ -74,6 +80,10 @@ Shadows are near-invisible; the primary button gets a coloured glow.
 - Verify any UI change at 375 px (iPhone), 768 px and 1280 px, light and dark, including its dialogs.
 
 ## Copy
+
+Written in English first, then translated; per-language rules and the glossary are in
+`10-localization.md`.
+
 
 Short, warm, never guilt-tripping: "A clear day", "one at a time", "Your first 25 minutes are the
 hardest. Start small." Buttons name the action ("Add task", "Create habit", "Log 5 pages").

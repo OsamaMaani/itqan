@@ -328,7 +328,12 @@ export interface Settings {
   onboarded: boolean
   /** The daily card on Today (ADR-023). Synced across devices. */
   daily: DailySettings
+  /** Interface language (ADR-024). Synced across devices. */
+  language: UiLanguage
 }
+
+export const UI_LANGUAGES = ['en', 'ar', 'fr', 'zh', 'es'] as const
+export type UiLanguage = (typeof UI_LANGUAGES)[number]
 
 export const WORD_LANGUAGES = ['fr', 'en', 'de', 'es', 'zh'] as const
 export type WordLanguage = (typeof WORD_LANGUAGES)[number]

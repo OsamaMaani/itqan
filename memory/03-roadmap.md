@@ -24,7 +24,7 @@ Driven by the owner's first one to two weeks of feedback. Candidates, in rough p
 - Skip/excuse a habit day (travel, illness) without breaking the streak (S2-04).
 - Reminders at chosen times via notifications (S2-05).
 - Code-split pages to cut first-load size (S2-06).
-- Arabic interface with RTL (S2-07) — depends on Q2.
+- ~~Arabic interface with RTL (S2-07)~~ — done 2026-10-17 as five languages (ADR-024).
 
 ## Stage 3 — Learning companions
 Purpose-built trackers for what the owner actually studies:

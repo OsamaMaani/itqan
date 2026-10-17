@@ -1,0 +1,36 @@
+import type { Messages } from '../core'
+
+export const memories: Messages['memories'] = {
+  subtitleCount: { one: '{n} momento guardado', other: '{n} momentos guardados' },
+  subtitleEmpty: 'Los momentos que merece la pena guardar, grandes y pequeños.',
+  newMemory: 'Nuevo recuerdo',
+  onThisDay: 'Un día como hoy',
+  yearsAgo: { one: 'Hace un año', other: 'Hace {n} años' },
+  onThisDayMeta: '{ago} · {year}',
+  rememberThis: '¿Te acuerdas?',
+  anotherMemory: 'Otro recuerdo',
+  rediscoverMeta: '{date} · {ago}',
+  searchPlaceholder: 'Buscar recuerdos',
+  favourites: 'Favoritos',
+  emptyTitle: 'Tu primer recuerdo',
+  emptyBody: 'Un viaje, una conversación, terminar un juz, un pequeño logro en el gimnasio: escríbelo mientras está fresco. Dentro de unos años te alegrarás de haberlo hecho.',
+  noMatchTitle: 'No hay coincidencias',
+  noMatchBody: 'Prueba con otra palabra o etiqueta.',
+  dateWithWeekday: '{weekday}, {date}',
+  removeFavourite: 'Quitar de favoritos',
+  addFavourite: 'Añadir a favoritos',
+
+  editor: {
+    title: 'Recuerdo',
+    newTitle: 'Nuevo recuerdo',
+    keep: 'Guardar este recuerdo',
+    saved: 'Recuerdo guardado · +5 XP',
+    deleted: 'Recuerdo eliminado',
+    titlePlaceholder: '¿Qué pasó?',
+    story: 'La historia',
+    storyPlaceholder: 'Quién estaba, qué se dijo, cómo te sentiste…',
+    when: 'Cuándo',
+    tagsHint: 'separadas por comas',
+    tagsPlaceholder: 'familia, viajes, ramadán',
+  },
+}

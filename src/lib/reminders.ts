@@ -1,7 +1,8 @@
 import {
   addDays, addMonths, addYears, differenceInCalendarDays, differenceInCalendarMonths,
-  differenceInCalendarYears, format,
+  differenceInCalendarYears,
 } from 'date-fns'
+import { tx, type I18n } from '../i18n/core'
 import { fromKey, toKey } from './date'
 import type { DateKey, Reminder } from './types'
 
@@ -21,22 +22,17 @@ export const REMINDER_ALL_DAY_TIME = '09:00'
 /** A missed alert (computer asleep or off) still fires if it is at most this late. */
 export const GRACE_MS = 12 * 60 * 60 * 1000
 
-export const ALERT_OPTIONS: { minutes: number; label: string }[] = [
-  { minutes: 0, label: 'At the time' },
-  { minutes: 15, label: '15 min before' },
-  { minutes: 60, label: '1 hour before' },
-  { minutes: 1440, label: '1 day before' },
-  { minutes: 4320, label: '3 days before' },
-  { minutes: 10080, label: '1 week before' },
-]
+/** Alert choices, in minutes before the reminder. */
+export const ALERT_MINUTES = [0, 15, 60, 1440, 4320, 10080]
 
-export function alertLabel(min: number, allDay: boolean): string {
-  if (min === 0) return allDay ? 'On the day' : 'At the time'
-  return ALERT_OPTIONS.find((o) => o.minutes === min)?.label ?? `${min} min before`
-}
-
-export const REPEAT_LABEL: Record<Reminder['repeat'], string> = {
-  none: 'Once', daily: 'Every day', weekly: 'Every week', monthly: 'Every month', yearly: 'Every year',
+/** "At the time", "15 min before", "1 day before", "1 week before"… in the interface language. */
+export function alertLabel(min: number, allDay: boolean, t: I18n = tx()): string {
+  const a = t.m.reminders.alert
+  if (min === 0) return allDay ? a.onTheDay : a.atTheTime
+  if (min % 10080 === 0) return t.p(a.weeksBefore, min / 10080)
+  if (min % 1440 === 0) return t.p(a.daysBefore, min / 1440)
+  if (min % 60 === 0) return t.p(a.hoursBefore, min / 60)
+  return t.p(a.minutesBefore, min)
 }
 
 /** The local Date of the reminder on a given day. */
@@ -111,16 +107,18 @@ export interface ScheduledAlert {
   urgent: boolean
 }
 
-export function whenText(r: Reminder, occurrence: DateKey, now: Date): string {
-  const days = differenceInCalendarDays(fromKey(occurrence), now)
-  const time = r.time ? ` at ${r.time}` : ''
-  const rel = days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : days === -1 ? 'Yesterday'
-    : days > 1 ? `In ${days} days` : `${-days} days ago`
-  return `${rel}${time} · ${format(fromKey(occurrence), 'EEE, MMM d')}`
+/** "Tomorrow at 9:00 AM · Sat, Oct 17" in the interface language. */
+export function whenText(r: Reminder, occurrence: DateKey, now: Date, t: I18n = tx()): string {
+  return `${relWhen(r, occurrence, now, t)} · ${t.d(occurrence, 'weekdayShort')}`
+}
+
+function relWhen(r: Reminder, occurrence: DateKey, now: Date, t: I18n): string {
+  const rel = t.relDay(differenceInCalendarDays(fromKey(occurrence), now))
+  return r.time ? t.f(t.m.reminders.whenAt, { when: rel, time: t.time(r.time) }) : rel
 }
 
 /** Every alert due between (now − grace) and (now + horizon), for the desktop helper. */
-export function buildSchedule(reminders: Reminder[], now: Date, horizonDays = 400): ScheduledAlert[] {
+export function buildSchedule(reminders: Reminder[], now: Date, horizonDays = 400, t: I18n = tx()): ScheduledAlert[] {
   const t0 = now.getTime() - GRACE_MS
   const t1 = now.getTime() + horizonDays * 86_400_000
   const out: ScheduledAlert[] = []
@@ -138,13 +136,12 @@ export function buildSchedule(reminders: Reminder[], now: Date, horizonDays = 40
         // Never "catch up" on alerts from before the reminder existed.
         if (fireAt < Date.parse(r.createdAt)) continue
         const years = yearsOn(r, occ)
-        const lead = before === 0 ? (r.time ? 'Now' : 'Today') : whenText(r, occ, new Date(fireAt)).split(' · ')[0]
+        const lead = before === 0 ? (r.time ? t.m.reminders.now : t.m.time.today) : relWhen(r, occ, new Date(fireAt), t)
         out.push({
           key: `${r.id}|${occ}|${before}`,
           fireAt,
           title: `${r.emoji ? `${r.emoji} ` : ''}${r.title}`,
-          body: [`${lead}${r.time && before !== 0 ? ` at ${r.time}` : ''} · ${format(fromKey(occ), 'EEE, MMM d')}`,
-            years ? `${years} year${years === 1 ? '' : 's'}` : '', r.notes].filter(Boolean).join('\n'),
+          body: [`${lead} · ${t.d(occ, 'weekdayShort')}`, years ? t.p(t.m.reminders.years, years) : '', r.notes].filter(Boolean).join('\n'),
           urgent: r.important,
         })
       }

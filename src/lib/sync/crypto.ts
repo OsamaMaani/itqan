@@ -1,3 +1,4 @@
+import { tx } from '../../i18n/core'
 /**
  * End-to-end encryption for the sync file (ADR-016): AES-256-GCM with a key derived from the
  * passphrase by PBKDF2-SHA-256 (600,000 iterations, random 16-byte salt). GitHub only ever
@@ -49,7 +50,7 @@ export async function encrypt(plaintext: string, keyB64: string, saltB64: string
 }
 
 export class WrongPassphrase extends Error {
-  constructor() { super('Wrong passphrase — it does not match the one used on your other device.') }
+  constructor() { super(tx().m.errors.wrongPassphrase) }
 }
 
 export async function decrypt(env: Envelope, keyB64: string): Promise<string> {

@@ -84,8 +84,9 @@ a Ctrl+K command bar with natural-language quick add, XP/levels/achievements, ba
 installable PWA. Since then (Stage 2): a no-server local app with an app-menu launcher (ADR-012),
 and Memories, Ideas and Reminders with desktop notifications via a local helper service
 (ADR-013), encrypted sync between laptop and iPhone through a private GitHub repo (ADR-016), and Projects
-and Connections (ADR-018, ADR-019), project boards (ADR-020), Achievements (ADR-022) and the daily
-card — verse, hadith, word, wisdom, fact (ADR-023; schema v6).
+and Connections (ADR-018, ADR-019), project boards (ADR-020), Achievements (ADR-022) the daily
+card — verse, hadith, word, wisdom, fact (ADR-023), and five interface languages — English,
+Arabic (RTL), French, Chinese, Spanish (ADR-024; schema v7; rules in `memory/10-localization.md`).
 `memory/status.json` and `dashboard/index.html` are the live answer — this
 paragraph is a snapshot and will lag them.
 

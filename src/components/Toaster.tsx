@@ -18,7 +18,7 @@ export function Toaster() {
             {t.emoji && <span className="text-lg">{t.emoji}</span>}
             <span>{t.message}</span>
             {t.action && (
-              <button onClick={() => { t.action!.run(); dismiss(t.id) }} className="ml-2 rounded-lg bg-bg/15 px-2.5 py-1 text-xs font-bold hover:bg-bg/25">
+              <button onClick={() => { t.action!.run(); dismiss(t.id) }} className="ms-2 rounded-lg bg-bg/15 px-2.5 py-1 text-xs font-bold hover:bg-bg/25">
                 {t.action.label}
               </button>
             )}

@@ -15,6 +15,7 @@ A **local-first, installable web app** (PWA). One codebase, no server.
  │                        localStorage "itqan-store"        │
  │  pure logic: lib/habits.ts · goals.ts · gamification.ts  │
  │              quickAdd.ts · date.ts                        │
+ │  text: i18n/ (catalogs, Intl formatting, RTL) ADR-024     │
  │  service worker (vite-plugin-pwa) → works offline        │
  └──────────────────────────────────────────────────────────┘
          ▲ deploy: GitHub Actions → GitHub Pages (static)
@@ -32,7 +33,8 @@ A **local-first, installable web app** (PWA). One codebase, no server.
 | Animation | `motion` (Framer Motion) 14, `canvas-confetti` |
 | Icons | `lucide-react` |
 | Dates | `date-fns` 4 |
-| Font | Plus Jakarta Sans (self-hosted via @fontsource, so offline works) |
+| Font | Plus Jakarta Sans; Vazirmatn (Arabic UI); Amiri Quran (verses) — all self-hosted via @fontsource, so offline works |
+| Languages | `src/i18n/`: typed catalogs (en source; ar, fr, zh, es loaded on demand) + `Intl` for dates, numbers and plurals (ADR-024, `10-localization.md`) |
 | PWA | `vite-plugin-pwa` (auto-updating service worker) |
 | Tests | Vitest 5 |
 

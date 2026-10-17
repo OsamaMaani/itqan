@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { useI18n } from '../i18n/react'
 import { addDaysKey, fromKey, weekStartKey } from '../lib/date'
 import type { DateKey } from '../lib/types'
 
@@ -12,16 +12,18 @@ export function Heatmap({ end, weeks = 18, weekStartsOn, value, color = 'var(--a
   cell?: number
   label?: (day: DateKey, v: number | null) => string
 }) {
+  const t = useI18n()
   const start = addDaysKey(weekStartKey(end, weekStartsOn), -(weeks - 1) * 7)
   const gap = 3
   const cols = Array.from({ length: weeks }, (_, w) => Array.from({ length: 7 }, (_, d) => addDaysKey(start, w * 7 + d)))
+  // Weeks are placed by absolute coordinates, oldest to newest, so the grid stays left to right even in Arabic.
   return (
-    <div className="overflow-x-auto">
+    <div dir="ltr" className="overflow-x-auto">
       <svg width={weeks * (cell + gap)} height={7 * (cell + gap) + 14} className="block">
         {cols.map((days, w) => (
           <g key={w} transform={`translate(${w * (cell + gap)}, 14)`}>
             {fromKey(days[0]).getDate() <= 7 && (
-              <text y={-4} className="fill-[var(--muted)] text-[9px] font-semibold">{format(fromKey(days[0]), 'MMM')}</text>
+              <text y={-4} className="fill-[var(--muted)] text-[9px] font-semibold">{t.d(days[0], 'monthShort')}</text>
             )}
             {days.map((k, d) => {
               const future = k > end
@@ -36,7 +38,7 @@ export function Heatmap({ end, weeks = 18, weekStartsOn, value, color = 'var(--a
                   fill={v && v > 0 ? color : 'var(--surface-2)'}
                   fillOpacity={v && v > 0 ? 0.25 + 0.75 * Math.min(1, v) : future ? 0.3 : 1}
                 >
-                  <title>{label ? label(k, v) : `${format(fromKey(k), 'EEE, MMM d')}`}</title>
+                  <title>{label ? label(k, v) : t.d(k, 'weekdayShort')}</title>
                 </rect>
               )
             })}

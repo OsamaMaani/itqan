@@ -1,0 +1,25 @@
+import type { Messages } from '../core'
+
+export const insights: Messages['insights'] = {
+  subtitle: 'En qué se han ido tu tiempo y tu energía, y cuánto has avanzado.',
+  rangeShort: '{n} d',
+  level: 'Nivel',
+  levelProgress: '{into} / {needed} XP · {total} XP en total',
+  tasksCompleted: 'tareas completadas',
+  focusedAllTime: 'de concentración en total',
+  bestStreak: 'mejor racha de un hábito',
+  activeDays: 'días activos seguidos',
+  xpPerDay: 'XP por día',
+  xpInRange: { one: '{xp} XP en {n} día', other: '{xp} XP en {n} días' },
+  xpTip: '{date} · {xp} XP',
+  balance: 'Equilibrio entre áreas',
+  noAreas: 'Crea áreas en Ajustes para ver tu equilibrio.',
+  areaLine: '{tasks} · {habitDays} · {focus}',
+  tasks: { one: '{n} tarea', other: '{n} tareas' },
+  habitDays: { one: '{n} día de hábito', other: '{n} días de hábito' },
+  consistency: 'Constancia en los hábitos · {n} d',
+  noHabits: 'Aún no hay hábitos.',
+  activity: 'Actividad · últimos 6 meses',
+  activityTip: '{date}: {xp} XP',
+  badges: 'Insignias · {unlocked}/{total}',
+}

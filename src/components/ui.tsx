@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { ChevronDown, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { useEffect, useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
+import { useI18n } from '../i18n/react'
 import { AREA_HEX } from '../lib/colors'
 import type { Area } from '../lib/types'
 
@@ -70,8 +71,8 @@ export function Textarea({ className, ...rest }: TextareaHTMLAttributes<HTMLText
 export function Select({ className, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <div className="relative">
-      <select className={cx(field, 'h-10 w-full appearance-none pr-9', className)} {...rest} />
-      <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
+      <select className={cx(field, 'h-10 w-full appearance-none pe-9', className)} {...rest} />
+      <ChevronDown size={16} className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-muted" />
     </div>
   )
 }
@@ -186,6 +187,7 @@ export function Modal({ open, onClose, title, children, footer, wide }: {
   footer?: ReactNode
   wide?: boolean
 }) {
+  const { m } = useI18n()
   useEffect(() => {
     if (!open) return
     const on = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -222,7 +224,7 @@ export function Modal({ open, onClose, title, children, footer, wide }: {
           >
             <div className="flex shrink-0 items-center justify-between gap-4 px-5 pb-3 pt-5">
               <h3 className="text-lg font-bold">{title}</h3>
-              <IconButton label="Close" onClick={onClose}><X size={18} /></IconButton>
+              <IconButton label={m.common.close} onClick={onClose}><X size={18} /></IconButton>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-5">{children}</div>
             {footer && (

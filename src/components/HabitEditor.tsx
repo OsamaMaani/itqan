@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { WEEKDAY_SHORT } from '../lib/date'
+import { useI18n } from '../i18n/react'
 import { useStore } from '../lib/store'
 import type { Habit, HabitSchedule } from '../lib/types'
 import { AreaPicker } from './AreaPicker'
@@ -10,6 +10,8 @@ type Draft = Pick<Habit, 'name' | 'emoji' | 'areaId' | 'schedule' | 'target' | '
 const blank: Draft = { name: '', emoji: '✨', areaId: null, schedule: { type: 'daily' }, target: 1, unit: '' }
 
 export function HabitEditor({ open, onClose, habit }: { open: boolean; onClose: () => void; habit?: Habit }) {
+  const t = useI18n()
+  const { m } = t
   const add = useStore((s) => s.addHabit)
   const update = useStore((s) => s.updateHabit)
   const remove = useStore((s) => s.deleteHabit)
@@ -27,45 +29,45 @@ export function HabitEditor({ open, onClose, habit }: { open: boolean; onClose: 
   }
 
   const s = d.schedule
-  const setType = (t: HabitSchedule['type']) =>
-    set('schedule', t === 'daily' ? { type: 'daily' } : t === 'days' ? { type: 'days', days: [0, 1, 2, 3, 4] } : { type: 'weekly', times: 3 })
+  const setType = (kind: HabitSchedule['type']) =>
+    set('schedule', kind === 'daily' ? { type: 'daily' } : kind === 'days' ? { type: 'days', days: [0, 1, 2, 3, 4] } : { type: 'weekly', times: 3 })
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={habit ? 'Edit habit' : 'New habit'}
+      title={habit ? m.habits.editor.editTitle : m.habits.editor.newTitle}
       footer={
         <>
           {habit && (
-            <Button variant="danger" className="mr-auto" onClick={() => { if (confirm(`Delete “${habit.name}” and all its history?`)) { remove(habit.id); onClose() } }}>
-              Delete
+            <Button variant="danger" className="me-auto" onClick={() => { if (confirm(t.f(m.habits.editor.deleteConfirm, { name: habit.name }))) { remove(habit.id); onClose() } }}>
+              {m.common.delete}
             </Button>
           )}
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" onClick={save} disabled={!d.name.trim()}>{habit ? 'Save' : 'Create habit'}</Button>
+          <Button variant="ghost" onClick={onClose}>{m.common.cancel}</Button>
+          <Button variant="primary" onClick={save} disabled={!d.name.trim()}>{habit ? m.common.save : m.habits.editor.create}</Button>
         </>
       }
     >
       <div className="space-y-4">
         <div className="flex gap-2">
           <EmojiInput value={d.emoji} onChange={(v) => set('emoji', v)} />
-          <Input autoFocus placeholder="e.g. Revise Quran" value={d.name} onChange={(e) => set('name', e.target.value)} onKeyDown={(e) => e.key === 'Enter' && save()} />
+          <Input autoFocus placeholder={m.habits.editor.namePlaceholder} value={d.name} onChange={(e) => set('name', e.target.value)} onKeyDown={(e) => e.key === 'Enter' && save()} />
         </div>
         <div>
-          <Label>Area</Label>
+          <Label>{m.common.area}</Label>
           <AreaPicker value={d.areaId} onChange={(v) => set('areaId', v)} />
         </div>
         <div>
-          <Label>How often</Label>
+          <Label>{m.habits.editor.howOften}</Label>
           <Segmented
             value={s.type}
             onChange={setType}
-            options={[{ value: 'daily', label: 'Every day' }, { value: 'days', label: 'Specific days' }, { value: 'weekly', label: 'X times a week' }]}
+            options={[{ value: 'daily', label: m.habits.everyDay }, { value: 'days', label: m.habits.editor.specificDays }, { value: 'weekly', label: m.habits.editor.xTimesAWeek }]}
           />
           {s.type === 'days' && (
             <div className="mt-3 flex gap-1.5">
-              {WEEKDAY_SHORT.map((n, i) => {
+              {t.weekdays('short').map((n, i) => {
                 const on = s.days.includes(i)
                 return (
                   <button
@@ -83,15 +85,15 @@ export function HabitEditor({ open, onClose, habit }: { open: boolean; onClose: 
           {s.type === 'weekly' && (
             <div className="mt-3 flex items-center gap-2 text-sm">
               <Input type="number" min={1} max={7} value={s.times} onChange={(e) => set('schedule', { type: 'weekly', times: Math.min(7, Math.max(1, Number(e.target.value) || 1)) })} className="w-20" />
-              times per week
+              {m.habits.editor.timesPerWeek}
             </div>
           )}
         </div>
         <div>
-          <Label hint="leave 1 for a simple check-off">Daily target</Label>
+          <Label hint={m.habits.editor.targetHint}>{m.habits.editor.dailyTarget}</Label>
           <div className="flex gap-2">
             <Input type="number" min={1} value={d.target} onChange={(e) => set('target', Number(e.target.value))} className="w-28" />
-            <Input placeholder="unit (pages, min, juz…)" value={d.unit} onChange={(e) => set('unit', e.target.value)} />
+            <Input placeholder={m.habits.editor.unitPlaceholder} value={d.unit} onChange={(e) => set('unit', e.target.value)} />
           </div>
         </div>
       </div>

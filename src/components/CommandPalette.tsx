@@ -2,9 +2,11 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Bell, Camera, Trophy, CornerDownLeft, Download, Lightbulb, Moon, Plus, Search, Timer } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { downloadBackup } from '../lib/backup'
+import { quickAddWords } from '../i18n/quickAddWords'
+import { rich, useI18n } from '../i18n/react'
 import { prettyDay } from '../lib/date'
 import { useToday } from '../lib/hooks'
-import { parseQuickAdd } from '../lib/quickAdd'
+import { ideaText, parseQuickAdd, quickAddExamples } from '../lib/quickAdd'
 import { navigate } from '../lib/router'
 import { snapshot, useStore } from '../lib/store'
 import { toast } from '../lib/toast'
@@ -22,6 +24,9 @@ interface Item {
 }
 
 export function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useI18n()
+  const { m } = t
+  const words = quickAddWords(t.lang)
   const [q, setQ] = useState('')
   const [sel, setSel] = useState(0)
   const today = useToday()
@@ -31,48 +36,54 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
 
   useEffect(() => { if (open) { setQ(''); setSel(0) } }, [open])
 
-  const parsed = useMemo(() => parseQuickAdd(q, areas, today, weekStartsOn, projects), [q, areas, today, weekStartsOn, projects])
+  const parsed = useMemo(() => parseQuickAdd(q, areas, today, weekStartsOn, projects, words), [q, areas, today, weekStartsOn, projects, words])
 
   const items = useMemo<Item[]>(() => {
     const st = useStore.getState()
     const list: Item[] = []
-    const ideaText = /^idea[:\s]\s*/i.test(q) ? q.replace(/^idea[:\s]\s*/i, '').trim() : ''
-    if (ideaText) {
+    const idea = ideaText(q, words)
+    if (idea) {
       list.push({
         id: 'idea', icon: <Lightbulb size={16} />, keywords: '',
-        label: <span>Save idea <b>“{ideaText}”</b></span>,
-        run: () => { st.addIdea({ title: ideaText }); toast({ emoji: '💡', message: 'Idea saved' }) },
+        label: <span>{rich(m.palette.saveIdea, { text: <b>{idea}</b> })}</span>,
+        run: () => { st.addIdea({ title: idea }); toast({ emoji: '💡', message: m.palette.ideaSaved }) },
       })
     } else if (parsed.title) {
       const date = parsed.date === undefined ? today : parsed.date
       const area = areas.find((a) => a.id === parsed.areaId)
       list.push({
         id: 'add', icon: <Plus size={16} />, keywords: '',
-        label: <span>Add task <b>“{parsed.title}”</b></span>,
-        hint: <span className="flex items-center gap-1.5">{area && <AreaChip area={area} />}{date ? prettyDay(date, today) : 'Inbox'}{parsed.priority > 0 && ` · P${parsed.priority}`}</span>,
-        run: () => { st.addTask({ title: parsed.title, areaId: parsed.areaId, projectId: parsed.projectId, priority: parsed.priority, timeOfDay: parsed.timeOfDay, estimateMin: parsed.estimateMin, date }); toast({ emoji: '✅', message: `Added “${parsed.title}”` }) },
+        label: <span>{rich(m.palette.addTask, { title: <b>{parsed.title}</b> })}</span>,
+        hint: <span className="flex items-center gap-1.5">{area && <AreaChip area={area} />}{date ? prettyDay(date, today, t) : m.tasks.inbox}{parsed.priority > 0 && ` · ${t.f(m.tasks.priority, { n: parsed.priority })}`}</span>,
+        run: () => { st.addTask({ title: parsed.title, areaId: parsed.areaId, projectId: parsed.projectId, priority: parsed.priority, timeOfDay: parsed.timeOfDay, estimateMin: parsed.estimateMin, date }); toast({ emoji: '✅', message: t.f(m.palette.taskAdded, { title: parsed.title }) }) },
       })
     }
-    for (const n of NAV) list.push({ id: `go-${n.route}`, icon: n.icon, label: `Go to ${n.label}`, keywords: `go ${n.label}`, run: () => navigate(n.route) })
+    // Search matches the localized label plus the English keywords (route names are the English page names).
+    for (const n of NAV) {
+      const label = t.f(m.palette.goTo, { page: m.nav[n.route] })
+      list.push({ id: `go-${n.route}`, icon: n.icon, label, keywords: `${label} go ${n.route}`, run: () => navigate(n.route) })
+    }
+    const focusLabel = t.f(m.palette.startFocus, { n: st.settings.focusMinutes })
     list.push({
-      id: 'focus', icon: <Timer size={16} />, label: `Start a ${st.settings.focusMinutes}-minute focus session`, keywords: 'focus timer pomodoro start',
-      run: () => { st.startTimer({ mode: 'focus', totalMs: st.settings.focusMinutes * 60000, label: 'Focus', areaId: null, goalId: null, taskId: null }); navigate('focus') },
+      id: 'focus', icon: <Timer size={16} />, label: focusLabel, keywords: `${focusLabel} focus timer pomodoro start`,
+      run: () => { st.startTimer({ mode: 'focus', totalMs: st.settings.focusMinutes * 60000, label: m.palette.focusLabel, areaId: null, goalId: null, taskId: null }); navigate('focus') },
     })
-    list.push({ id: 'new-reminder', icon: <Bell size={16} />, label: 'New reminder', keywords: 'reminder remind date birthday new', run: () => navigate('reminders') })
-    list.push({ id: 'new-achievement', icon: <Trophy size={16} />, label: 'Record an achievement', keywords: 'achievement win accomplishment record new', run: () => { navigate('achievements'); openAchievement() } })
-    list.push({ id: 'new-memory', icon: <Camera size={16} />, label: 'Write a memory', keywords: 'memory memories journal write new', run: () => navigate('memories') })
+    list.push({ id: 'new-reminder', icon: <Bell size={16} />, label: m.palette.newReminder, keywords: `${m.palette.newReminder} reminder remind date birthday new`, run: () => navigate('reminders') })
+    list.push({ id: 'new-achievement', icon: <Trophy size={16} />, label: m.palette.recordAchievement, keywords: `${m.palette.recordAchievement} achievement win accomplishment record new`, run: () => { navigate('achievements'); openAchievement() } })
+    list.push({ id: 'new-memory', icon: <Camera size={16} />, label: m.palette.writeMemory, keywords: `${m.palette.writeMemory} memory memories journal write new`, run: () => navigate('memories') })
     list.push({
-      id: 'theme', icon: <Moon size={16} />, label: 'Toggle dark mode', keywords: 'theme dark light mode',
+      id: 'theme', icon: <Moon size={16} />, label: m.palette.toggleDark, keywords: `${m.palette.toggleDark} theme dark light mode`,
       run: () => st.updateSettings({ theme: document.documentElement.classList.contains('dark') ? 'light' : 'dark' }),
     })
     list.push({
-      id: 'backup', icon: <Download size={16} />, label: 'Download a backup', keywords: 'backup export download save',
+      id: 'backup', icon: <Download size={16} />, label: m.palette.downloadBackup, keywords: `${m.palette.downloadBackup} backup export download save`,
       run: () => { downloadBackup(snapshot(useStore.getState())); st.updateSettings({ lastBackupAt: new Date().toISOString() }) },
     })
-    const words = q.toLowerCase().split(/\s+/).filter(Boolean)
-    return list.filter((i) => i.id === 'add' || i.id === 'idea' || words.length === 0 || words.every((w) => i.keywords.toLowerCase().includes(w)))
-  }, [parsed, q, areas, today])
+    const terms = q.toLowerCase().split(/\s+/).filter(Boolean)
+    return list.filter((i) => i.id === 'add' || i.id === 'idea' || terms.length === 0 || terms.every((w) => i.keywords.toLowerCase().includes(w)))
+  }, [parsed, q, areas, today, t, m, words])
 
+  const ex = quickAddExamples(words)
   const run = (i: Item) => { i.run(); onClose() }
 
   return (
@@ -97,10 +108,10 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                   if (e.key === 'Enter' && items[sel]) run(items[sel])
                   if (e.key === 'Escape') onClose()
                 }}
-                placeholder="Type a task (“Gym tonight #gym”) or a command…"
+                placeholder={t.f(m.palette.placeholder, { example: m.palette.example })}
                 className="h-14 flex-1 bg-transparent text-base outline-none placeholder:text-muted/70"
               />
-              <Kbd>Esc</Kbd>
+              <Kbd><span dir="ltr">{m.palette.escKey}</span></Kbd>
             </div>
             <div className="max-h-[50vh] overflow-y-auto p-2">
               {items.map((i, idx) => (
@@ -108,17 +119,25 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
                   key={i.id}
                   onMouseEnter={() => setSel(idx)}
                   onClick={() => run(i)}
-                  className={cx('flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition', idx === sel ? 'bg-surface-2' : '')}
+                  className={cx('flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start text-sm transition', idx === sel ? 'bg-surface-2' : '')}
                 >
                   <span className={cx('grid size-8 place-items-center rounded-lg', idx === sel ? 'bg-accent-soft text-accent' : 'bg-surface-2 text-muted')}>{i.icon}</span>
                   <span className="flex-1">{i.label}</span>
                   {i.hint && <span className="text-xs text-muted">{i.hint}</span>}
-                  {idx === sel && <CornerDownLeft size={14} className="text-muted" />}
+                  {idx === sel && <CornerDownLeft size={14} className="text-muted rtl:-scale-x-100" />}
                 </button>
               ))}
             </div>
             <div className="border-t border-border px-4 py-2 text-[11px] text-muted">
-              <b>idea: …</b> saves an idea · <b>#area</b> · <b>+project</b> · <b>!1–!3</b> priority · <b>today / tomorrow / friday / next week / in 3 days / inbox</b> · <b>@morning</b> · <b>~30m</b>
+              {rich(m.palette.hint, {
+                idea: <b>{t.f(m.palette.ideaToken, { word: ex.idea })}</b>,
+                area: <b>#{m.quickAdd.areaToken}</b>,
+                project: <b>+{m.quickAdd.projectToken}</b>,
+                priority: <b dir="ltr">!1–!3</b>,
+                days: <b>{ex.days.join(' / ')}</b>,
+                time: <b>{ex.time}</b>,
+                estimate: <b>{ex.estimate}</b>,
+              })}
             </div>
           </motion.div>
         </div>

@@ -1,0 +1,31 @@
+import type { Messages } from '../core'
+
+export const tasks: Messages['tasks'] = {
+  inbox: 'Boîte de réception',
+  priority: 'P{n}',
+  timeOfDay: { morning: 'Matin', afternoon: 'Après-midi', evening: 'Soir', anytime: 'À tout moment' },
+  doing: 'En cours',
+  blocked: 'Bloquée',
+  focusOnThis: 'Se concentrer sur cette tâche',
+  moveToTomorrow: 'Reporter à demain',
+  deleted: 'Tâche supprimée\u00a0: «\u202f{title}\u202f»',
+  editor: {
+    editTitle: 'Modifier la tâche',
+    newTitle: 'Nouvelle tâche',
+    saveChanges: 'Enregistrer les modifications',
+    addTask: 'Ajouter la tâche',
+    titlePlaceholder: 'Que faut-il faire\u202f?',
+    when: 'Quand',
+    timeOfDay: 'Moment de la journée',
+    anyTime: 'Peu importe',
+    priority: 'Priorité',
+    estimate: 'Durée estimée',
+    minutesHint: 'minutes',
+    estimatePlaceholder: 'ex. 30',
+    goal: 'Fait avancer un objectif',
+    todo: 'À faire',
+    steps: 'Sous-tâches',
+    addStep: 'Ajouter une sous-tâche',
+    notesPlaceholder: 'Tout ce qui mérite d’être retenu',
+  },
+}

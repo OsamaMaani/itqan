@@ -1,0 +1,26 @@
+import type { Messages } from '../core'
+
+export const errors: Messages['errors'] = {
+  notJson: '该文件不是有效的 JSON。',
+  notBackup: '该文件不是 Itqan 备份。',
+  newerBackup: '这份备份来自更新版本的 Itqan。请先更新应用。',
+  damagedBackup: '备份已损坏：缺少“{field}”。',
+  wrongPassphrase: '密码短语错误——与你在另一台设备上使用的不一致。',
+  syncNotJson: '同步文件已损坏（不是 JSON）。',
+  syncNotItqan: '该同步文件不是 Itqan 的同步文件。',
+  syncShape: '同步文件的结构不符合预期。',
+  syncNewer: '你的另一台设备运行的是更新版本的 Itqan。请先更新这台设备（在笔记本电脑上：运行 install_local.sh）。',
+  syncSettle: '暂时无法与另一台设备完成同步，稍后会自动重试。',
+  syncRepoFile: '仓库中的 itqan-sync.json 不是 Itqan 同步文件。',
+  offline: '离线——恢复联网后会自动同步。',
+  tokenRejected: 'GitHub 拒绝了该令牌。请检查是否完整复制，以及令牌是否已过期。',
+  cantSeeRepo: '无法访问 {repo}。请检查名称是否正确，以及令牌是否已获得该仓库的访问权限。',
+  githubStatus: 'GitHub 返回了 {status}。',
+  githubStatusReading: '读取时 GitHub 返回了 {status}。',
+  githubStatusSaving: '保存时 GitHub 返回了 {status}。',
+  repoPublic: '{repo} 是公开仓库。请先将其设为私有——即使已加密，你的数据也不能放在公开仓库中。',
+  tokenReadOnly: '该令牌只能读取，不能写入。请授予它“Contents：读写”权限。',
+  tokenExpired: 'GitHub 拒绝了该令牌——它可能已过期。请新建一个令牌并重新连接。',
+  changedElsewhere: '其间已在另一台设备上更改。',
+  tokenCantWrite: '该令牌无法写入仓库。请授予它“Contents：读写”权限。',
+}

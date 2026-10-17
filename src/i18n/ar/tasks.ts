@@ -1,0 +1,31 @@
+import type { Messages } from '../core'
+
+export const tasks: Messages['tasks'] = {
+  inbox: 'الوارد',
+  priority: 'أولوية {n}',
+  timeOfDay: { morning: 'الصباح', afternoon: 'بعد الظهر', evening: 'المساء', anytime: 'أي وقت' },
+  doing: 'قيد التنفيذ',
+  blocked: 'عالقة',
+  focusOnThis: 'التركيز عليها',
+  moveToTomorrow: 'نقل إلى الغد',
+  deleted: 'تم حذف «{title}»',
+  editor: {
+    editTitle: 'تعديل المهمة',
+    newTitle: 'مهمة جديدة',
+    saveChanges: 'حفظ التغييرات',
+    addTask: 'إضافة مهمة',
+    titlePlaceholder: 'ما الذي يلزم إنجازه؟',
+    when: 'متى',
+    timeOfDay: 'الفترة',
+    anyTime: 'أي وقت',
+    priority: 'الأولوية',
+    estimate: 'المدة المتوقعة',
+    minutesHint: 'بالدقائق',
+    estimatePlaceholder: 'مثلًا 30',
+    goal: 'تخدم هدفًا',
+    todo: 'للتنفيذ',
+    steps: 'الخطوات',
+    addStep: 'إضافة خطوة',
+    notesPlaceholder: 'أي شيء يستحق التذكّر',
+  },
+}

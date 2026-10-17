@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
 import { useTick } from '../lib/hooks'
 import { useStore } from '../lib/store'
@@ -18,13 +19,15 @@ export function remainingMs(t: { endsAt: number | null; remainingMs: number; tot
  * screen is open — and survives a reload, because the end time is persisted.
  */
 export function TimerWatcher() {
+  const t = useI18n()
+  const { m } = t
   const timer = useStore((s) => s.timer)
   const now = useTick(500, !!timer?.endsAt)
 
   useEffect(() => {
-    if (!timer) { document.title = 'Itqan'; return }
+    if (!timer) { document.title = m.focus.appName; return }
     const left = remainingMs(timer, now)
-    document.title = `${timer.endsAt ? '▶' : '⏸'} ${mmss(left)} · ${timer.mode === 'focus' ? 'Focus' : 'Break'} — Itqan`
+    document.title = t.f(m.focus.tabTitle, { icon: timer.endsAt ? '▶' : '⏸', time: mmss(left), mode: timer.mode === 'focus' ? m.focus.state.focus : m.focus.state.break, app: m.focus.appName })
     if (timer.endsAt && left <= 0) {
       const { finishTimer, startTimer, settings, timer: live } = useStore.getState()
       // Already finished by an earlier run of this effect (StrictMode runs effects twice).
@@ -32,24 +35,24 @@ export function TimerWatcher() {
       const wasFocus = timer.mode === 'focus'
       const minutes = finishTimer(true)
       celebrate.timerDone()
-      notify(wasFocus ? `Focus done — ${minutes} min. Take a break.` : 'Break over. Ready for the next one?')
+      notify(wasFocus ? t.f(m.focus.focusDoneNotify, { n: minutes }) : m.focus.breakOverNotify, m.focus.appName)
       if (wasFocus) {
         toast({
-          emoji: '🎯', message: `${minutes} minutes of focus logged`,
-          action: { label: 'Start break', run: () => startTimer({ mode: 'break', totalMs: settings.breakMinutes * 60000, label: 'Break', areaId: null, goalId: null, taskId: null }) },
+          emoji: '🎯', message: t.p(m.focus.focusLogged, minutes),
+          action: { label: m.focus.startBreak, run: () => startTimer({ mode: 'break', totalMs: settings.breakMinutes * 60000, label: m.focus.breakLabel, areaId: null, goalId: null, taskId: null }) },
         }, 10000)
       } else {
-        toast({ emoji: '☕', message: 'Break finished' })
+        toast({ emoji: '☕', message: m.focus.breakFinished })
       }
     }
-  }, [timer, now])
+  }, [timer, now, t, m])
 
   return null
 }
 
-function notify(body: string) {
+function notify(body: string, title: string) {
   try {
-    if ('Notification' in window && Notification.permission === 'granted') new Notification('Itqan', { body, icon: 'icon-192.png' })
+    if ('Notification' in window && Notification.permission === 'granted') new Notification(title, { body, icon: 'icon-192.png' })
   } catch {
     /* notifications are optional */
   }

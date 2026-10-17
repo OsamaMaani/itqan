@@ -1,0 +1,31 @@
+import type { Messages } from '../core'
+
+export const tasks: Messages['tasks'] = {
+  inbox: '收件箱',
+  priority: 'P{n}',
+  timeOfDay: { morning: '上午', afternoon: '下午', evening: '晚上', anytime: '随时' },
+  doing: '进行中',
+  blocked: '受阻',
+  focusOnThis: '专注于此',
+  moveToTomorrow: '移到明天',
+  deleted: '已删除“{title}”',
+  editor: {
+    editTitle: '编辑任务',
+    newTitle: '新任务',
+    saveChanges: '保存更改',
+    addTask: '添加任务',
+    titlePlaceholder: '要做什么？',
+    when: '日期',
+    timeOfDay: '时段',
+    anyTime: '不限',
+    priority: '优先级',
+    estimate: '预计用时',
+    minutesHint: '分钟',
+    estimatePlaceholder: '例如 30',
+    goal: '推进的目标',
+    todo: '待办',
+    steps: '步骤',
+    addStep: '添加步骤',
+    notesPlaceholder: '值得记下的任何事',
+  },
+}

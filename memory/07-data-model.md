@@ -28,7 +28,7 @@ Zustand as `{ state: Data, version: SCHEMA_VERSION }`.
 | `contacts` | `Contact[]` | Circle, rhythm (`cadenceDays`), birthday `YYYY-MM-DD` or `MM-DD`, `birthdayReminderId` (ADR-018) |
 | `interactions` | `Interaction[]` | Check-ins with a person: kind, date, note |
 | `reminders` | `Reminder[]` | `date` = first/original occurrence; `time` null = all-day; `repeat`; `alerts` = minutes before (ADR-013) |
-| `settings` | `Settings` | Includes `onboarded`, `lastBackupAt`, and `daily` — the daily card's switches, word language and level (ADR-023). `normalize()` merges `daily` with its defaults key by key |
+| `settings` | `Settings` | Includes `onboarded`, `lastBackupAt`, `daily` — the daily card's switches, word language and level (ADR-023) — and `language`, the interface language `en`/`ar`/`fr`/`zh`/`es` (schema v7, ADR-024; synced). `normalize()` merges `daily` with its defaults key by key and falls back to `en` for an unknown language |
 
 ## The sync document (ADR-016)
 

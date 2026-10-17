@@ -13,12 +13,16 @@
     <meta name="description" content="Itqan — daily tasks, habits and long-term goals." />
     <title>Itqan</title>
     <script>
-      // Apply the saved theme before first paint so there is no light/dark flash.
+      // Apply the saved theme and language direction before first paint, so there is no
+      // light/dark flash and Arabic never flashes left-to-right.
       try {
         var s = JSON.parse(localStorage.getItem('itqan-store') || '{}');
-        var t = (s.state && s.state.settings && s.state.settings.theme) || 'system';
+        var set = (s.state && s.state.settings) || {};
+        var t = set.theme || 'system';
         var dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
         if (dark) document.documentElement.classList.add('dark');
+        var lang = { ar: 'ar', fr: 'fr-FR', zh: 'zh-CN', es: 'es-ES' }[set.language];
+        if (lang) { document.documentElement.lang = lang; if (lang === 'ar') document.documentElement.dir = 'rtl'; }
       } catch (e) {}
     </script>
   </head>

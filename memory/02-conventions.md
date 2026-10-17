@@ -16,6 +16,7 @@ correct code without reading the whole app.
 | UI primitives | `src/components/ui.tsx` | Card, Button, Input, Modal, ProgressRing… |
 | Feature components | `src/components/*.tsx` | Editors, tiles, cards shared by pages |
 | Screens | `src/pages/*.tsx` | One file per route; registered in `App.tsx` and `router.ts` |
+| Interface text | `src/i18n/<lang>/<screen>.ts` | Every visible string. English is the source; rules in `10-localization.md` |
 | Bundled content | `src/content/` | Daily card verses, hadith, wisdom, facts, word packs (ADR-023). Data only |
 
 ## Patterns
@@ -29,6 +30,10 @@ correct code without reading the whole app.
   (`TaskEditor`, `HabitEditor`, `GoalEditor`).
 - **Destructive actions** confirm (`confirm()` for single items, typed `DELETE` for wiping all),
   or offer Undo via toast (task delete).
+
+- **Any visible text**: add it to `src/i18n/en/<screen>.ts` and the four translations, read it
+  with `useI18n()` (`tx()` in lib code). Whole sentences with placeholders, plurals for counts,
+  `t.d()`/`t.n()` for dates and numbers, logical `ms-/pe-/start-` classes. `10-localization.md`.
 
 ## Naming
 
@@ -48,10 +53,16 @@ Coverage where a silent bug is unrecoverable, not everywhere:
 1. **Migrations and backups** — every schema step; backup round-trip; bad files rejected.
 2. **Habit maths** — streaks, pending today, unscheduled days, weekly quotas, completion rate.
 3. **XP and levels** — derived from history; thresholds.
-4. **Quick-add parser** — every token type, and that ordinary words stay in the title.
+4. **Quick-add parser** — every token type, and that ordinary words stay in the title, in each
+   language (ADR-024).
 5. **Daily card content** — selection (`pickForDay`) and content integrity in `daily.test.ts`.
    **Quran and hadith text is never typed by hand**: add the reference, copy the text from the
    source, and run `python3 scripts/verify_daily.py` (word-for-word check; needs the network).
+   After adding a verse, `verify_daily.py --write-meanings` regenerates its published French,
+   Spanish and Chinese meanings; cut the excerpt by hand if it is a `part` verse.
+6. **Translations** — `src/i18n/__tests__/catalogs.test.ts`: every key and plural form in every
+   language, placeholders kept, each language's typography, quick-add examples parse, daily-card
+   content complete. `I18N_LANGS=fr npx vitest run src/i18n` checks one language.
 
 UI is verified by running it (`npm run dev`), not by snapshot tests.
 

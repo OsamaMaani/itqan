@@ -1,0 +1,36 @@
+import type { Messages } from '../core'
+
+export const memories: Messages['memories'] = {
+  subtitleCount: { other: '已珍藏 {n} 个瞬间' },
+  subtitleEmpty: '值得珍藏的瞬间——无论大小。',
+  newMemory: '新回忆',
+  onThisDay: '那年今日',
+  yearsAgo: { other: '{n} 年前' },
+  onThisDayMeta: '{ago} · {year}',
+  rememberThis: '还记得吗？',
+  anotherMemory: '换一段回忆',
+  rediscoverMeta: '{date} · {ago}',
+  searchPlaceholder: '搜索回忆',
+  favourites: '收藏',
+  emptyTitle: '你的第一段回忆',
+  emptyBody: '一次旅行、一次谈话、背完一卷经文、健身房里的一个小突破——趁记忆犹新写下来。多年以后，你会庆幸自己这样做了。',
+  noMatchTitle: '没有匹配的内容',
+  noMatchBody: '换个词或标签试试。',
+  dateWithWeekday: '{date} {weekday}',
+  removeFavourite: '取消收藏',
+  addFavourite: '加入收藏',
+
+  editor: {
+    title: '回忆',
+    newTitle: '新回忆',
+    keep: '珍藏这段回忆',
+    saved: '回忆已保存 · +5 XP',
+    deleted: '回忆已删除',
+    titlePlaceholder: '发生了什么？',
+    story: '经过',
+    storyPlaceholder: '谁在场、说了什么、当时的感受…',
+    when: '日期',
+    tagsHint: '用逗号或顿号分隔',
+    tagsPlaceholder: '家人、旅行、斋月',
+  },
+}

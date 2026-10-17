@@ -1,0 +1,43 @@
+import type { Messages } from '../core'
+
+export const memories: Messages['memories'] = {
+  subtitleCount: {
+    zero: 'لا لحظات محفوظة',
+    one: 'لحظة واحدة محفوظة',
+    two: 'لحظتان محفوظتان',
+    few: '{n} لحظات محفوظة',
+    many: '{n} لحظة محفوظة',
+    other: '{n} لحظة محفوظة',
+  },
+  subtitleEmpty: 'اللحظات التي تستحق أن تُحفظ — كبيرة وصغيرة.',
+  newMemory: 'ذكرى جديدة',
+  onThisDay: 'في مثل هذا اليوم',
+  yearsAgo: { zero: 'هذا العام', one: 'قبل سنة', two: 'قبل سنتين', few: 'قبل {n} سنوات', many: 'قبل {n} سنة', other: 'قبل {n} سنة' },
+  onThisDayMeta: '{ago} · {year}',
+  rememberThis: 'أتذكر هذا؟',
+  anotherMemory: 'ذكرى أخرى',
+  rediscoverMeta: '{date} · {ago}',
+  searchPlaceholder: 'البحث في الذكريات',
+  favourites: 'المفضلة',
+  emptyTitle: 'ذكراك الأولى',
+  emptyBody: 'رحلة، حديث، ختم جزء، انتصار صغير في النادي الرياضي — اكتبها ما دامت حاضرة في ذهنك. بعد سنوات ستسعد بأنك فعلت.',
+  noMatchTitle: 'لا نتائج',
+  noMatchBody: 'جرّب كلمة أو وسمًا آخر.',
+  dateWithWeekday: '{weekday}، {date}',
+  removeFavourite: 'إزالة من المفضلة',
+  addFavourite: 'إضافة إلى المفضلة',
+
+  editor: {
+    title: 'ذكرى',
+    newTitle: 'ذكرى جديدة',
+    keep: 'حفظ هذه الذكرى',
+    saved: 'تم حفظ الذكرى · +5 XP',
+    deleted: 'تم حذف الذكرى',
+    titlePlaceholder: 'ماذا حدث؟',
+    story: 'القصة',
+    storyPlaceholder: 'من كان هناك، وماذا قيل، وكيف كان الشعور…',
+    when: 'متى',
+    tagsHint: 'افصل بينها بفاصلة',
+    tagsPlaceholder: 'العائلة، السفر، رمضان',
+  },
+}

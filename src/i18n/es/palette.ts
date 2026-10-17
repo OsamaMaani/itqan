@@ -1,0 +1,22 @@
+import type { Messages } from '../core'
+
+export const palette: Messages['palette'] = {
+  placeholder: 'Escribe una tarea («{example}») o un comando…',
+  // "esta noche" is a quick-add word (tonight); #gimnasio names the starter area "Gimnasio".
+  example: 'Entrenar esta noche #gimnasio',
+  escKey: 'Esc',
+  saveIdea: 'Guardar la idea «{text}»',
+  addTask: 'Añadir la tarea «{title}»',
+  ideaSaved: 'Idea guardada',
+  taskAdded: 'Tarea añadida: «{title}»',
+  goTo: 'Ir a {page}',
+  startFocus: 'Empezar una sesión de concentración de {n} minutos',
+  focusLabel: 'Concentración',
+  newReminder: 'Nuevo recordatorio',
+  recordAchievement: 'Registrar un logro',
+  writeMemory: 'Escribir un recuerdo',
+  toggleDark: 'Activar o desactivar el modo oscuro',
+  downloadBackup: 'Descargar una copia de seguridad',
+  hint: '{idea} guarda una idea · {area} · {project} · prioridad {priority} · {days} · {time} · {estimate}',
+  ideaToken: '{word}: …',
+}

@@ -1,3 +1,4 @@
+import { tx, type I18n, type Lang } from '../i18n/core'
 import type { CefrLevel, DailySettings, DateKey, WordLanguage } from './types'
 
 /**
@@ -75,17 +76,22 @@ export interface Word {
 
 export type WordPack = Record<CefrLevel, Word[]>
 
-export const POS_LABEL: Record<Pos, string> = {
-  n: 'noun', nm: 'noun, masc.', nf: 'noun, fem.', nn: 'noun, neut.', v: 'verb', adj: 'adjective', adv: 'adverb',
-  expr: 'expression', prep: 'preposition', conj: 'conjunction', pron: 'pronoun',
-}
-
+/** Speech voices for the word of the day. Names come from Intl (`languageName`), in the interface language. */
 export const LANGUAGES: Record<WordLanguage, { name: string; speech: string }> = {
   fr: { name: 'French', speech: 'fr-FR' },
   en: { name: 'English', speech: 'en-GB' },
   de: { name: 'German', speech: 'de-DE' },
   es: { name: 'Spanish', speech: 'es-ES' },
   zh: { name: 'Chinese', speech: 'zh-CN' },
+}
+
+/** "French", "Französisch"… — a language's name in the interface language. */
+export function languageName(code: WordLanguage, t: I18n = tx()): string {
+  try {
+    return t.cap(new Intl.DisplayNames([t.locale], { type: 'language' }).of(code) ?? LANGUAGES[code].name)
+  } catch {
+    return LANGUAGES[code].name
+  }
 }
 
 /** Chinese is graded by HSK, not CEFR; this is the usual approximate match (the original HSK 1–6). */
@@ -163,19 +169,118 @@ export function arabicDigits(n: number): string {
   return String(n).replace(/\d/g, (d) => ARABIC_DIGITS[Number(d)])
 }
 
-/** "Ash-Sharh 94:5–6", or "from Al-Baqarah 2:286" for an excerpt. */
-export function verseRef(v: Verse, surahName: string): string {
+export function verseKey(v: Verse): string {
+  return `${v.s}:${v.a}-${v.b}`
+}
+
+/** "Ash-Sharh 94:5–6", or "from Al-Baqarah 2:286" for an excerpt — in the interface language. */
+export function verseRef(v: Verse, surahName: string, t: I18n = tx()): string {
   const ayahs = v.b > v.a ? `${v.a}–${v.b}` : `${v.a}`
-  return `${v.part ? 'from ' : ''}${surahName} ${v.s}:${ayahs}`
+  return t.f(v.part ? t.m.daily.verseRefPart : t.m.daily.verseRef, { surah: surahName, s: String(v.s), ayahs })
 }
 
-const COLLECTIONS: Record<HadithBook, string> = {
-  bukhari: 'Sahih al-Bukhari', muslim: 'Sahih Muslim', tirmidhi: 'Jami‘ at-Tirmidhi', abudawud: 'Sunan Abi Dawud',
-  ibnmajah: 'Sunan Ibn Majah', bayhaqi: 'al-Bayhaqi, Shu‘ab al-Iman',
+/** "Sahih al-Bukhari 6464" / "Jami‘ at-Tirmidhi 2380 · Sahih (al-Albani)" — in the interface language. */
+export function hadithSource(h: Hadith, t: I18n = tx()): string {
+  const { daily } = t.m
+  const where = h.n ? t.f(daily.hadithNumber, { collection: daily.collections[h.book], n: String(h.n) }) : daily.collections[h.book]
+  return h.grade ? t.f(daily.graded, { where, grade: daily.grades[GRADE_KEY[h.grade]] }) : where
+}
+const GRADE_KEY = { Sahih: 'sahih', Hasan: 'hasan', 'Hasan Sahih': 'hasanSahih' } as const
+
+/*
+ * Translations of the daily card (ADR-024). The verse, hadith and Arabic sayings are shown in
+ * Arabic in every language; what changes is the meaning under them and everything else on the card.
+ *
+ * - Quran: never translated by us. French, Spanish and Chinese show a published translation of the
+ *   meanings (src/content/meanings/, generated and verified); Arabic shows the verse alone.
+ * - Everything else is translated in src/content/i18n/<lang>.ts and <lang>-words.ts, keyed by the
+ *   English — so when an English item is edited its old translation stops matching, and the
+ *   completeness test in daily.test.ts fails until it is translated again.
+ */
+
+/** A published translation of the Quran's meanings, for the verses in VERSES. */
+export interface QuranMeanings {
+  translator: string
+  /** 114 surah names in the language, index = surah - 1. */
+  surahs: string[]
+  /** verseKey → the translation of ayahs a..b. */
+  verses: Record<string, string>
+  /** verseKey → the run of that translation matching an excerpt (`part`) verse. */
+  excerpts: Record<string, string>
 }
 
-/** "Sahih al-Bukhari 6464" / "Jami‘ at-Tirmidhi 2380 · Sahih (al-Albani)". */
-export function hadithSource(h: Hadith): string {
-  const where = h.n ? `${COLLECTIONS[h.book]} ${h.n}` : COLLECTIONS[h.book]
-  return h.grade ? `${where} · ${h.grade} (al-Albani)` : where
+/** The daily card's own content in one interface language, keyed by the English. */
+export interface DailyTranslation {
+  /** Narrators and authors ("Abu Hurairah", "attributed to William Osler", "Arabic proverb"). */
+  people: Record<string, string>
+  /** Where a saying comes from ("The Principles of Psychology, 1890"). */
+  sources: Record<string, string>
+  /** Hadith meanings, keyed by `Hadith.en`. Not used in Arabic, where the hadith stands alone. */
+  hadith: Record<string, string>
+  /** Sayings, keyed by `Saying.text`. In Arabic, sayings that have their original `ar` need none. */
+  sayings: Record<string, string>
+  /** Facts, keyed by `Fact.text`. */
+  facts: Record<string, string>
+}
+
+/**
+ * Word meanings, per word pack, keyed by `Word.word`: [meaning, example meaning]. For the pack in
+ * the interface language itself (French words in French), [a short definition] — like the English pack.
+ */
+export type WordMeanings = Record<WordLanguage, Record<string, [string] | [string, string]>>
+
+export interface DailyContent {
+  quran?: QuranMeanings
+  /** Surah names for Arabic (no meanings there). */
+  surahs?: string[]
+  text?: DailyTranslation
+  words?: WordMeanings
+}
+
+/** The meaning shown under a verse, or null when none is shown (Arabic, or not loaded yet). */
+export function verseMeaning(v: Verse, lang: Lang, c: DailyContent): string | null {
+  if (lang === 'en') return v.en
+  const q = c.quran
+  if (!q) return null
+  return (v.part ? q.excerpts[verseKey(v)] : q.verses[verseKey(v)]) || null
+}
+
+/** [primary, secondary] surah name: "Ash-Sharh" · "The Relief"; "الشرح"; "开拓". */
+export function surahName(s: number, lang: Lang, c: DailyContent, english: [string, string]): [string, string | null] {
+  if (lang === 'en') return english
+  if (lang === 'ar') return [c.surahs?.[s - 1] ?? english[0], null]
+  const local = c.quran?.surahs[s - 1]
+  if (lang === 'zh') return [local ?? english[0], null]
+  return [english[0], local ?? null]
+}
+
+export function hadithMeaning(h: Hadith, lang: Lang, c: DailyContent): string | null {
+  if (lang === 'en') return h.en
+  if (lang === 'ar') return null
+  return c.text?.hadith[h.en] ?? null
+}
+
+/** A saying in the interface language; null in Arabic for a saying shown in its Arabic original. */
+export function sayingText(s: Saying, lang: Lang, c: DailyContent): string | null {
+  if (lang === 'en') return s.text
+  if (lang === 'ar' && s.ar) return null
+  return c.text?.sayings[s.text] ?? s.text
+}
+
+export function factText(f: Fact, lang: Lang, c: DailyContent): string {
+  return lang === 'en' ? f.text : c.text?.facts[f.text] ?? f.text
+}
+
+export function personName(name: string, lang: Lang, c: DailyContent): string {
+  return lang === 'en' ? name : c.text?.people[name] ?? name
+}
+
+export function sourceName(source: string, lang: Lang, c: DailyContent): string {
+  return lang === 'en' ? source : c.text?.sources[source] ?? source
+}
+
+/** [meaning, example meaning] of a word in the interface language (English until loaded). */
+export function wordMeaning(w: Word, pack: WordLanguage, lang: Lang, c: DailyContent): [string, string | undefined] {
+  const local = lang === 'en' ? undefined : c.words?.[pack]?.[w.word]
+  return local ? [local[0], local[1]] : [w.meaning, w.exampleMeaning]
 }

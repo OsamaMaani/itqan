@@ -1,3 +1,4 @@
+import { tx } from '../i18n/core'
 import { create } from 'zustand'
 import { checkIn } from './connections'
 import { toKey } from './date'
@@ -41,7 +42,7 @@ export function checkInAlerts(now: Date): ScheduledAlert[] {
     if (!ci.due || ci.due < today) continue // overdue ones were already announced on their day
     const fireAt = at({ time: '10:00' } as Reminder, ci.due).getTime()
     if (fireAt < now.getTime() - 12 * 3600_000) continue
-    out.push({ key: `checkin|${c.id}|${ci.due}`, fireAt, title: `🫶 Check in with ${c.name}`, body: 'It has been a while — a quick message is enough.', urgent: false })
+    out.push({ key: `checkin|${c.id}|${ci.due}`, fireAt, title: `🫶 ${tx().f(tx().m.store.checkInTitle, { name: c.name })}`, body: tx().m.store.checkInBody, urgent: false })
   }
   return out
 }
@@ -64,7 +65,7 @@ export async function sendTestNotification(): Promise<boolean> {
   if (useNotifier.getState().state === 'connected') {
     try { return (await call('/test', { method: 'POST', body: '{}' })).ok } catch { return false }
   }
-  return inAppNotify('Itqan', 'Notifications are working ✓', false)
+  return inAppNotify('Itqan', tx().m.store.notificationsWork, false)
 }
 
 function inAppNotify(title: string, body: string, urgent: boolean): boolean {

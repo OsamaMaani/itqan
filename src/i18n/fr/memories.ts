@@ -1,0 +1,36 @@
+import type { Messages } from '../core'
+
+export const memories: Messages['memories'] = {
+  subtitleCount: { one: '{n} moment conservé', other: '{n} moments conservés' },
+  subtitleEmpty: 'Les moments qui valent d’être gardés — grands et petits.',
+  newMemory: 'Nouveau souvenir',
+  onThisDay: 'Ce jour-là',
+  yearsAgo: { one: 'Il y a un an', other: 'Il y a {n} ans' },
+  onThisDayMeta: '{ago} · {year}',
+  rememberThis: 'Tu te souviens\u202f?',
+  anotherMemory: 'Un autre souvenir',
+  rediscoverMeta: '{date} · {ago}',
+  searchPlaceholder: 'Rechercher dans les souvenirs',
+  favourites: 'Favoris',
+  emptyTitle: 'Ton premier souvenir',
+  emptyBody: 'Un voyage, une conversation, un juz terminé, une petite victoire à la salle — écris-le tant que c’est frais. Dans quelques années, tu ne le regretteras pas.',
+  noMatchTitle: 'Aucun résultat',
+  noMatchBody: 'Essaie un autre mot ou une autre étiquette.',
+  dateWithWeekday: '{weekday} {date}',
+  removeFavourite: 'Retirer des favoris',
+  addFavourite: 'Ajouter aux favoris',
+
+  editor: {
+    title: 'Souvenir',
+    newTitle: 'Nouveau souvenir',
+    keep: 'Garder ce souvenir',
+    saved: 'Souvenir enregistré · +5 XP',
+    deleted: 'Souvenir supprimé',
+    titlePlaceholder: 'Que s’est-il passé\u202f?',
+    story: 'L’histoire',
+    storyPlaceholder: 'Qui était là, ce qui s’est dit, ce que tu as ressenti…',
+    when: 'Quand',
+    tagsHint: 'séparées par des virgules',
+    tagsPlaceholder: 'famille, voyage, ramadan',
+  },
+}
