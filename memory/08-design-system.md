@@ -76,6 +76,10 @@ Shadows are near-invisible; the primary button gets a coloured glow.
   nothing waits for the previous page to leave. Do not reintroduce `AnimatePresence mode="wait"`
   around routes.
 - **Touch has no HTML5 drag** — every drag interaction needs a tap alternative (◀ ▶ on board cards).
+- **Cards summarise, dialogs detail** (ADR-026, goals): a grid card shows its glance facts and at
+  most one everyday action; the rest — notes, full lists, history, the action row — lives in a
+  details `Modal` the whole card opens (a stretched title button, `after:absolute after:inset-0`;
+  inner buttons are `relative` so they sit above it). Use the same shape for other dense cards.
 - **Daily content never pushes tasks down** (ADR-023): on a laptop the daily card heads the side
   column; on a phone it is one folded line until tapped. Add new "of the day" content there, as a
   tab, not as another card.

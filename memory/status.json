@@ -1,7 +1,7 @@
 {
   "project": "Itqan",
   "subtitle": "إتقان — daily tasks, habits and long-term goals in one calm place",
-  "updated": "2026-10-18",
+  "updated": "2026-10-19",
   "current_stage": 4,
   "next_actions": [
     "In Settings → Profile, pick your interface language (it follows you to your other devices). All four translations have had their independent review (S2-23); if a phrase still reads oddly, note it.",
@@ -305,6 +305,12 @@
           "title": "Starter set is a generic example, not the owner's routine (ADR-025)",
           "module": "today",
           "status": "done"
+        },
+        {
+          "id": "S2-25",
+          "title": "Goals: \"New goal\" created nothing (fixed, guarded by a test); compact goal cards with a details dialog (ADR-026)",
+          "module": "goals",
+          "status": "done"
         }
       ]
     },
@@ -528,6 +534,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-19",
+      "entry": "S2-25, from the owner's report: \"New goal\" on the Goals page closed without creating anything — since the first commit. Cause: the editor saved with onCreated?.(add(goal)), and an optional call skips its arguments when there is no callback, which is exactly the Goals page (Plan and Projects passed one, so it worked there). Fixed, and src/lib/__tests__/sourceGuards.test.ts now fails on any optional call with a call in its arguments. Also at the owner's request: goal cards are about half as tall — progress ring, title, area and pace, one line of facts, and a quick + (numeric) or the next milestone to tick; the whole card opens a details dialog with the why, all milestones, the progress history and every action (ADR-026). Checked in the browser at 375 and 1280 px, light and dark, English and Arabic."
+    },
     {
       "date": "2026-10-18",
       "entry": "S2-24, at the owner's request: the onboarding starter set no longer mirrors his own routine (this repository is public). It is now a generic example in all five languages — Health, Mind, Learning, Books, Work, Life; habits like Drink water, Read, Meditate, Exercise; goals Read 12 books, Run 5 km, Learn a new skill, Finish an online course. Onboarding text, quick-add examples and memory/00-project.md follow suit; the routine is kept only in the private, local notes. Existing data is untouched — the starter set is only created at first run (ADR-025)."

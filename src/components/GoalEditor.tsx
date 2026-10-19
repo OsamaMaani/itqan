@@ -40,7 +40,12 @@ export function GoalEditor({ open, onClose, goal, defaults, onCreated }: {
   const save = () => {
     if (!valid) return
     if (goal) update(goal.id, { ...d, title: d.title.trim() })
-    else onCreated?.(add({ ...d, title: d.title.trim() }))
+    else {
+      // Create first, then notify: inside an optional call the argument is skipped when there is
+      // no onCreated, so the Goals page used to create nothing (2026-10-19, sourceGuards.test.ts).
+      const id = add({ ...d, title: d.title.trim() })
+      onCreated?.(id)
+    }
     onClose()
   }
 

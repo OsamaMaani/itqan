@@ -28,6 +28,9 @@ correct code without reading the whole app.
 - **A new derived number**: pure function in `lib/`, test first, then use it via a hook.
 - **Create/edit forms** are one modal component taking an optional existing entity
   (`TaskEditor`, `HabitEditor`, `GoalEditor`).
+- **Optional callbacks** are called after the work, never around it: `const id = add(x); onCreated?.(id)`.
+  `onCreated?.(add(x))` skips `add(x)` entirely when there is no callback — it is why "New goal"
+  on the Goals page created nothing from the first commit (S2-25). `sourceGuards.test.ts` fails on the pattern.
 - **Destructive actions** confirm (`confirm()` for single items, typed `DELETE` for wiping all),
   or offer Undo via toast (task delete).
 

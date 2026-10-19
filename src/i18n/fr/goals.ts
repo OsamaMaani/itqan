@@ -33,6 +33,7 @@ export const goals: Messages['goals'] = {
     needsPerDay: 'il faut {amount} {unit}/jour',
     openTasks: { one: '{n} tâche à faire', other: '{n} tâches à faire' },
     history: 'Historique',
+    noHistory: 'Aucun progrès noté pour l’instant.',
     pause: 'Mettre en pause',
     resume: 'Reprendre',
     markComplete: 'Marquer comme atteint',

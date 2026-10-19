@@ -40,6 +40,8 @@ export const goals = {
     needsPerDay: 'needs {amount} {unit}/day',
     openTasks: { one: '{n} open task', other: '{n} open tasks' },
     history: 'History',
+    /** Shown in a goal's details when no progress has been logged yet. */
+    noHistory: 'Nothing logged yet.',
     pause: 'Pause',
     resume: 'Resume',
     markComplete: 'Mark complete',

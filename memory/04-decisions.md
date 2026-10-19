@@ -491,3 +491,22 @@ onboarding and is ordinary data afterwards, so the owner's existing data is unto
 no better at teaching the app; keeping a faith or language item — those were the identifying part.
 **Note:** git history still holds the old text; rewriting a public repository's history was not
 done.
+
+## ADR-026 | 2026-10-19 | accepted | Goal cards summarise; a details dialog holds the rest
+
+**Context:** The owner found goal cards too big: each one carried a 72 px ring, the "why", every
+milestone, the facts line and six action buttons, so three or four goals filled a laptop screen.
+They asked for smaller cards and "a professional way to see details".
+**Decision:** The card shows only what is needed at a glance — a 52 px ring, the title (two lines
+at most), area and pace chips, progress, one wrapping line of facts (deadline and days left,
+needed per day, open tasks) — plus the one action used daily: **+** to log a numeric goal, or the
+next undone milestone to tick. The whole card is one stretched button (`after:inset-0` on the
+title) that opens `GoalDetails`, a wide `Modal` (a bottom sheet on phones): a summary panel, the
+why, all milestones, the progress history with delete, and Delete / Pause or Resume / Mark
+complete or Reopen / Edit / Log progress in the footer — icon-only below `sm` so it stays one row.
+Opening Edit or Log closes the details first, so two dialogs never stack (Escape would close both).
+**Rejected:** a card that expands in place (the grid jumps and the neighbours reflow); a separate
+goal page with its own route (heavier than the content needs, and loses the list behind it); a
+side drawer (a new overlay pattern for one screen, and phones would need the sheet anyway); a
+"⋯" menu for the actions on the card (still a crowded card, and actions hide behind a second tap
+without the context the details give).

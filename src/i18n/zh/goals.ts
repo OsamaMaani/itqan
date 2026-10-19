@@ -33,6 +33,7 @@ export const goals: Messages['goals'] = {
     needsPerDay: '每天需 {amount} {unit}',
     openTasks: { other: '{n} 个未完成任务' },
     history: '历史',
+    noHistory: '还没有记录。',
     pause: '暂停',
     resume: '继续',
     markComplete: '标为完成',

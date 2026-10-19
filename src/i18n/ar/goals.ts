@@ -40,6 +40,7 @@ export const goals: Messages['goals'] = {
     needsPerDay: 'يلزم {amount} {unit} يوميًا',
     openTasks: { zero: 'لا مهام مفتوحة', one: 'مهمة مفتوحة واحدة', two: 'مهمتان مفتوحتان', few: '{n} مهام مفتوحة', many: '{n} مهمة مفتوحة', other: '{n} مهمة مفتوحة' },
     history: 'السجل',
+    noHistory: 'لم يُسجَّل أي تقدّم بعد.',
     pause: 'إيقاف مؤقت',
     resume: 'استئناف',
     markComplete: 'تحديد كمحقّق',
