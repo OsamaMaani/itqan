@@ -9,7 +9,7 @@ Scaffold, data model, versioned persistence, PWA, tests, CI, Pages deploy, memor
 ## Stage 1 — Daily-use MVP ✅
 Today, Plan (week + inbox, drag between days), Habits (streaks, heatmaps, backfill), Goals
 (numeric and milestone, pace), Focus timer, Insights, Weekly review, Settings (areas, backup),
-onboarding with the starter routine, command bar with natural-language quick add, XP / levels /
+onboarding with an example starter set, command bar with natural-language quick add, XP / levels /
 achievements, celebrations.
 **Done when:** The owner can run their whole day from it.
 

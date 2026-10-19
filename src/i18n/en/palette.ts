@@ -8,7 +8,7 @@ export const palette = {
    * language: use this language's quick-add words from src/i18n/quickAddWords.ts (a day word such as
    * "tonight") and the name of an area from the starter set (m.seed.areas) after the #.
    */
-  example: 'Gym tonight #gym',
+  example: 'Walk tonight #health',
   /** The Esc key cap, shown at the end of the input. */
   escKey: 'Esc',
   /** {text} is what the person typed after the "idea:" prefix, shown in bold. */

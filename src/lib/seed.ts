@@ -25,7 +25,10 @@ export function emptyData(): Data {
   }
 }
 
-/** The starter set: the routine Itqan was first built around (memory/00-project.md). */
+/**
+ * The starter set: a generic example offered at onboarding so a new user sees every kind of thing
+ * Itqan holds (ADR-025). Deliberately not anyone's real routine — this repository is public.
+ */
 export function starterData(today: string, t: I18n = tx()): Pick<Data, 'areas' | 'habits' | 'goals' | 'tasks'> {
   const now = new Date().toISOString()
   // Created in the interface language at the moment of onboarding; afterwards it is the owner's data.
@@ -33,11 +36,11 @@ export function starterData(today: string, t: I18n = tx()): Pick<Data, 'areas' |
   const area = (name: string, emoji: string, color: Area['color']): Area =>
     ({ id: uid(), name, emoji, color, archived: false, createdAt: now })
 
-  const quran = area(s.areas.quran, '📖', 'emerald')
-  const french = area(s.areas.french, '🇫🇷', 'sky')
-  const gym = area(s.areas.gym, '🏋️', 'rose')
+  const health = area(s.areas.health, '💪', 'rose')
+  const mind = area(s.areas.mind, '🧘', 'emerald')
+  const learning = area(s.areas.learning, '🎓', 'indigo')
   const books = area(s.areas.books, '📚', 'amber')
-  const courses = area(s.areas.courses, '🎓', 'indigo')
+  const work = area(s.areas.work, '💼', 'sky')
   const life = area(s.areas.life, '🌱', 'lime')
 
   let order = 0
@@ -45,11 +48,11 @@ export function starterData(today: string, t: I18n = tx()): Pick<Data, 'areas' |
     ({ id: uid(), name, emoji, areaId: a.id, schedule, target, unit, archived: false, createdAt: now, order: order++ })
 
   const habits: Habit[] = [
-    habit(s.habits.quran, '📖', quran, { type: 'daily' }),
-    habit(s.habits.french, '🗣️', french, { type: 'daily' }, 20, s.units.min),
+    habit(s.habits.water, '💧', health, { type: 'daily' }, 8, s.units.glasses),
     habit(s.habits.read, '📚', books, { type: 'daily' }, 10, s.units.pages),
-    habit(s.habits.gym, '🏋️', gym, { type: 'weekly', times: 4 }),
-    habit(s.habits.course, '🎓', courses, { type: 'weekly', times: 5 }),
+    habit(s.habits.meditate, '🧘', mind, { type: 'daily' }, 10, s.units.min),
+    habit(s.habits.exercise, '🏃', health, { type: 'weekly', times: 3 }),
+    habit(s.habits.learn, '🎓', learning, { type: 'weekly', times: 5 }),
   ]
 
   const goal = (g: Partial<Goal> & Pick<Goal, 'title' | 'kind'>): Goal => ({
@@ -60,20 +63,21 @@ export function starterData(today: string, t: I18n = tx()): Pick<Data, 'areas' |
 
   const goals: Goal[] = [
     goal({
-      title: s.goals.quran.title, kind: 'numeric', areaId: quran.id, target: 30, unit: s.units.juz,
-      deadline: addDaysKey(today, 120), why: s.goals.quran.why,
+      title: s.goals.books.title, kind: 'numeric', areaId: books.id, target: 12, unit: s.units.books,
+      deadline: addDaysKey(today, 365), why: s.goals.books.why,
     }),
     goal({
-      title: s.goals.french.title, kind: 'milestones', areaId: french.id, deadline: addDaysKey(today, 180),
-      why: s.goals.french.why,
-      milestones: ms(...s.goals.french.milestones),
+      title: s.goals.run.title, kind: 'milestones', areaId: health.id, deadline: addDaysKey(today, 90),
+      why: s.goals.run.why,
+      milestones: ms(...s.goals.run.milestones),
     }),
     goal({
-      title: s.goals.book.title, kind: 'numeric', areaId: books.id, target: 300, unit: s.units.pages,
-      deadline: addDaysKey(today, 30), why: s.goals.book.why,
+      title: s.goals.skill.title, kind: 'milestones', areaId: learning.id, deadline: addDaysKey(today, 180),
+      why: s.goals.skill.why,
+      milestones: ms(...s.goals.skill.milestones),
     }),
     goal({
-      title: s.goals.course.title, kind: 'numeric', areaId: courses.id, target: 10, unit: s.units.modules,
+      title: s.goals.course.title, kind: 'numeric', areaId: learning.id, target: 10, unit: s.units.modules,
       deadline: addDaysKey(today, 45), why: s.goals.course.why,
     }),
   ]
@@ -86,9 +90,9 @@ export function starterData(today: string, t: I18n = tx()): Pick<Data, 'areas' |
   const tasks: Task[] = [
     task(s.tasks.tour, life, { priority: 1, timeOfDay: 'morning' }),
     task(s.tasks.editGoals, life, { priority: 2 }),
-    task(s.tasks.focus, courses, { timeOfDay: 'afternoon', estimateMin: 25 }),
-    task(s.tasks.gym, gym, { timeOfDay: 'evening' }),
+    task(s.tasks.focus, work, { timeOfDay: 'afternoon', estimateMin: 25 }),
+    task(s.tasks.walk, health, { timeOfDay: 'evening', estimateMin: 20 }),
   ]
 
-  return { areas: [quran, french, gym, books, courses, life], habits, goals, tasks }
+  return { areas: [health, mind, learning, books, work, life], habits, goals, tasks }
 }

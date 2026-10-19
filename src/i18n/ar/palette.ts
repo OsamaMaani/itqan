@@ -2,7 +2,7 @@ import type { Messages } from '../core'
 
 export const palette: Messages['palette'] = {
   placeholder: 'اكتب مهمة («{example}») أو أمرًا…',
-  example: 'تمرين الليلة #الرياضة',
+  example: 'المشي الليلة #الصحة',
   escKey: 'Esc',
   saveIdea: 'حفظ الفكرة «{text}»',
   addTask: 'إضافة المهمة «{title}»',

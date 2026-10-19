@@ -1,23 +1,27 @@
 import type { Messages } from '../core'
 
 export const seed: Messages['seed'] = {
-  areas: { quran: 'Coran', french: 'Français', gym: 'Sport', books: 'Livres', courses: 'Cours', life: 'Vie' },
-  habits: { quran: 'Réviser le Coran', french: 'Pratiquer le français', read: 'Lire', gym: 'Salle de sport', course: 'Étudier mon cours' },
-  units: { min: 'min', pages: 'pages', juz: 'juz', modules: 'modules' },
+  areas: { health: 'Santé', mind: 'Esprit', learning: 'Apprentissage', books: 'Livres', work: 'Travail', life: 'Vie' },
+  habits: { water: 'Boire de l’eau', read: 'Lire', meditate: 'Méditer', exercise: 'Faire du sport', learn: 'Pratiquer une compétence' },
+  units: { min: 'min', pages: 'pages', glasses: 'verres', books: 'livres', modules: 'modules' },
   goals: {
-    quran: { title: 'Faire une révision complète du Coran', why: 'Consolider ce que j’ai mémorisé et le garder proche de mon cœur.' },
-    french: {
-      title: 'Atteindre le niveau B1 en français',
-      why: 'Parler avec assurance, pas seulement réussir un examen.',
-      milestones: ['Terminer la révision de la grammaire A2', 'Apprendre 1\u202f000 mots essentiels', 'Faire 5 exposés oraux', 'Réussir un examen blanc B1'],
+    books: { title: 'Lire 12 livres cette année', why: 'Un peu chaque jour finit par faire beaucoup.' },
+    run: {
+      title: 'Courir 5 km',
+      why: 'Gagner en endurance, un petit pas à la fois.',
+      milestones: ['Marcher 30 minutes trois fois par semaine', 'Courir 1 km sans s’arrêter', 'Courir 3 km', 'Courir 5 km'],
     },
-    book: { title: 'Finir mon livre en cours', why: 'Modifie le titre et le nombre de pages pour qu’ils correspondent au livre.' },
-    course: { title: 'Finir mon cours actuel', why: 'Modifie l’objectif pour qu’il corresponde au cours que tu suis.' },
+    skill: {
+      title: 'Apprendre une nouvelle compétence',
+      why: 'Progresser un peu chaque semaine.',
+      milestones: ['Choisir la compétence et une bonne ressource', 'S’exercer pendant 10 heures', 'Réaliser un petit projet avec', 'Partager ou enseigner ce qu’on a appris'],
+    },
+    course: { title: 'Terminer un cours en ligne', why: 'Modifie-le pour qu’il corresponde à ton cours, ou supprime-le.' },
   },
   tasks: {
-    tour: 'Découvre Itqan\u00a0: appuie sur Ctrl+K (ou sur le bouton +) pour ajouter une tâche',
-    editGoals: 'Modifie les objectifs de départ pour qu’ils correspondent à tes vrais livres, cours et cibles',
-    focus: 'Essaie une session de concentration de 25\u00a0minutes',
-    gym: 'Séance de sport',
+    tour: 'Découvre Itqan : appuie sur Ctrl+K (ou sur le bouton +) pour ajouter une tâche',
+    editGoals: 'Modifie les objectifs d’exemple pour qu’ils correspondent à tes vraies cibles, ou supprime-les',
+    focus: 'Essaie une session de concentration de 25 minutes',
+    walk: 'Faire une marche de 20 minutes',
   },
 }

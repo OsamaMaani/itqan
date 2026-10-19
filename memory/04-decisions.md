@@ -474,3 +474,20 @@ English-keyed message strings in code (no compile-time completeness); Arabic-Ind
 UI (the owner's choice); device-local language (the owner switches devices and expects the same
 app); machine-translating at runtime (offline-first, and quality); translating the Quran's meanings
 ourselves; translating the owner's data.
+
+## ADR-025 | 2026-10-18 | accepted | The starter set is a generic example, not the owner's routine
+
+**Context:** The onboarding starter set (`src/lib/seed.ts`, `src/i18n/*/seed.ts`) was the owner's
+own routine — Quran revision, French to B1, the gym 4×/week, courses — and the onboarding text,
+the quick-add examples and `memory/00-project.md` described it too. The repository is public, so
+that was a personal profile in the open, and it made a poor first run for anyone else.
+**Decision (the owner's):** replace it with a generic example that still shows every kind of thing
+Itqan holds — six areas (Health, Mind, Learning, Books, Work, Life), daily and weekly habits with
+and without a target, numeric and milestone goals, first-day tasks. The routine itself lives only
+in `memory/private/owner.md`. Quick-add and command-bar examples name the new areas so the
+catalog test that parses them still holds. No schema change: the starter set is created once at
+onboarding and is ordinary data afterwards, so the owner's existing data is untouched.
+**Rejected:** a random set generated at onboarding — harder to translate well and to test, and
+no better at teaching the app; keeping a faith or language item — those were the identifying part.
+**Note:** git history still holds the old text; rewriting a public repository's history was not
+done.

@@ -16,14 +16,9 @@ the consistent ones, even if small" — is why habits and streaks are central.
 ## Who it is for
 
 **The owner**, first and only user for now (2026-10-16) — personal details are in
-`memory/private/owner.md` (local only). Alongside a full-time job, they:
-
-- study **courses**,
-- **read books**,
-- go to the **gym**,
-- study **French** (working toward B1),
-- **revise the Quran**,
-- "and many other things".
+`memory/private/owner.md` (local only), including the routine Itqan was first built around.
+In short: a full-time job alongside study, reading, exercise, a language and faith — "and many
+other things".
 
 He asked for it to be **dynamic, fun, modern, clean and interactive**, usable as soon as
 possible, and published on **GitHub**. He may offer it to others later.
@@ -31,7 +26,7 @@ possible, and published on **GitHub**. He may offer it to others later.
 ## What success looks like
 
 1. He opens it every morning and it tells him, in one screen, what today is for.
-2. Habits he cares about (Quran, French, reading) survive busy weeks — streaks make a missed day
+2. The habits he cares about survive busy weeks — streaks make a missed day
    visible without making it shameful.
 3. Each goal shows whether he is on pace, and how much per day finishes it on time.
 4. Once a week he looks back (Weekly review) and adjusts.
@@ -53,9 +48,11 @@ possible, and published on **GitHub**. He may offer it to others later.
 
 ## The starter set (seed)
 
-On first run the user can load their routine: areas Quran, French, Gym, Books, Courses, Life;
-habits Revise Quran (daily), French practice (20 min daily), Read (10 pages daily), Gym (4×/week),
-Course study (5×/week); four example goals. All editable. Source: `src/lib/seed.ts`.
+On first run the user can load a **generic example set** (ADR-025) — areas Health, Mind,
+Learning, Books, Work, Life; habits Drink water (8 glasses), Read (10 pages), Meditate (10 min),
+Exercise (3×/week), Practise a skill (5×/week); goals Read 12 books, Run 5 km, Learn a new skill,
+Finish an online course; four first-day tasks. All editable. It is deliberately nobody's real
+routine: this repository is public. Source: `src/lib/seed.ts`.
 
 ## Out of scope for now
 

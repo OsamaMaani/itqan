@@ -1,25 +1,29 @@
 /**
- * The starter set offered at onboarding — the owner's routine (memory/00-project.md). Created in
- * the interface language once; after that it is ordinary, editable data.
+ * The starter set offered at onboarding — a generic example, not anyone's real routine (ADR-025).
+ * Created in the interface language once; after that it is ordinary, editable data.
  */
 export const seed = {
-  areas: { quran: 'Quran', french: 'French', gym: 'Gym', books: 'Books', courses: 'Courses', life: 'Life' },
-  habits: { quran: 'Revise Quran', french: 'French practice', read: 'Read', gym: 'Gym', course: 'Course study' },
-  units: { min: 'min', pages: 'pages', juz: 'juz', modules: 'modules' },
+  areas: { health: 'Health', mind: 'Mind', learning: 'Learning', books: 'Books', work: 'Work', life: 'Life' },
+  habits: { water: 'Drink water', read: 'Read', meditate: 'Meditate', exercise: 'Exercise', learn: 'Practise a skill' },
+  units: { min: 'min', pages: 'pages', glasses: 'glasses', books: 'books', modules: 'modules' },
   goals: {
-    quran: { title: 'Complete a full Quran revision', why: 'Keep what I memorised strong and close to my heart.' },
-    french: {
-      title: 'Reach French B1',
-      why: 'Speak with confidence, not just pass an exam.',
-      milestones: ['Finish A2 grammar review', 'Learn 1,000 core words', 'Give 5 oral presentations', 'Pass a B1 mock exam'],
+    books: { title: 'Read 12 books this year', why: 'A little every day adds up to a lot.' },
+    run: {
+      title: 'Run 5 km',
+      why: 'Build stamina one small step at a time.',
+      milestones: ['Walk 30 minutes, three times a week', 'Run 1 km without stopping', 'Run 3 km', 'Run 5 km'],
     },
-    book: { title: 'Finish my current book', why: 'Edit the title and page count to match the book.' },
-    course: { title: 'Finish my current course', why: 'Edit to match the course you are studying.' },
+    skill: {
+      title: 'Learn a new skill',
+      why: 'Grow a little every week.',
+      milestones: ['Choose the skill and one good resource', 'Practise for 10 hours', 'Make something small with it', 'Share or teach what you learned'],
+    },
+    course: { title: 'Finish an online course', why: 'Edit it to match a course you are taking — or delete it.' },
   },
   tasks: {
     tour: 'Tour Itqan: press Ctrl+K (or the + button) to add a task',
-    editGoals: 'Edit the starter goals so they match your real books, courses and targets',
+    editGoals: 'Edit the example goals so they match your real targets — or delete them',
     focus: 'Try one 25-minute focus session',
-    gym: 'Gym session',
+    walk: 'Take a 20-minute walk',
   },
 }

@@ -2,7 +2,7 @@ import type { Messages } from '../core'
 
 export const palette: Messages['palette'] = {
   placeholder: '输入任务（“{example}”）或命令…',
-  example: '今晚去健身房 #健身',
+  example: '今晚去散步 #健康',
   escKey: 'Esc',
   saveIdea: '保存想法“{text}”',
   addTask: '添加任务“{title}”',

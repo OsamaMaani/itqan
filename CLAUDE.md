@@ -79,7 +79,7 @@ itqan/
 ## Current state
 
 Stages 0 (foundation) and 1 (daily-use MVP) are complete as of 2026-10-16: Today, Plan, Habits,
-Goals, Focus, Insights, Weekly review, Settings, onboarding with the owner's routine as a starter set,
+Goals, Focus, Insights, Weekly review, Settings, onboarding with an example starter set,
 a Ctrl+K command bar with natural-language quick add, XP/levels/achievements, backup/restore,
 installable PWA. Since then (Stage 2): a no-server local app with an app-menu launcher (ADR-012),
 and Memories, Ideas and Reminders with desktop notifications via a local helper service

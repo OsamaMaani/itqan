@@ -1,7 +1,7 @@
 {
   "project": "Itqan",
   "subtitle": "إتقان — daily tasks, habits and long-term goals in one calm place",
-  "updated": "2026-10-17",
+  "updated": "2026-10-18",
   "current_stage": 4,
   "next_actions": [
     "In Settings → Profile, pick your interface language (it follows you to your other devices). All four translations have had their independent review (S2-23); if a phrase still reads oddly, note it.",
@@ -299,6 +299,12 @@
           "title": "Independent review of each translation against its language guide (memory/10-localization.md), then fixes",
           "module": "settings",
           "status": "done"
+        },
+        {
+          "id": "S2-24",
+          "title": "Starter set is a generic example, not the owner's routine (ADR-025)",
+          "module": "today",
+          "status": "done"
         }
       ]
     },
@@ -522,6 +528,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-18",
+      "entry": "S2-24, at the owner's request: the onboarding starter set no longer mirrors his own routine (this repository is public). It is now a generic example in all five languages — Health, Mind, Learning, Books, Work, Life; habits like Drink water, Read, Meditate, Exercise; goals Read 12 books, Run 5 km, Learn a new skill, Finish an online course. Onboarding text, quick-add examples and memory/00-project.md follow suit; the routine is kept only in the private, local notes. Existing data is untouched — the starter set is only created at first run (ADR-025)."
+    },
     {
       "date": "2026-10-17",
       "entry": "Phone navigation, at the owner's request: the bottom bar's fifth item is now More (the menu) instead of Focus; the sheet it opens lists Projects, Focus, Ideas and every other screen. The header's menu button is gone (it duplicated More). A running focus timer shows as a dot on More and a countdown on the Focus tile, so it isn't hidden behind the menu."

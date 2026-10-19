@@ -3,7 +3,7 @@ import type { Messages } from '../core'
 export const palette: Messages['palette'] = {
   placeholder: 'Escribe una tarea («{example}») o un comando…',
   // "esta noche" is a quick-add word (tonight); #gimnasio names the starter area "Gimnasio".
-  example: 'Entrenar esta noche #gimnasio',
+  example: 'Caminar esta noche #salud',
   escKey: 'Esc',
   saveIdea: 'Guardar la idea «{text}»',
   addTask: 'Añadir la tarea «{title}»',
