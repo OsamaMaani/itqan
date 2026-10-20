@@ -57,6 +57,9 @@ export const today = {
     start: 'Start',
     rest: 'Rest day',
     restSub: 'Recovery is part of the plan.',
+    /** Training whenever you can: a suggested routine, {when} relative (“9 days ago”). */
+    suggested: 'When you’re ready · last done {when}',
+    suggestedNew: 'When you’re ready · not done yet',
     open: 'Open',
     all: 'All workouts',
   },

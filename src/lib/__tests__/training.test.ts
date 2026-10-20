@@ -3,7 +3,7 @@ import { badges, xpEvents, XP } from '../gamification'
 import { goalCurrent, goalProgress } from '../goals'
 import { emptyData } from '../seed'
 import {
-  activeWorkout, bestWeekRun, dueRoutine, exerciseBest, exerciseHistory, exerciseSeries, fromUnit, lastTime, newRecords, oneRepMax,
+  activeWorkout, bestWeekRun, dueRoutine, lastWorkoutDay, exerciseBest, exerciseHistory, exerciseSeries, fromUnit, lastTime, newRecords, oneRepMax,
   personalRecords, plannedPerWeek, prefillSet, recordCounts, suggestNext, toUnit, weekStats, workoutSummary,
 } from '../training'
 import type { Data, Effort, Exercise, Goal, Routine, RoutineItem, TrainingProgram, Workout, WorkoutSet } from '../types'
@@ -52,9 +52,33 @@ describe('units', () => {
 describe('what is due today', () => {
   const routines = [routine('push'), routine('pull'), routine('legs')]
 
-  it('nothing without a program or without routines in it', () => {
-    expect(dueRoutine(null, routines, [], '2026-10-20')).toEqual({ kind: 'none' })
+  it('nothing when a schedule has no routines in it, or there are no routines at all', () => {
     expect(dueRoutine(program(), routines, [], '2026-10-20')).toEqual({ kind: 'none' })
+    expect(dueRoutine(program({ mode: 'rotation' }), routines, [], '2026-10-20')).toEqual({ kind: 'none' })
+    expect(dueRoutine(null, [], [], '2026-10-20')).toEqual({ kind: 'none' })
+    expect(dueRoutine(program({ mode: 'flexible' }), [routine('x', { archived: true })], [], '2026-10-20')).toEqual({ kind: 'none' })
+  })
+  it('whenever I can (or no program yet): suggests, never-done first in routine order', () => {
+    const rs = [routine('push', { order: 0 }), routine('pull', { order: 1 }), routine('legs', { order: 2 })]
+    expect(dueRoutine(null, rs, [], '2026-10-20')).toEqual({ kind: 'suggest', routineId: 'push', lastDone: null })
+    const ws = [workout('2026-10-10', { routineId: 'push' })]
+    expect(dueRoutine(program({ mode: 'flexible' }), rs, ws, '2026-10-20')).toEqual({ kind: 'suggest', routineId: 'pull', lastDone: null })
+  })
+  it('whenever I can: then the routine left longest, ignoring unfinished workouts and later days', () => {
+    const rs = [routine('push', { order: 0 }), routine('pull', { order: 1 })]
+    const ws = [
+      workout('2026-10-01', { routineId: 'pull' }),
+      workout('2026-10-05', { routineId: 'push' }),
+      workout('2026-10-08', { routineId: 'pull', finishedAt: null }), // in progress: doesn't count
+    ]
+    expect(dueRoutine(program({ mode: 'flexible' }), rs, ws, '2026-10-20')).toEqual({ kind: 'suggest', routineId: 'pull', lastDone: '2026-10-01' })
+    ws.push(workout('2026-10-12', { routineId: 'pull' }))
+    expect(dueRoutine(program({ mode: 'flexible' }), rs, ws, '2026-10-20')).toEqual({ kind: 'suggest', routineId: 'push', lastDone: '2026-10-05' })
+    expect(dueRoutine(program({ mode: 'flexible' }), rs, ws, '2026-10-06')).toMatchObject({ routineId: 'pull', lastDone: '2026-10-01' })
+  })
+  it('the last workout day: newest finished, not one in progress', () => {
+    expect(lastWorkoutDay([], '2026-10-20')).toBeNull()
+    expect(lastWorkoutDay([workout('2026-10-12'), workout('2026-10-15'), workout('2026-10-19', { finishedAt: null })], '2026-10-20')).toBe('2026-10-15')
   })
   it('fixed weekdays: the routine set for this day, a rest day otherwise', () => {
     const p = program({ weekdays: [null, null, 'push', null, 'pull', null, 'legs'] }) // Tue, Thu, Sat
@@ -266,6 +290,8 @@ describe('summaries', () => {
     expect(plannedPerWeek(program({ weekdays: ['push', null, 'pull', null, 'gone', null, null] }), rs)).toBe(2)
     expect(plannedPerWeek(program({ mode: 'rotation', rotation: ['push'], perWeek: 4 }), rs)).toBe(4)
     expect(plannedPerWeek(program({ mode: 'rotation', rotation: [], perWeek: 4 }), rs)).toBe(0)
+    expect(plannedPerWeek(program({ mode: 'flexible', perWeek: 2 }), rs)).toBe(2)
+    expect(plannedPerWeek(program({ mode: 'flexible', perWeek: 0 }), rs)).toBe(0) // no aim
   })
   it('a week: finished workouts in it and work sets per muscle', () => {
     const ex = [exercise('bench', { muscle: 'chest' }), exercise('row', { muscle: 'back' }), exercise('misc', { muscle: null })]

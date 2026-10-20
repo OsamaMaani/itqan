@@ -6,7 +6,7 @@ import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 8
+export const SCHEMA_VERSION = 9
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -63,6 +63,10 @@ const steps: Record<number, Step> = {
       settings: { ...settings, weightUnit: settings.weightUnit ?? 'kg' },
     }
   },
+  // 8 → 9 (2026-10-21): a third program mode, 'flexible' — train whenever you can (ADR-028).
+  // Nothing stored changes; the version moves so a device that doesn't know the mode stops
+  // syncing and asks to be updated instead of misreading it.
+  8: (d) => d,
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {

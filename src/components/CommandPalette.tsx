@@ -73,7 +73,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     // Training (ADR-027): resume the workout in progress, or start what today calls for.
     const active = activeWorkout(st.workouts)
     const due = dueRoutine(st.program, st.routines, st.workouts, today)
-    const routine = due.kind === 'routine' ? st.routines.find((r) => r.id === due.routineId) : undefined
+    const routine = due.kind === 'routine' || due.kind === 'suggest' ? st.routines.find((r) => r.id === due.routineId) : undefined
     const workoutLabel = active ? t.f(m.palette.resumeWorkout, { name: active.name }) : routine ? t.f(m.palette.startRoutine, { name: routine.name }) : m.palette.startWorkout
     list.push({
       id: 'workout', icon: <Dumbbell size={16} />, label: workoutLabel, keywords: `${workoutLabel} workout gym training exercise start`,

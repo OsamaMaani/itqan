@@ -105,6 +105,10 @@ describe('deleting things training refers to', () => {
 })
 
 describe('program', () => {
+  it('a new program starts as "whenever I can" with no weekly aim', () => {
+    st().updateProgram({ habitId: null })
+    expect(st().program).toMatchObject({ mode: 'flexible', perWeek: 0 })
+  })
   it('does not exist until first saved, then keeps every choice', () => {
     expect(st().program).toBeNull()
     st().updateProgram({ mode: 'rotation', perWeek: 4 })

@@ -35,6 +35,8 @@ exactly what happened. Gym, home, bodyweight, dumbbells, machines, cardio — al
 2. **Routines** — ordered exercises, each with sets, a rep range (e.g. 8–10), a starting weight,
    rest time between sets, and warm-up sets (which never count toward records).
 3. **Program — customizable per person** (owner's answer, so others can use Itqan differently):
+   - *Whenever I can* (added 2026-10-21, ADR-028; the default): no schedule, nothing missed;
+     Itqan suggests the routine left longest; an optional weekly aim.
    - *Fixed weekdays*: a routine (or rest) for each day of the week.
    - *Rotation*: routines in order, done whenever you go; a skipped day waits for you. A
      "times per week" target gives the weekly view something to compare against.

@@ -56,5 +56,7 @@ export const today: Messages['today'] = {
     restSub: '恢复也是训练的一部分。',
     open: '打开',
     all: '全部训练',
+    suggested: '准备好就练 · 上次是{when}',
+    suggestedNew: '准备好就练 · 还没练过',
   },
 }

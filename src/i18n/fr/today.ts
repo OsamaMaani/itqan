@@ -56,5 +56,7 @@ export const today: Messages['today'] = {
     restSub: 'La récupération fait partie du programme.',
     open: 'Ouvrir',
     all: 'Toutes les séances',
+    suggested: 'Quand tu veux · dernière fois {when}',
+    suggestedNew: 'Quand tu veux · pas encore faite',
   },
 }

@@ -70,5 +70,7 @@ export const today: Messages['today'] = {
     restSub: 'التعافي جزء من البرنامج.',
     open: 'فتح',
     all: 'كل الحصص',
+    suggested: 'متى كنت مستعدًا · آخر مرة {when}',
+    suggestedNew: 'متى كنت مستعدًا · لم تؤدِّه بعد',
   },
 }

@@ -4,7 +4,7 @@ import { useI18n } from '../../i18n/react'
 import { prettyDay } from '../../lib/date'
 import { useToday } from '../../lib/hooks'
 import { navigate } from '../../lib/router'
-import { activeWorkout, dueRoutine, weekStats, workoutsOn } from '../../lib/training'
+import { activeWorkout, dueRoutine, lastWorkoutDay, weekStats, workoutsOn } from '../../lib/training'
 import { MUSCLES, type Routine } from '../../lib/types'
 import { Button, Card, EmptyState, ProgressBar, SectionTitle } from '../ui'
 import { beginWorkout } from './format'
@@ -24,7 +24,8 @@ export function OverviewTab() {
   const live = useMemo(() => liveRoutines(routines), [routines])
   const active = activeWorkout(workouts)
   const due = dueRoutine(program, routines, workouts, today)
-  const dueRoutineObj = due.kind === 'routine' ? live.find((r) => r.id === due.routineId) : undefined
+  const dueRoutineObj = due.kind === 'routine' || due.kind === 'suggest' ? live.find((r) => r.id === due.routineId) : undefined
+  const lastDay = lastWorkoutDay(workouts, today)
   const doneToday = workoutsOn(today, workouts)
   const week = useMemo(
     () => weekStats(today, weekStartsOn, program, routines, workouts, workoutSets, exercises),
@@ -66,7 +67,8 @@ export function OverviewTab() {
 
         {!active && (
           <Card className="p-5">
-            <SectionTitle>{m.training.overview.todayTitle}</SectionTitle>
+            {/* Whenever-I-can: nothing is "due" — a suggestion, and how long it has been (ADR-028). */}
+            <SectionTitle>{due.kind === 'suggest' ? m.training.overview.readyTitle : m.training.overview.todayTitle}</SectionTitle>
             {doneToday.length > 0 && (
               <div className="mb-4 space-y-1 rounded-xl bg-accent-soft px-3 py-2.5">
                 {doneToday.map((w) => (
@@ -86,6 +88,11 @@ export function OverviewTab() {
                   <div className="truncate text-lg font-extrabold">{dueRoutineObj.name}</div>
                   <div className="text-sm text-muted">{t.p(m.gym.exercisesCount, dueRoutineObj.items.length)}</div>
                   {dueRoutineObj.items.length > 0 && <div className="mt-0.5 line-clamp-2 text-xs text-muted">{exerciseLine(dueRoutineObj)}</div>}
+                  {due.kind === 'suggest' && (
+                    <div className="mt-1 text-xs font-semibold text-accent">
+                      {due.lastDone ? t.f(m.training.overview.leftLongest, { when: t.ago(due.lastDone) }) : m.training.overview.notDoneYet}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -93,6 +100,9 @@ export function OverviewTab() {
               <Button variant="primary" className="mt-4 h-12 w-full text-base" onClick={() => beginWorkout(dueRoutineObj.id, dueRoutineObj.name)}>
                 <Play size={18} className="rtl:-scale-x-100" /> {m.training.overview.start}
               </Button>
+            )}
+            {due.kind === 'suggest' && lastDay && lastDay !== today && (
+              <p className="mt-3 text-center text-xs text-muted">{t.f(m.training.overview.lastWorkout, { when: t.ago(lastDay) })}</p>
             )}
             {due.kind === 'rest' && (
               <div className="flex items-center gap-4">
@@ -108,8 +118,8 @@ export function OverviewTab() {
             )}
             {due.kind === 'none' && (
               <div>
-                <div className="font-semibold">{m.training.overview.noProgramTitle}</div>
-                <p className="mt-1 text-sm text-muted">{m.training.overview.noProgramBody}</p>
+                <div className="font-semibold">{live.length ? m.training.overview.noProgramTitle : m.training.overview.noRoutinesTitle}</div>
+                <p className="mt-1 text-sm text-muted">{live.length ? m.training.overview.noProgramBody : m.training.overview.noRoutinesBody}</p>
                 <Button variant="soft" className="mt-3" onClick={() => navigate('training', 'routines')}>{m.training.overview.openRoutines}</Button>
               </div>
             )}

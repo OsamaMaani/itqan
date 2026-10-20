@@ -24,7 +24,7 @@ export function TrainingToday() {
   const done = workoutsOn(today, workouts)
   if (!active && due.kind === 'none' && !done.length) return null
 
-  const routine = due.kind === 'routine' ? routines.find((r) => r.id === due.routineId) : undefined
+  const routine = due.kind === 'routine' || due.kind === 'suggest' ? routines.find((r) => r.id === due.routineId) : undefined
   const names = routine?.items.map((i) => exercises.find((e) => e.id === i.exerciseId)?.name).filter(Boolean) as string[] | undefined
   const last = done.at(-1)
   const sum = last ? workoutSummary(last, sets) : null
@@ -48,7 +48,13 @@ export function TrainingToday() {
     )
   } else if (routine) {
     body = (
-      <Row icon={<span className="text-lg">{routine.emoji || '🏋️'}</span>} title={routine.name} sub={names?.length ? names.join(' · ') : t.p(m.gym.exercisesCount, routine.items.length)}>
+      <Row
+        icon={<span className="text-lg">{routine.emoji || '🏋️'}</span>}
+        title={routine.name}
+        sub={due.kind === 'suggest'
+          ? (due.lastDone ? t.f(m.today.training.suggested, { when: t.ago(due.lastDone) }) : m.today.training.suggestedNew)
+          : names?.length ? names.join(' · ') : t.p(m.gym.exercisesCount, routine.items.length)}
+      >
         <Button size="sm" variant="primary" onClick={() => beginWorkout(routine.id, routine.name)}><Play size={14} /> {m.today.training.start}</Button>
       </Row>
     )

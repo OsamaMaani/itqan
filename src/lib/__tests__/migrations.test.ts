@@ -201,3 +201,19 @@ describe('v7 → v8 (training)', () => {
     expect(d.tasks).toEqual(v7().tasks)
   })
 })
+
+describe('v8 → v9 (flexible program mode)', () => {
+  it('changes nothing stored: a v8 program and training data come through exactly', () => {
+    const program = { mode: 'rotation', weekdays: [null, null, null, null, null, null, null], rotation: ['r1'], perWeek: 3, habitId: 'h', updatedAt: 'x' }
+    const v8 = { program, workouts: [{ id: 'w' }], workoutSets: [{ id: 's' }], exercises: [{ id: 'e' }], routines: [{ id: 'r1' }], settings: { weightUnit: 'lb' } }
+    const d = migrate(v8, 8)
+    expect(d.program).toEqual(program)
+    expect(d.workouts).toEqual(v8.workouts)
+    expect(d.workoutSets).toEqual(v8.workoutSets)
+    expect(d.settings.weightUnit).toBe('lb')
+  })
+  it('a v8 backup restores unchanged', () => {
+    const b = { app: 'itqan', schemaVersion: 8, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [], program: null } }
+    expect(parseBackup(JSON.stringify(b)).program).toBeNull()
+  })
+})

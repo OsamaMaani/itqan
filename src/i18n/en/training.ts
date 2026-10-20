@@ -14,9 +14,20 @@ export const training = {
     restTitle: 'Rest day',
     restBody: 'Nothing planned for today. Rest is part of getting stronger.',
     trainAnyway: 'Train anyway',
-    noProgramTitle: 'No program yet',
+    /** Shown when the program's schedule has no routines in it. */
+    noProgramTitle: 'Nothing scheduled',
     /** “Routines” is the name of the tab. */
-    noProgramBody: 'A program decides which routine comes next. Set one up under Routines.',
+    noProgramBody: 'Your program has no routines in it yet. Add some under Routines.',
+    noRoutinesTitle: 'No routines yet',
+    /** “Routines” is the name of the tab. */
+    noRoutinesBody: 'Put a few exercises together in a routine under Routines — then start it from here whenever you go.',
+    /** Title of the card when training “whenever I can”: a suggestion, not a duty. */
+    readyTitle: 'Ready when you are',
+    /** Under a suggested routine: {when} is relative, “9 days ago”. */
+    leftLongest: 'Last done {when} — the one you’ve left longest',
+    notDoneYet: 'Not done yet',
+    /** {when} is relative, “6 days ago”. Information, never a reproach. */
+    lastWorkout: 'Last workout: {when}',
     openRoutines: 'Open Routines',
     otherRoutines: 'Start a different routine',
     pickRoutine: 'Start a routine',
@@ -121,8 +132,10 @@ export const training = {
   },
   program: {
     title: 'Program',
+    flexible: 'Whenever I can',
     fixedDays: 'Fixed days',
     rotation: 'Rotation',
+    flexibleHint: 'No schedule and nothing to miss. Go when you can — Itqan suggests the routine you’ve left longest.',
     fixedDaysHint: 'Choose a routine for each day of the week.',
     rotationHint: 'Routines in order, whenever you go. A day you skip waits for you.',
     /** A day of the week with no routine. */
@@ -131,6 +144,9 @@ export const training = {
     addToRotation: 'Add a routine…',
     perWeek: 'Workouts per week',
     perWeekHint: 'Your weekly target',
+    /** Whenever I can: an optional weekly aim. */
+    aim: 'Weekly aim',
+    aimHint: 'optional — 0 means no aim',
     habit: 'Linked habit',
     noHabit: 'No habit',
     archivedHabit: 'Habit no longer available',

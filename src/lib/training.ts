@@ -27,9 +27,11 @@ export function fromUnit(value: number, unit: WeightUnit): number {
 // --- what is due ---------------------------------------------------------------------------
 
 export type Due =
-  | { kind: 'none' } // no program, or nothing in it
+  | { kind: 'none' } // no routines, or a schedule with nothing in it
   | { kind: 'rest' } // fixed weekdays, and today has no routine
-  | { kind: 'routine'; routineId: ID }
+  | { kind: 'routine'; routineId: ID } // what the schedule calls for
+  /** Flexible (or no program yet): nothing is due — this is the routine left longest, if you go. */
+  | { kind: 'suggest'; routineId: ID; lastDone: DateKey | null }
 
 const usable = (routines: Routine[]) => new Set(routines.filter((r) => !r.archived).map((r) => r.id))
 
@@ -41,7 +43,8 @@ const byStart = (a: Workout, b: Workout) => a.startedAt.localeCompare(b.startedA
  * whatever comes next, whenever you go.
  */
 export function dueRoutine(program: TrainingProgram | null, routines: Routine[], workouts: Workout[], today: DateKey): Due {
-  if (!program) return { kind: 'none' }
+  // Without a program, Itqan behaves as "whenever I can" — useful from the first routine (ADR-028).
+  if (!program || program.mode === 'flexible') return suggestRoutine(routines, workouts, today)
   const ok = usable(routines)
   if (program.mode === 'weekdays') {
     if (!program.weekdays.some((id) => id && ok.has(id))) return { kind: 'none' }
@@ -63,6 +66,36 @@ export function dueRoutine(program: TrainingProgram | null, routines: Routine[],
     }
   }
   return { kind: 'routine', routineId: rotation[(pos + 1) % rotation.length] }
+}
+
+/**
+ * For training whenever you can: the routine you have gone longest without — never-done ones
+ * first, in routine order — so an irregular week still spreads over every routine.
+ */
+export function suggestRoutine(routines: Routine[], workouts: Workout[], today: DateKey): Due {
+  const live = routines.filter((r) => !r.archived).sort((a, b) => a.order - b.order)
+  if (!live.length) return { kind: 'none' }
+  const last = new Map<ID, Workout>()
+  for (const w of workouts) {
+    if (!w.finishedAt || !w.routineId || w.date > today) continue
+    const prev = last.get(w.routineId)
+    if (!prev || w.startedAt > prev.startedAt) last.set(w.routineId, w)
+  }
+  let pick = live[0]
+  for (const r of live) {
+    const a = last.get(r.id)
+    const b = last.get(pick.id)
+    if (!a && b) pick = r // never done beats done (first in order wins among never-done)
+    else if (a && b && a.startedAt < b.startedAt) pick = r
+  }
+  return { kind: 'suggest', routineId: pick.id, lastDone: last.get(pick.id)?.date ?? null }
+}
+
+/** The day of the most recent finished workout, or null. */
+export function lastWorkoutDay(workouts: Workout[], today: DateKey): DateKey | null {
+  let best: Workout | null = null
+  for (const w of workouts) if (w.finishedAt && w.date <= today && (!best || w.startedAt > best.startedAt)) best = w
+  return best?.date ?? null
 }
 
 /** The workout still in progress, if any (newest first). */
@@ -326,6 +359,7 @@ export function plannedPerWeek(program: TrainingProgram | null, routines: Routin
   if (!program) return 0
   const ok = usable(routines)
   if (program.mode === 'weekdays') return program.weekdays.filter((id) => id && ok.has(id)).length
+  if (program.mode === 'flexible') return Math.max(0, program.perWeek) // the aim; 0 = none
   return program.rotation.some((id) => ok.has(id)) ? Math.max(0, program.perWeek) : 0
 }
 

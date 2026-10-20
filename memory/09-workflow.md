@@ -51,6 +51,11 @@ look at the UI in the browser — a report is a claim, not evidence.
 - [ ] `status.json`: task status, `updated` date, a `log` entry (newest first)
 - [ ] `python3 scripts/build_dashboard.py`, committed **with** the `status.json` change
 - [ ] Committed, message referencing the task ID and the reasoning
+- [ ] **Shipped, without asking** (the owner's standing instruction, 2026-10-21): `git push origin main`
+      (GitHub Pages redeploys — the iPhone and anyone else using the published app get it), then
+      `scripts/install_local.sh` so the laptop app is current. Only once `ci:check` passes and the
+      change was seen working; never push half-finished work, since the published app updates for
+      every user. Then confirm the live site serves the new version.
 
 ## Always Opus — never delegate to Sonnet
 

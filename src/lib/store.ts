@@ -563,7 +563,8 @@ export const useStore = create<Store>()(
       updateProgram: (patch) =>
         set((s) => ({
           program: {
-            mode: 'weekdays', weekdays: [null, null, null, null, null, null, null], rotation: [], perWeek: 3, habitId: null,
+            // A new program starts flexible with no weekly aim — the easiest start (ADR-028).
+            mode: 'flexible', weekdays: [null, null, null, null, null, null, null], rotation: [], perWeek: 0, habitId: null,
             ...s.program, ...patch, updatedAt: now(),
           },
         })),

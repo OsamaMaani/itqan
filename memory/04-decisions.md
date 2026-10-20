@@ -554,3 +554,23 @@ set (every comparison and PR would need converting; one canonical unit is simple
 enough at full precision); deriving the linked habit (touches all habit maths for one feature);
 check-in logs for linked goals (go stale when a workout is deleted); "Plan" or "Session" as names
 (both already mean something in Itqan).
+
+## ADR-028 | 2026-10-21 | accepted | Training "whenever I can": a program with no schedule
+
+**Context:** The owner pointed out that many people can't train on fixed days or a strict
+rotation — busy people go when they can — and the app should still be useful to them.
+**Decision (product choices the owner's, 2026-10-21):** a third program mode, `flexible`
+("Whenever I can"), and the **default** for a new program and for no program at all.
+- Nothing is ever due or missed. `dueRoutine()` returns `{ kind: 'suggest' }` with the routine left
+  longest (never-done first, in routine order; only finished workouts count) — so irregular weeks
+  still spread over every routine — shown as "Ready when you are", with "last done …" and
+  "Last workout: …" as information, never a reproach.
+- An optional weekly aim (`perWeek`, 0 = none). With 0 the week shows only the count; badges need
+  one workout a week.
+- Today shows the Training card every day once a routine exists (quiet, one line).
+- Schema v9: the step changes no data. The version moves so a device that doesn't know the mode
+  pauses sync and asks to be updated rather than treating `flexible` as a rotation.
+**Rejected:** treating "no program" as its own state only (people who chose a schedule and then
+got busy need to switch to it explicitly); suggesting the next routine in list order (repeats the
+first routine on every irregular visit); a "days since last workout" warning colour (shame, the
+opposite of ADR-006's spirit).

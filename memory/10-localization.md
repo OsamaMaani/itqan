@@ -201,6 +201,7 @@ glossary term flags it.
 | Warm-up | إحماء | échauffement | 热身 | calentamiento |
 | Rest (between sets / rest day) | راحة | repos | 休息 | descanso |
 | Effort | الجهد | effort | 感受 | esfuerzo |
+| Whenever I can (program mode) | متى استطعت | Quand je peux | 有空就练 | Cuando pueda |
 | Personal record (PR) | رقم قياسي شخصي | record personnel | 个人纪录 | récord personal |
 
 French *série* already means streak; in Training it means a set, and context keeps them apart.

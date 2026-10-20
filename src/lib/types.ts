@@ -387,12 +387,13 @@ export interface Routine {
 }
 
 export interface TrainingProgram {
-  mode: 'weekdays' | 'rotation'
+  /** weekdays = fixed days; rotation = in order, whenever you go; flexible = no schedule, train when you can (schema v9) */
+  mode: 'weekdays' | 'rotation' | 'flexible'
   /** Index = day of week, 0 Sunday … 6 Saturday; null = rest day */
   weekdays: (ID | null)[]
   /** Routines in order, for mode 'rotation' */
   rotation: ID[]
-  /** Workouts a week the rotation aims for */
+  /** Workouts a week aimed for (rotation, flexible); 0 = no aim (flexible only) */
   perWeek: number
   /** Finishing a workout ticks this habit on the workout's day */
   habitId: ID | null

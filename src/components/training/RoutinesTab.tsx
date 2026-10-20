@@ -10,7 +10,7 @@ import { liveRoutines, useTrainingData } from './useTrainingData'
 
 /** What the program looks like before the first save (the store creates it on the first change). */
 const NO_PROGRAM: TrainingProgram = {
-  mode: 'weekdays', weekdays: [null, null, null, null, null, null, null], rotation: [], perWeek: 3, habitId: null, updatedAt: '',
+  mode: 'flexible', weekdays: [null, null, null, null, null, null, null], rotation: [], perWeek: 0, habitId: null, updatedAt: '',
 }
 
 /** The program (when to train what) and the routines themselves. */
@@ -100,15 +100,29 @@ function ProgramCard({ program, routines, live, habits }: {
       <SectionTitle>{m.training.program.title}</SectionTitle>
       <Segmented
         value={program.mode}
-        onChange={(mode) => update({ mode })}
+        // A rotation needs a weekly target; "whenever I can" may have none (0).
+        onChange={(mode) => update(mode === 'rotation' && program.perWeek < 1 ? { mode, perWeek: 3 } : { mode })}
         options={[
+          { value: 'flexible', label: m.training.program.flexible },
           { value: 'weekdays', label: m.training.program.fixedDays },
           { value: 'rotation', label: m.training.program.rotation },
         ]}
       />
-      <p className="mt-2 text-xs text-muted">{program.mode === 'weekdays' ? m.training.program.fixedDaysHint : m.training.program.rotationHint}</p>
+      <p className="mt-2 text-xs text-muted">
+        {program.mode === 'flexible' ? m.training.program.flexibleHint : program.mode === 'weekdays' ? m.training.program.fixedDaysHint : m.training.program.rotationHint}
+      </p>
 
-      {program.mode === 'weekdays' ? (
+      {program.mode === 'flexible' ? (
+        <div className="mt-4">
+          <Label hint={m.training.program.aimHint}>{m.training.program.aim}</Label>
+          <NumField
+            key={`aim-${program.perWeek}`}
+            className="w-24"
+            value={program.perWeek}
+            onChange={(v) => v !== null && update({ perWeek: Math.min(7, Math.max(0, Math.round(v))) })}
+          />
+        </div>
+      ) : program.mode === 'weekdays' ? (
         <div className="mt-4 space-y-2">
           {order.map((day) => (
             <div key={day} className="grid grid-cols-[6.5rem_1fr] items-center gap-3 sm:grid-cols-[9rem_1fr]">

@@ -56,5 +56,7 @@ export const today: Messages['today'] = {
     restSub: 'La recuperación es parte del programa.',
     open: 'Abrir',
     all: 'Todos los entrenamientos',
+    suggested: 'Cuando quieras · última vez {when}',
+    suggestedNew: 'Cuando quieras · aún sin hacer',
   },
 }
