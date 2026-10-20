@@ -11,7 +11,7 @@ export const palette: Messages['palette'] = {
   goTo: 'الانتقال إلى {page}',
   startFocus: 'بدء جلسة تركيز مدتها {n} د',
   focusLabel: 'تركيز',
-  resumeWorkout: 'متابعة حصة التدريب: {name}',
+  resumeWorkout: 'استئناف حصة التدريب: {name}',
   startRoutine: 'بدء حصة تدريب: {name}',
   startWorkout: 'بدء حصة تدريب فارغة',
   newReminder: 'تذكير جديد',

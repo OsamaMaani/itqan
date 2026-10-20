@@ -26,7 +26,7 @@ export const review: Messages['review'] = {
   updateReview: 'Actualizar revisión',
   toastSaved: 'Revisión guardada · +30 XP',
   toastUpdated: 'Revisión actualizada',
-  workoutsOfPlanned: { one: 'entrenamientos de {n} previsto', other: 'entrenamientos de {n} previstos' },
+  workoutsOfPlanned: { one: 'de {n} entrenamiento previsto', other: 'de {n} entrenamientos previstos' },
   workouts: { one: 'entrenamiento', other: 'entrenamientos' },
   records: { one: 'récord personal', other: 'récords personales' },
 }

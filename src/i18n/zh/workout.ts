@@ -43,7 +43,7 @@ export const workout: Messages['workout'] = {
   setsLogged: { other: '已记录 {n} 组。' },
   setsLeft: { other: '计划中还有 {n} 组没做——没关系。' },
   note: '备注',
-  notePlaceholder: '没睡好，肩膀有点紧……',
+  notePlaceholder: '没睡好，肩膀有点紧…',
   doneTitle: '训练完成',
   duration: '时长',
   xp: 'XP',

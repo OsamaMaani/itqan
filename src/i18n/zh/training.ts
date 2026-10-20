@@ -1,7 +1,7 @@
 import type { Messages } from '../core'
 
 export const training: Messages['training'] = {
-  subtitle: '你的计划、你的训练，以及你变强了多少',
+  subtitle: '训练计划、训练记录，以及你变强了多少',
   tabs: { overview: '概览', history: '历史', routines: '例行训练', exercises: '动作' },
   overview: {
     inProgress: '训练进行中：{name}',
@@ -70,7 +70,7 @@ export const training: Messages['training'] = {
     newTitle: '新建动作',
     name: '名称',
     namePlaceholder: '杠铃卧推',
-    equipment: '器械',
+    equipment: '器材',
     muscle: '肌群',
     noMuscle: '不指定肌群',
     measure: '记录方式',
@@ -110,10 +110,10 @@ export const training: Messages['training'] = {
   },
   program: {
     title: '训练计划',
-    fixedDays: '固定日期',
+    fixedDays: '每周固定',
     rotation: '轮换',
     fixedDaysHint: '为一周的每一天选一个例行训练。',
-    rotationHint: '例行训练按顺序轮换，想练就练。跳过的那天会等你。',
+    rotationHint: '例行训练按顺序轮换，想练就练。哪天没练，轮到的例行训练会等着你。',
     rest: '休息',
     rotationEmpty: '添加你要轮换的例行训练。',
     addToRotation: '添加例行训练…',

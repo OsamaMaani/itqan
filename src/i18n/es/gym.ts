@@ -100,6 +100,6 @@ export const gym: Messages['gym'] = {
     running: 'Correr',
     cycling: 'Bicicleta',
     rowing: 'Máquina de remo',
-    jumpRope: 'Saltar a la comba',
+    jumpRope: 'Saltar la cuerda',
   },
 }

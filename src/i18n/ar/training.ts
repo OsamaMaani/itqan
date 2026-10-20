@@ -1,14 +1,14 @@
 import type { Messages } from '../core'
 
 export const training: Messages['training'] = {
-  subtitle: 'خطتك، وحصص تدريبك، ومدى تقدّم قوتك',
+  subtitle: 'برنامجك وحصص تدريبك، وكيف تزداد قوة',
   tabs: { overview: 'نظرة عامة', history: 'السجل', routines: 'الروتينات', exercises: 'التمارين' },
   overview: {
     inProgress: 'حصة تدريب جارية: {name}',
     inProgressHint: 'كل مجموعة علّمتها محفوظة. أكمل من حيث توقفت.',
     resume: 'استئناف',
     todayTitle: 'اليوم',
-    doneToday: 'أُنجزت اليوم: {name}',
+    doneToday: 'أنهيت اليوم: {name}',
     start: 'بدء',
     restTitle: 'يوم راحة',
     restBody: 'لا شيء مخطط له اليوم. الراحة جزء من بناء القوة.',
@@ -45,10 +45,10 @@ export const training: Messages['training'] = {
   },
   history: {
     exerciseEmpty: 'لم تُسجَّل أي مجموعة لهذا التمرين بعد.',
-    heaviest: 'الأثقل',
-    mostReps: 'أكثر تكرارات',
+    heaviest: 'أثقل وزن',
+    mostReps: 'أكبر عدد تكرارات',
     longestTime: 'أطول مدة',
-    longestDistance: 'أطول مسافة',
+    longestDistance: 'أبعد مسافة',
     bestVolume: 'أفضل مجموع في حصة واحدة',
     overTime: 'عبر الزمن',
     chartLabel: 'مخطط التقدم في {name}',
@@ -88,7 +88,7 @@ export const training: Messages['training'] = {
     muscle: 'العضلة المستهدفة',
     noMuscle: 'بلا عضلة محددة',
     measure: 'طريقة القياس',
-    step: 'خطوة زيادة الوزن',
+    step: 'مقدار زيادة الوزن',
     stepHint: 'مقدار الزيادة عندما يحين وقت رفع وزن أثقل. مجرد اقتراح.',
     notesPlaceholder: 'المقعد على الرقم 4، محطة الكابل اليسرى…',
     deleteConfirm: 'حذف «{name}»؟ إن كان له سجل فسيُؤرشف بدلًا من حذفه، ويبقى سجله محفوظًا.',
@@ -127,7 +127,7 @@ export const training: Messages['training'] = {
     fixedDays: 'أيام ثابتة',
     rotation: 'تناوب',
     fixedDaysHint: 'اختر روتينًا لكل يوم من أيام الأسبوع.',
-    rotationHint: 'روتينات بالترتيب، متى ما تدرّبت. اليوم الذي تفوّته ينتظرك.',
+    rotationHint: 'الروتينات بالترتيب، متى ما تدرّبت. إن فاتك يوم فروتينه ينتظرك.',
     rest: 'راحة',
     rotationEmpty: 'أضف الروتينات التي تتناوب عليها.',
     addToRotation: 'إضافة روتين…',

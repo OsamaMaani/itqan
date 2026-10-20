@@ -12,7 +12,7 @@ export const palette: Messages['palette'] = {
   goTo: 'Ir a {page}',
   startFocus: 'Empezar una sesión de concentración de {n} minutos',
   focusLabel: 'Concentración',
-  resumeWorkout: 'Continuar entrenamiento: {name}',
+  resumeWorkout: 'Reanudar entrenamiento: {name}',
   startRoutine: 'Empezar entrenamiento: {name}',
   startWorkout: 'Empezar un entrenamiento vacío',
   newReminder: 'Nuevo recordatorio',

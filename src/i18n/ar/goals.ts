@@ -71,7 +71,7 @@ export const goals: Messages['goals'] = {
     sourceWorkouts: 'حصص التدريب التي أنهيها',
     exercise: 'التمرين',
     metric: 'الأفضل',
-    metrics: { kg: 'أثقل وزن', reps: 'أكثر تكرارات', seconds: 'أطول مدة', meters: 'أبعد مسافة' },
+    metrics: { kg: 'أثقل وزن', reps: 'أكبر عدد تكرارات', seconds: 'أطول مدة', meters: 'أبعد مسافة' },
     exerciseHint: 'يتحدّث تلقائيًا من حصص تدريبك. الإحماء لا يُحتسب.',
     workoutsHint: 'يحتسب كل حصة تدريب تنهيها بدءًا من يوم البداية.',
     bestBefore: 'أفضل أداء حتى الآن',

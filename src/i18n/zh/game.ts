@@ -31,7 +31,7 @@ export const badges: Messages['badges'] = {
   'proud-10': { title: '引以为豪', desc: '记录 10 项成就' },
   'people-10': { title: '好朋友', desc: '记录 10 次与人的联系' },
   'people-50': { title: '广结善缘', desc: '记录 50 次与人的联系' },
-  'workout-1': { title: '第一下', desc: '完成第一次训练' },
+  'workout-1': { title: '迈出第一步', desc: '完成第一次训练' },
   'workouts-10': { title: '健身常客', desc: '完成 10 次训练' },
   'workouts-50': { title: '钢铁意志', desc: '完成 50 次训练' },
   'record-1': { title: '更强了', desc: '创造一项个人纪录' },

@@ -53,7 +53,7 @@ export const today: Messages['today'] = {
     done: '{name}——已完成',
     start: '开始',
     rest: '休息日',
-    restSub: '恢复也是计划的一部分。',
+    restSub: '恢复也是训练的一部分。',
     open: '打开',
     all: '全部训练',
   },

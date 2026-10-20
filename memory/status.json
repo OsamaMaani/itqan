@@ -350,7 +350,7 @@
           "id": "S2-31",
           "title": "Training in Arabic, French, Chinese and Spanish, with an independent review",
           "module": "training",
-          "status": "in-progress"
+          "status": "done"
         }
       ]
     },
@@ -531,7 +531,7 @@
     {
       "slug": "training",
       "name": "Training",
-      "status": "in-progress"
+      "status": "done"
     }
   ],
   "open_questions": [
@@ -579,6 +579,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-20",
+      "entry": "S2-31: independent review of every new Training string in Arabic, French, Chinese and Spanish (62 lines in 24 files). Main fixes: Arabic no longer uses تمرين (exercise) for the program and says إلغاء, not تجاهل, for discarding a workout; \"plan\" words that clashed with the Plan screen became program words in ar/es/zh; the weekly-review label under the workout count now reads right under any number in ar/fr/es; French no-break spaces between numbers and units; gender-neutral French badge titles; one word for Resume and for each record type throughout. Left as is: Spanish Gemelos (Spain/anatomical), English gym words French and Spanish lifters use (Hip thrust, Dips), the long Arabic 1-rep-max label."
+    },
     {
       "date": "2026-10-20",
       "entry": "S2-28 to S2-30: the Training screen. Overview (today's routine from the program, resume, start another or an empty workout, this week vs plan with sets per muscle, recent workouts), History (month calendar, any day's workouts with every set and PRs, any exercise's records and chart), Routines (program by fixed days or rotation, times per week, linked habit; routine editor with per-measure targets), Exercises (editor, search, archive, \"Add common exercises\" in the interface language). The live workout: one exercise at a time, target, last time, next-time suggestion, set rows prefilled so logging is one tap on Easy/Good/Hard/Failed, rest timer, add/reorder/skip, finish summary with records and XP, resumes after reload, keeps the phone screen on. Elsewhere: a Training card on Today, goals that follow an exercise's best or count workouts, kg/lb in Settings, workouts and records in the weekly review, start/resume from Ctrl+K. Tabs built by the builder subagent (Sonnet), live workout and connections in the main session; checked in the browser at 375 px and desktop, light and dark, English and Arabic."

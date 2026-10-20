@@ -65,7 +65,7 @@ export const goals: Messages['goals'] = {
     sourceWorkouts: 'Los entrenamientos que termino',
     exercise: 'Ejercicio',
     metric: 'Mejor marca',
-    metrics: { kg: 'Peso máximo', reps: 'Más repeticiones', seconds: 'Más tiempo', meters: 'Más distancia' },
+    metrics: { kg: 'Mayor peso', reps: 'Más repeticiones', seconds: 'Mayor tiempo', meters: 'Mayor distancia' },
     exerciseHint: 'Se actualiza solo con tus entrenamientos. El calentamiento no cuenta.',
     workoutsHint: 'Cuenta cada entrenamiento que terminas desde el día de inicio.',
     bestBefore: 'Mejor marca actual',

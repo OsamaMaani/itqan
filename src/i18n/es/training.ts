@@ -113,7 +113,7 @@ export const training: Messages['training'] = {
     fixedDays: 'Días fijos',
     rotation: 'Rotación',
     fixedDaysHint: 'Elige una rutina para cada día de la semana.',
-    rotationHint: 'Las rutinas en orden, cuando vayas a entrenar. Un día que te saltas te espera.',
+    rotationHint: 'Las rutinas en orden, cuando vayas a entrenar. Si te saltas un día, su rutina te espera.',
     rest: 'Descanso',
     rotationEmpty: 'Añade las rutinas por las que vas rotando.',
     addToRotation: 'Añadir una rutina…',

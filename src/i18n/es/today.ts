@@ -49,11 +49,11 @@ export const today: Messages['today'] = {
   onThisDay: 'Un día como hoy',
   training: {
     inProgress: 'En curso: {name}',
-    resume: 'Continuar',
+    resume: 'Reanudar',
     done: '{name} — terminado',
     start: 'Empezar',
     rest: 'Día de descanso',
-    restSub: 'La recuperación es parte del plan.',
+    restSub: 'La recuperación es parte del programa.',
     open: 'Abrir',
     all: 'Todos los entrenamientos',
   },
