@@ -1,6 +1,6 @@
 import { addDaysKey, dayOfWeek, rangeKeys, weekStartKey } from './date'
 import type {
-  DateKey, Exercise, ID, Muscle, Routine, RoutineItem, TrainingProgram, WeightUnit, Workout, WorkoutSet,
+  DateKey, Exercise, GoalMetric, ID, Muscle, Routine, RoutineItem, TrainingProgram, WeightUnit, Workout, WorkoutSet,
 } from './types'
 
 /**
@@ -276,7 +276,7 @@ export function recordCounts(workouts: Workout[], sets: WorkoutSet[]): Map<ID, n
 }
 
 /** An exercise's best for a linked goal — warm-ups excluded, every workout counted. */
-export function exerciseBest(exerciseId: ID, metric: 'kg' | 'reps' | 'seconds', sets: WorkoutSet[]): number {
+export function exerciseBest(exerciseId: ID, metric: GoalMetric, sets: WorkoutSet[]): number {
   let best = 0
   for (const s of sets) {
     if (s.exerciseId !== exerciseId || s.warmup) continue
@@ -377,4 +377,51 @@ export function bestWeekRun(workouts: Workout[], planned: number, weekStartsOn: 
     else if (k !== thisWeek) run = 0
   }
   return best
+}
+
+export interface SeriesPoint { date: DateKey; value: number; workoutId: ID }
+
+/**
+ * One point per workout for an exercise's chart, oldest first: the best work set by the
+ * exercise's own measure — heaviest kg (weight), most reps (reps), longest time, longest distance.
+ */
+export function exerciseSeries(history: Performance[], measure: Exercise['measure']): SeriesPoint[] {
+  const metric = measure === 'weight' ? 'kg' : measure === 'reps' ? 'reps' : measure === 'time' ? 'seconds' : 'meters'
+  return [...history]
+    .sort((a, b) => byStart(a.workout, b.workout))
+    .map(({ workout, sets }) => ({ workout, value: Math.max(0, ...work(sets).map((s) => s[metric] ?? 0)) }))
+    .filter((p) => p.value > 0)
+    .map(({ workout, value }) => ({ date: workout.date, value, workoutId: workout.id }))
+}
+
+export type SetValues = Pick<WorkoutSet, 'reps' | 'kg' | 'seconds' | 'meters'>
+
+/**
+ * What a not-yet-logged set row is prefilled with, so that "done as planned" is one tap:
+ * 1. the previous set of the same kind in this workout (you just did it — likely again);
+ * 2. else the same set last time (the n-th warm-up or work set, or the last one if there were fewer);
+ * 3. else the routine's target (top of the rep range). A work set's weight follows the
+ *    next-time suggestion when there is one and nothing is logged yet. Warm-ups without
+ *    history start at half the target weight.
+ */
+export function prefillSet(
+  item: RoutineItem, warmup: boolean, index: number, loggedHere: WorkoutSet[], last: Performance | null, suggestion: Suggestion,
+): SetValues {
+  const pick = (s: WorkoutSet): SetValues => ({ reps: s.reps, kg: s.kg, seconds: s.seconds, meters: s.meters })
+  const sameKind = (sets: WorkoutSet[]) => sets.filter((s) => s.warmup === warmup)
+  const here = sameKind(loggedHere)
+  if (here.length) return pick(here[here.length - 1])
+
+  const target: SetValues = { reps: item.repsMax ?? item.repsMin, kg: item.kg, seconds: item.seconds, meters: item.meters }
+  const before = last ? sameKind(last.sets) : []
+  const base = before.length ? pick(before[Math.min(index, before.length - 1)]) : target
+  if (warmup) {
+    return before.length ? base : { ...target, kg: item.kg !== null ? Math.round(item.kg / 2 / 2.5) * 2.5 : null }
+  }
+  return suggestion.kind === 'none' ? base : { ...base, kg: suggestion.kg }
+}
+
+/** The metric an exercise goal follows by default, from how the exercise is measured. */
+export function metricFor(measure: Exercise['measure']): GoalMetric {
+  return measure === 'weight' ? 'kg' : measure === 'reps' ? 'reps' : measure === 'time' ? 'seconds' : 'meters'
 }

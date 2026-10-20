@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 export const ROUTES = [
-  'today', 'plan', 'habits', 'goals', 'projects', 'focus', 'ideas', 'reminders', 'connections', 'memories',
+  'today', 'plan', 'habits', 'goals', 'projects', 'focus', 'training', 'ideas', 'reminders', 'connections', 'memories',
   'achievements', 'insights', 'review', 'settings',
 ] as const
 export type Route = (typeof ROUTES)[number]

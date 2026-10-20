@@ -61,4 +61,14 @@ export const today: Messages['today'] = {
   overdueBy: { zero: 'موعده اليوم', one: 'متأخر بيوم', two: 'متأخر بيومين', few: 'متأخر {n} أيام', many: 'متأخر {n} يومًا', other: 'متأخر {n} يوم' },
   checkInToday: 'تواصل اليوم',
   onThisDay: 'في مثل هذا اليوم',
+  training: {
+    inProgress: 'جارية: {name}',
+    resume: 'متابعة',
+    done: 'انتهت {name}',
+    start: 'بدء',
+    rest: 'يوم راحة',
+    restSub: 'التعافي جزء من الخطة.',
+    open: 'فتح',
+    all: 'كل الحصص',
+  },
 }

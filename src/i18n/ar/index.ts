@@ -12,6 +12,7 @@ import { errors } from './errors'
 import { focus } from './focus'
 import { badges, levels } from './game'
 import { goals } from './goals'
+import { gym } from './gym'
 import { habits } from './habits'
 import { ideas } from './ideas'
 import { insights } from './insights'
@@ -31,8 +32,11 @@ import { sync } from './sync'
 import { tasks } from './tasks'
 import { time } from './time'
 import { today } from './today'
+import { training } from './training'
+import { workout } from './workout'
 
 export const messages: Messages = {
   common, nav, time, app, levels, badges, today, palette, quickAdd, tasks, plan, focus, habits, goals, insights, review,
   projects, ideas, memories, achievements, reminders, connections, settings, sync, onboarding, daily, seed, store, errors,
+  gym, training, workout,
 }

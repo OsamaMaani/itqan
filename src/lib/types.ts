@@ -106,9 +106,13 @@ export interface Goal {
   link: GoalLink | null
 }
 
+/** What an exercise goal follows: heaviest weight, most reps, longest time or farthest distance. */
+export const GOAL_METRICS = ['kg', 'reps', 'seconds', 'meters'] as const
+export type GoalMetric = (typeof GOAL_METRICS)[number]
+
 /** A numeric goal that follows Training: an exercise's best, or a count of finished workouts. */
 export type GoalLink =
-  | { kind: 'exercise'; exerciseId: ID; metric: 'kg' | 'reps' | 'seconds' }
+  | { kind: 'exercise'; exerciseId: ID; metric: GoalMetric }
   | { kind: 'workouts' }
 
 export interface GoalLog {

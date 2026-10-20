@@ -25,6 +25,10 @@ export const palette = {
   startFocus: 'Start a {n}-minute focus session',
   /** The name given to a focus session started from here; it is stored and shown in the session list later. */
   focusLabel: 'Focus',
+  /** Training (ADR-027). {name} is the workout or routine name. */
+  resumeWorkout: 'Resume workout: {name}',
+  startRoutine: 'Start workout: {name}',
+  startWorkout: 'Start an empty workout',
   newReminder: 'New reminder',
   recordAchievement: 'Record an achievement',
   writeMemory: 'Write a memory',

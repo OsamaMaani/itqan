@@ -13,6 +13,8 @@ export const settings: Messages['settings'] = {
     theme: 'المظهر',
     themes: { system: 'حسب النظام', light: 'فاتح', dark: 'داكن' },
     weekStartsOn: 'يبدأ الأسبوع يوم',
+    weightUnit: 'وحدة الأوزان',
+    weightUnitHint: 'التغيير لا يمسّ ما سجّلته',
     focusMinutes: 'التركيز (دقيقة)',
     breakMinutes: 'الاستراحة (دقيقة)',
     sounds: 'الأصوات',

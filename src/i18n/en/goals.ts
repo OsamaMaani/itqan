@@ -67,5 +67,26 @@ export const goals = {
     addMilestone: 'Add a milestone',
     start: 'Start',
     deadline: 'Deadline',
+    /** Where a numeric goal's progress comes from (Training, ADR-027). */
+    source: 'Progress comes from',
+    sourceCheckins: 'What I log',
+    sourceExercise: 'My best on an exercise',
+    sourceWorkouts: 'Workouts I finish',
+    exercise: 'Exercise',
+    metric: 'Best',
+    metrics: { kg: 'Heaviest weight', reps: 'Most reps', seconds: 'Longest time', meters: 'Farthest distance' },
+    exerciseHint: 'Fills in by itself from your workouts. Warm-ups don’t count.',
+    workoutsHint: 'Counts every workout you finish from the start day.',
+    /** For an exercise goal: the best before you started logging it in Itqan. */
+    bestBefore: 'Best so far',
+    /** Target with its unit: “Target (kg)”. */
+    targetIn: 'Target ({unit})',
+  },
+  /** A goal whose progress comes from Training. */
+  linked: {
+    exercise: 'Follows {exercise} — {metric}',
+    workouts: 'Counts your finished workouts',
+    workoutsUnit: 'workouts',
+    open: 'Open Training',
   },
 }

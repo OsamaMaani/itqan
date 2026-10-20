@@ -3,8 +3,8 @@ import { badges, xpEvents, XP } from '../gamification'
 import { goalCurrent, goalProgress } from '../goals'
 import { emptyData } from '../seed'
 import {
-  activeWorkout, bestWeekRun, dueRoutine, exerciseBest, exerciseHistory, fromUnit, lastTime, newRecords, oneRepMax,
-  personalRecords, plannedPerWeek, recordCounts, suggestNext, toUnit, weekStats, workoutSummary,
+  activeWorkout, bestWeekRun, dueRoutine, exerciseBest, exerciseHistory, exerciseSeries, fromUnit, lastTime, newRecords, oneRepMax,
+  personalRecords, plannedPerWeek, prefillSet, recordCounts, suggestNext, toUnit, weekStats, workoutSummary,
 } from '../training'
 import type { Data, Effort, Exercise, Goal, Routine, RoutineItem, TrainingProgram, Workout, WorkoutSet } from '../types'
 
@@ -209,6 +209,47 @@ describe('personal records', () => {
   it('best for a goal ignores warm-ups', () => {
     const w = workout('2026-10-17')
     expect(exerciseBest('bench', 'kg', [set(w, 1, 100, 'easy', { warmup: true }), set(w, 5, 60)])).toBe(60)
+  })
+})
+
+describe('prefilled set rows', () => {
+  const none = { kind: 'none' } as const
+  it('copies the previous set of the same kind in this workout first', () => {
+    const w = workout('2026-10-20', { finishedAt: null })
+    const here = [set(w, 9, 42.5), set(w, 5, 20, 'easy', { warmup: true })]
+    expect(prefillSet(item(), false, 1, here, null, { kind: 'up', kg: 45 })).toEqual({ reps: 9, kg: 42.5, seconds: null, meters: null })
+    expect(prefillSet(item(), true, 1, here, null, none)).toMatchObject({ reps: 5, kg: 20 })
+  })
+  it('then the same set last time — the n-th, or the last when there were fewer', () => {
+    const w = workout('2026-10-17')
+    const last = { workout: w, sets: [set(w, 10, 40), set(w, 9, 40), set(w, 6, 20, 'easy', { warmup: true })] }
+    expect(prefillSet(item(), false, 1, [], last, none)).toMatchObject({ reps: 9, kg: 40 })
+    expect(prefillSet(item(), false, 4, [], last, none)).toMatchObject({ reps: 9, kg: 40 })
+    expect(prefillSet(item(), true, 0, [], last, none)).toMatchObject({ reps: 6, kg: 20 })
+  })
+  it('a work set’s weight follows the suggestion; a warm-up’s never does', () => {
+    const w = workout('2026-10-17')
+    const last = { workout: w, sets: [set(w, 10, 40), set(w, 6, 20, 'easy', { warmup: true })] }
+    expect(prefillSet(item(), false, 0, [], last, { kind: 'up', kg: 42.5 })).toMatchObject({ reps: 10, kg: 42.5 })
+    expect(prefillSet(item(), true, 0, [], last, { kind: 'up', kg: 42.5 })).toMatchObject({ kg: 20 })
+  })
+  it('without history: the routine’s target, top of the range; warm-ups at half weight', () => {
+    expect(prefillSet(item({ repsMin: 8, repsMax: 10, kg: 40 }), false, 0, [], null, none)).toEqual({ reps: 10, kg: 40, seconds: null, meters: null })
+    expect(prefillSet(item({ repsMin: 8, repsMax: null, kg: 45 }), true, 0, [], null, none)).toMatchObject({ reps: 8, kg: 22.5 })
+    expect(prefillSet(item({ repsMin: null, repsMax: null, kg: null, seconds: 60 }), false, 0, [], null, none)).toEqual({ reps: null, kg: null, seconds: 60, meters: null })
+  })
+})
+
+describe('chart series', () => {
+  it('one point per workout, oldest first, the best work set by the exercise’s measure', () => {
+    const w1 = workout('2026-10-14'), w2 = workout('2026-10-17'), w3 = workout('2026-10-18')
+    const sets = [set(w2, 5, 50), set(w2, 8, 45), set(w1, 8, 40), set(w1, 2, 80, 'easy', { warmup: true }), set(w3, 3, 20, 'easy', { warmup: true })]
+    const h = exerciseHistory('bench', [w1, w2, w3], sets)
+    expect(exerciseSeries(h, 'weight')).toEqual([
+      { date: '2026-10-14', value: 40, workoutId: w1.id },
+      { date: '2026-10-17', value: 50, workoutId: w2.id },
+    ]) // w3 had only a warm-up
+    expect(exerciseSeries(h, 'reps').map((p) => p.value)).toEqual([8, 8])
   })
 })
 

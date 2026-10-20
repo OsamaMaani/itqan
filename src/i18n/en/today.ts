@@ -48,4 +48,16 @@ export const today = {
   overdueBy: { one: 'Overdue by {n} day', other: 'Overdue by {n} days' },
   checkInToday: 'Check in today',
   onThisDay: 'On this day',
+  /** The Training card on Today (ADR-027). */
+  training: {
+    inProgress: 'In progress: {name}',
+    resume: 'Resume',
+    /** A workout finished today. */
+    done: '{name} — done',
+    start: 'Start',
+    rest: 'Rest day',
+    restSub: 'Recovery is part of the plan.',
+    open: 'Open',
+    all: 'All workouts',
+  },
 }

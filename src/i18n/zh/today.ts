@@ -47,4 +47,14 @@ export const today: Messages['today'] = {
   overdueBy: { other: '已逾期 {n} 天' },
   checkInToday: '今天联系',
   onThisDay: '那年今日',
+  training: {
+    inProgress: '进行中：{name}',
+    resume: '继续',
+    done: '{name}——已完成',
+    start: '开始',
+    rest: '休息日',
+    restSub: '恢复也是计划的一部分。',
+    open: '打开',
+    all: '全部训练',
+  },
 }

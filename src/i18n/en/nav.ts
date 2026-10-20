@@ -5,6 +5,7 @@ export const nav = {
   goals: 'Goals',
   projects: 'Projects',
   focus: 'Focus',
+  training: 'Training',
   ideas: 'Ideas',
   reminders: 'Reminders',
   connections: 'Connections',

@@ -56,7 +56,8 @@ Shadows are near-invisible; the primary button gets a coloured glow.
 - Phone: top bar (logo, sync badge), bottom tab bar (Today, Plan, Habits, Goals, More), floating
   + button. "More" opens a sheet with every other screen, Focus first among them; a running focus
   timer shows as a dot on More and a countdown on the Focus tile. Bottom padding keeps content
-  clear of the bar.
+  clear of the bar. The + button is hidden on Training, where the live workout's effort buttons
+  and rest timer sit (ADR-027).
 
 ## Layout rules that prevent real bugs (2026-10-16)
 

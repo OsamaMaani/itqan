@@ -7,6 +7,7 @@ export const nav: Messages['nav'] = {
   goals: '目标',
   projects: '项目',
   focus: '专注',
+  training: '训练',
   ideas: '想法',
   reminders: '提醒',
   connections: '联系人',

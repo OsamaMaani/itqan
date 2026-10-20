@@ -28,10 +28,11 @@ import { RemindersPage } from './pages/Reminders'
 import { ReviewPage } from './pages/Review'
 import { SettingsPage } from './pages/Settings'
 import { TodayPage } from './pages/Today'
+import { TrainingPage } from './pages/Training'
 
 const PAGES: Record<Route, () => React.ReactElement> = {
   today: TodayPage, plan: PlanPage, habits: HabitsPage, goals: GoalsPage, projects: ProjectsPage, connections: ConnectionsPage,
-  focus: FocusPage, ideas: IdeasPage, reminders: RemindersPage, memories: MemoriesPage, achievements: AchievementsPage,
+  focus: FocusPage, training: TrainingPage, ideas: IdeasPage, reminders: RemindersPage, memories: MemoriesPage, achievements: AchievementsPage,
   insights: InsightsPage, review: ReviewPage, settings: SettingsPage,
 }
 

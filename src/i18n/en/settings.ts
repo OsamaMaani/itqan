@@ -12,6 +12,9 @@ export const settings = {
     theme: 'Theme',
     themes: { system: 'System', light: 'Light', dark: 'Dark' },
     weekStartsOn: 'Week starts on',
+    /** Training (ADR-027): how weights are shown. */
+    weightUnit: 'Weights in',
+    weightUnitHint: 'switching never changes what you logged',
     focusMinutes: 'Focus (min)',
     breakMinutes: 'Break (min)',
     sounds: 'Sounds',

@@ -65,3 +65,16 @@ exactly what happened. Gym, home, bodyweight, dumbbells, machines, cardio — al
 ## Not in the first version (owner: "that is enough for first version")
 
 Supersets, plate calculator, body weight and measurements, deload weeks, progress photos.
+
+## How it was built (2026-10-20)
+
+- Data and maths: S2-26, S2-27 — `src/lib/types.ts`, `store.ts`, `training.ts`, `trainingStarter.ts`.
+- Screen: `src/pages/Training.tsx` routes `#/training[/history|/routines|/exercises|/workout]`;
+  tabs and editors in `src/components/training/`; the live workout is `LiveWorkout.tsx`, its rest
+  timer `rest.ts` (device-local key `itqan-rest`); display helpers `format.tsx` (`useGymFormat`,
+  `beginWorkout` — never two workouts in progress at once).
+- Text: `m.gym` (shared vocabulary), `m.training` (tabs and editors), `m.workout` (live workout).
+- On the phone the floating "+ task" button is hidden on Training: the effort buttons and the
+  rest timer sit where it would be.
+- Elsewhere: `TodayCard.tsx` on Today (hidden until Training is set up), goal links in
+  `GoalEditor`/`GoalCard`, `weightUnit` in Settings → Profile, the weekly review, Ctrl+K.

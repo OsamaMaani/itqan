@@ -26,4 +26,7 @@ export const review: Messages['review'] = {
   updateReview: '更新回顾',
   toastSaved: '回顾已保存 · +30 XP',
   toastUpdated: '回顾已更新',
+  workoutsOfPlanned: { other: '次训练（计划 {n} 次）' },
+  workouts: { other: '次训练' },
+  records: { other: '项个人纪录' },
 }

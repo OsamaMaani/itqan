@@ -7,6 +7,7 @@ export const nav: Messages['nav'] = {
   goals: 'Objetivos',
   projects: 'Proyectos',
   focus: 'Concentración',
+  training: 'Entrenamiento',
   ideas: 'Ideas',
   reminders: 'Recordatorios',
   connections: 'Contactos',

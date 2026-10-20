@@ -47,4 +47,14 @@ export const today: Messages['today'] = {
   overdueBy: { one: 'Con {n} día de retraso', other: 'Con {n} días de retraso' },
   checkInToday: 'Contacta hoy',
   onThisDay: 'Un día como hoy',
+  training: {
+    inProgress: 'En curso: {name}',
+    resume: 'Continuar',
+    done: '{name} — terminado',
+    start: 'Empezar',
+    rest: 'Día de descanso',
+    restSub: 'La recuperación es parte del plan.',
+    open: 'Abrir',
+    all: 'Todos los entrenamientos',
+  },
 }

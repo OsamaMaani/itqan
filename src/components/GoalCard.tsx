@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { CalendarDays, Check, CheckCircle2, ListTodo, Pause, Pencil, Play, Plus, RotateCcw, Trash2, TrendingUp } from 'lucide-react'
+import { CalendarDays, Check, CheckCircle2, Dumbbell, ListTodo, Pause, Pencil, Play, Plus, RotateCcw, Trash2, TrendingUp } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { tx } from '../i18n/core'
 import { useI18n } from '../i18n/react'
@@ -7,6 +7,8 @@ import { celebrate } from '../lib/celebrate'
 import { goalCurrent, goalPace, goalProgress, goalTarget, type Pace } from '../lib/goals'
 import { areaHex, useAreaMap, useGoalSources, useToday } from '../lib/hooks'
 import { useStore } from '../lib/store'
+import { navigate } from '../lib/router'
+import { useGymFormat } from './training/format'
 import { categoryForArea } from '../lib/achievements'
 import { todayKey } from '../lib/date'
 import { openAchievement } from '../pages/Achievements'
@@ -39,6 +41,8 @@ function onCompleted(goal: Goal) {
 export function GoalLogButton({ goal }: { goal: Goal }) {
   const { m } = useI18n()
   const [open, setOpen] = useState(false)
+  // A goal that follows Training fills in by itself — there is nothing to log by hand.
+  if (goal.link) return null
   return (
     <>
       <IconButton label={m.goals.logProgress} onClick={() => setOpen(true)} className="bg-surface-2"><Plus size={16} /></IconButton>
@@ -124,15 +128,24 @@ function useGoalView(goal: Goal) {
   const areas = useAreaMap()
   const area = goal.areaId ? areas.get(goal.areaId) : undefined
   const fmtN = (x: number) => t.n(x, { maximumFractionDigits: 1 })
+  const gym = useGymFormat()
+  const exercises = useStore((s) => s.exercises)
   const cur = goalCurrent(goal, src)
   const target = goalTarget(goal)
+  const link = goal.kind === 'numeric' ? goal.link : null
+  const progressText = goal.kind === 'milestones'
+    ? t.p(t.m.goals.card.progressMilestones, target, { cur })
+    : link?.kind === 'exercise'
+      ? t.f(t.m.goals.card.progressNumeric, { cur: gym.metric(link.metric, cur), target: gym.metric(link.metric, target), unit: '' }).trim()
+      : t.f(t.m.goals.card.progressNumeric, { cur: fmtN(cur), target: fmtN(target), unit: link ? t.m.goals.linked.workoutsUnit : goal.unit })
+  const linkText = link?.kind === 'exercise'
+    ? t.f(t.m.goals.linked.exercise, { exercise: exercises.find((e) => e.id === link.exerciseId)?.name ?? t.m.workout.unknownExercise, metric: t.m.goals.editor.metrics[link.metric] })
+    : link ? t.m.goals.linked.workouts : null
   return {
-    t, area, hex: areaHex(area), logs, linkedOpen, fmtN,
+    t, area, hex: areaHex(area), logs, linkedOpen, fmtN, linkText,
     p: goalProgress(goal, src),
     pace: goalPace(goal, src, today),
-    progressText: goal.kind === 'numeric'
-      ? t.f(t.m.goals.card.progressNumeric, { cur: fmtN(cur), target: fmtN(target), unit: goal.unit })
-      : t.p(t.m.goals.card.progressMilestones, target, { cur }),
+    progressText,
   }
 }
 
@@ -162,7 +175,8 @@ function MilestoneRow({ goal, ms, hex }: { goal: Goal; ms: Milestone; hex: strin
 function GoalMeta({ goal, view, className }: { goal: Goal; view: ReturnType<typeof useGoalView>; className?: string }) {
   const { t, pace, fmtN, linkedOpen } = view
   const { m } = t
-  const showPerDay = pace.perDay !== null && goal.kind === 'numeric'
+  // Per-day amounts suit what you log, not a personal best or a count of workouts.
+  const showPerDay = pace.perDay !== null && goal.kind === 'numeric' && !goal.link
   if (!goal.deadline && !showPerDay && !linkedOpen) return null
   return (
     <div className={cx('flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted', className)}>
@@ -212,7 +226,7 @@ export function GoalCard({ goal }: { goal: Goal }) {
               <span className="tabular">{progressText}</span>
             </div>
           </div>
-          {goal.status === 'active' && goal.kind === 'numeric' && (
+          {goal.status === 'active' && goal.kind === 'numeric' && !goal.link && (
             <IconButton label={m.goals.logProgress} onClick={() => setLogging(true)} className="relative shrink-0 bg-surface-2"><Plus size={16} /></IconButton>
           )}
         </div>
@@ -244,7 +258,7 @@ function Action({ icon, label, variant = 'ghost', className, onClick }: { icon: 
 /** Everything about one goal, opened from its card. */
 function GoalDetails({ goal, open, onClose, onEdit, onLog }: { goal: Goal; open: boolean; onClose: () => void; onEdit: () => void; onLog: () => void }) {
   const view = useGoalView(goal)
-  const { t, area, hex, p, pace, progressText, logs } = view
+  const { t, area, hex, p, pace, progressText, logs, linkText } = view
   const { m } = t
   const setStatus = useStore((s) => s.setGoalStatus)
   const deleteGoal = useStore((s) => s.deleteGoal)
@@ -266,7 +280,8 @@ function GoalDetails({ goal, open, onClose, onEdit, onLog }: { goal: Goal; open:
           {goal.status !== 'done' && <Action icon={<CheckCircle2 size={15} />} label={m.goals.card.markComplete} onClick={() => { setStatus(goal.id, 'done'); onCompleted(goal) }} />}
           {goal.status === 'done' && <Action icon={<RotateCcw size={15} />} label={m.goals.card.reopen} onClick={() => setStatus(goal.id, 'active')} />}
           <Action variant="soft" icon={<Pencil size={15} />} label={m.common.edit} onClick={onEdit} />
-          {goal.status === 'active' && goal.kind === 'numeric' && <Button variant="primary" onClick={onLog}><Plus size={15} /> {m.goals.logProgress}</Button>}
+          {goal.status === 'active' && goal.kind === 'numeric' && !goal.link && <Button variant="primary" onClick={onLog}><Plus size={15} /> {m.goals.logProgress}</Button>}
+          {goal.link && <Button variant="primary" onClick={() => { onClose(); navigate('training') }}><Dumbbell size={15} /> {m.goals.linked.open}</Button>}
         </>
       }
     >
@@ -281,6 +296,7 @@ function GoalDetails({ goal, open, onClose, onEdit, onLog }: { goal: Goal; open:
               <StatusChip goal={goal} pace={pace.pace} />
             </div>
             <div className="mt-1.5 text-lg font-bold tabular">{progressText}</div>
+            {linkText && <div className="mt-0.5 flex items-center gap-1 text-xs text-muted"><Dumbbell size={12} /> {linkText}</div>}
             <GoalMeta goal={goal} view={view} className="mt-1" />
           </div>
         </div>
@@ -301,7 +317,7 @@ function GoalDetails({ goal, open, onClose, onEdit, onLog }: { goal: Goal; open:
           </div>
         )}
 
-        {goal.kind === 'numeric' && (
+        {goal.kind === 'numeric' && !goal.link && (
           <div>
             <div className={section}>{m.goals.card.history}</div>
             {myLogs.length === 0 ? (

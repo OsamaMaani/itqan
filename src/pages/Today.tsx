@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { ChevronDown, Flame, Plus, Sparkles, Target, Timer, Zap } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { GoalLogButton } from '../components/GoalCard'
+import { TrainingToday } from '../components/training/TodayCard'
 import { HabitTile } from '../components/HabitTile'
 import { QuickAdd } from '../components/QuickAdd'
 import { TaskItem } from '../components/TaskItem'
@@ -227,6 +228,7 @@ export function TodayPage() {
             )}
           </section>
 
+          <TrainingToday />
           <PinnedProjects />
 
           <section>
@@ -254,7 +256,7 @@ export function TodayPage() {
                         {pace.daysLeft !== null && (
                           <div className="mt-1 text-[11px] text-muted">
                             {pace.daysLeft >= 0 ? t.p(m.today.daysLeft, pace.daysLeft) : m.today.pastDeadline}
-                            {pace.perDay !== null && g.kind === 'numeric' && ` · ${t.f(m.today.perDay, { amount: fmt(pace.perDay), unit: g.unit })}`}
+                            {pace.perDay !== null && g.kind === 'numeric' && !g.link && ` · ${t.f(m.today.perDay, { amount: fmt(pace.perDay), unit: g.unit })}`}
                           </div>
                         )}
                       </div>

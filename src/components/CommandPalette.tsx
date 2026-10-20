@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { Bell, Camera, Trophy, CornerDownLeft, Download, Lightbulb, Moon, Plus, Search, Timer } from 'lucide-react'
+import { Bell, Camera, Trophy, CornerDownLeft, Download, Dumbbell, Lightbulb, Moon, Plus, Search, Timer } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { downloadBackup } from '../lib/backup'
 import { quickAddWords } from '../i18n/quickAddWords'
@@ -10,6 +10,8 @@ import { ideaText, parseQuickAdd, quickAddExamples } from '../lib/quickAdd'
 import { navigate } from '../lib/router'
 import { snapshot, useStore } from '../lib/store'
 import { toast } from '../lib/toast'
+import { activeWorkout, dueRoutine } from '../lib/training'
+import { beginWorkout } from './training/format'
 import { NAV } from './Shell'
 import { openAchievement } from '../pages/Achievements'
 import { AreaChip, cx, Kbd } from './ui'
@@ -67,6 +69,15 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     list.push({
       id: 'focus', icon: <Timer size={16} />, label: focusLabel, keywords: `${focusLabel} focus timer pomodoro start`,
       run: () => { st.startTimer({ mode: 'focus', totalMs: st.settings.focusMinutes * 60000, label: m.palette.focusLabel, areaId: null, goalId: null, taskId: null }); navigate('focus') },
+    })
+    // Training (ADR-027): resume the workout in progress, or start what today calls for.
+    const active = activeWorkout(st.workouts)
+    const due = dueRoutine(st.program, st.routines, st.workouts, today)
+    const routine = due.kind === 'routine' ? st.routines.find((r) => r.id === due.routineId) : undefined
+    const workoutLabel = active ? t.f(m.palette.resumeWorkout, { name: active.name }) : routine ? t.f(m.palette.startRoutine, { name: routine.name }) : m.palette.startWorkout
+    list.push({
+      id: 'workout', icon: <Dumbbell size={16} />, label: workoutLabel, keywords: `${workoutLabel} workout gym training exercise start`,
+      run: () => beginWorkout(routine?.id ?? null, routine?.name ?? m.workout.title),
     })
     list.push({ id: 'new-reminder', icon: <Bell size={16} />, label: m.palette.newReminder, keywords: `${m.palette.newReminder} reminder remind date birthday new`, run: () => navigate('reminders') })
     list.push({ id: 'new-achievement', icon: <Trophy size={16} />, label: m.palette.recordAchievement, keywords: `${m.palette.recordAchievement} achievement win accomplishment record new`, run: () => { navigate('achievements'); openAchievement() } })

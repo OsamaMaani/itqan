@@ -6,6 +6,7 @@ import { rich, useI18n } from '../i18n/react'
 import { addDaysKey, todayKey, weekDays, weekStartKey } from '../lib/date'
 import { xpByDay } from '../lib/gamification'
 import { historyStart, isMetOn, isScheduled } from '../lib/habits'
+import { recordCounts, weekStats } from '../lib/training'
 import { useAreaMap, useData, useProgress, useToday } from '../lib/hooks'
 import { useStore } from '../lib/store'
 import { toast } from '../lib/toast'
@@ -55,7 +56,11 @@ export function ReviewPage() {
     const mood = moods.length ? Math.round(moods.reduce<number>((s, x) => s + x, 0) / moods.length) : 0
     const perArea = new Map<string | null, number>()
     for (const t of done) perArea.set(t.areaId, (perArea.get(t.areaId) ?? 0) + 1)
-    return { done, planned, habitRate: sched ? met / sched : null, focus, goalLogs, people, xpWeek, best, bestXp: xp[best] ?? 0, mood, perArea }
+    // Training (ADR-027): workouts against the program, and records set this week.
+    const training = d.program || d.workouts.length ? weekStats(ws, d.settings.weekStartsOn, d.program, d.routines, d.workouts, d.workoutSets, d.exercises) : null
+    const counts = recordCounts(d.workouts, d.workoutSets)
+    const records = d.workouts.filter((w) => w.finishedAt && days.includes(w.date)).reduce((n, w) => n + (counts.get(w.id) ?? 0), 0)
+    return { done, planned, habitRate: sched ? met / sched : null, focus, goalLogs, people, xpWeek, best, bestXp: xp[best] ?? 0, mood, perArea, training, records }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [d, ws, events, today])
 
@@ -92,6 +97,13 @@ export function ReviewPage() {
             <Mini value={t.n(summary.goalLogs)} label={m.review.goalCheckins} />
             <Mini value={t.n(summary.people)} label={t.p(m.review.peopleCheckedIn, summary.people)} />
             <Mini value={summary.mood ? MOODS[summary.mood] : '—'} label={m.review.averageMood} />
+            {summary.training && (
+              <Mini
+                value={t.n(summary.training.done)}
+                label={summary.training.planned ? t.p(m.review.workoutsOfPlanned, summary.training.planned) : t.p(m.review.workouts, summary.training.done)}
+              />
+            )}
+            {summary.training && summary.records > 0 && <Mini value={t.n(summary.records)} label={t.p(m.review.records, summary.records)} />}
           </div>
           {summary.bestXp > 0 && (
             <Card className="p-4 text-sm">

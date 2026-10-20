@@ -86,7 +86,8 @@ and Memories, Ideas and Reminders with desktop notifications via a local helper 
 (ADR-013), encrypted sync between laptop and iPhone through a private GitHub repo (ADR-016), and Projects
 and Connections (ADR-018, ADR-019), project boards (ADR-020), Achievements (ADR-022) the daily
 card — verse, hadith, word, wisdom, fact (ADR-023), and five interface languages — English,
-Arabic (RTL), French, Chinese, Spanish (ADR-024; schema v7; rules in `memory/10-localization.md`).
+Arabic (RTL), French, Chinese, Spanish (ADR-024; rules in `memory/10-localization.md`), and Training —
+exercises, routines, a program, live workouts, records (ADR-027; schema v8; `memory/11-training.md`).
 `memory/status.json` and `dashboard/index.html` are the live answer — this
 paragraph is a snapshot and will lag them.
 

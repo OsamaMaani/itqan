@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { BarChart3, Bell, BookOpenCheck, CalendarDays, Camera, FolderKanban, Lightbulb, Menu, Plus, Settings, Sun, Target, Timer, Trophy, Repeat, Users } from 'lucide-react'
+import { BarChart3, Bell, BookOpenCheck, CalendarDays, Camera, Dumbbell, FolderKanban, Lightbulb, Menu, Plus, Settings, Sun, Target, Timer, Trophy, Repeat, Users } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useI18n } from '../i18n/react'
 import { useProgress } from '../lib/hooks'
@@ -18,6 +18,7 @@ export const NAV: { route: Route; icon: ReactNode }[] = [
   { route: 'goals', icon: <Target size={18} /> },
   { route: 'projects', icon: <FolderKanban size={18} /> },
   { route: 'focus', icon: <Timer size={18} /> },
+  { route: 'training', icon: <Dumbbell size={18} /> },
   { route: 'ideas', icon: <Lightbulb size={18} /> },
   { route: 'reminders', icon: <Bell size={18} /> },
   { route: 'connections', icon: <Users size={18} /> },
@@ -110,13 +111,14 @@ export function MobileNav({ route, onAdd }: { route: Route; onAdd: () => void })
   const tab = 'flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold transition'
   return (
     <>
-      <button
+      {/* Not on Training: the live workout's effort buttons and rest timer sit where it would. */}
+      {route !== 'training' && <button
         onClick={onAdd}
         aria-label={m.nav.newTask}
         className="fixed bottom-[calc(84px+env(safe-area-inset-bottom))] end-4 z-40 grid size-14 place-items-center rounded-2xl bg-gradient-accent text-accent-fg shadow-[0_10px_30px_-8px_var(--accent)] active:scale-95 lg:hidden"
       >
         <Plus size={26} />
-      </button>
+      </button>}
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/90 backdrop-blur-xl lg:hidden">
         <div className="mx-auto flex max-w-lg">
           {MOBILE.map((r) => {

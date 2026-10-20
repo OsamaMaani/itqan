@@ -13,6 +13,8 @@ export const settings: Messages['settings'] = {
     theme: 'Tema',
     themes: { system: 'Sistema', light: 'Claro', dark: 'Oscuro' },
     weekStartsOn: 'La semana empieza el',
+    weightUnit: 'Pesos en',
+    weightUnitHint: 'cambiarlo nunca altera lo que registraste',
     focusMinutes: 'Concentración (min)',
     breakMinutes: 'Descanso (min)',
     sounds: 'Sonidos',

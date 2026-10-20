@@ -26,4 +26,7 @@ export const review: Messages['review'] = {
   updateReview: 'Mettre à jour le bilan',
   toastSaved: 'Bilan enregistré · +30 XP',
   toastUpdated: 'Bilan mis à jour',
+  workoutsOfPlanned: { one: 'séance sur {n} prévue', other: 'séances sur {n} prévues' },
+  workouts: { one: 'séance', other: 'séances' },
+  records: { one: 'record personnel', other: 'records personnels' },
 }

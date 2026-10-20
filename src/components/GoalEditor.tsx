@@ -4,11 +4,13 @@ import { useI18n } from '../i18n/react'
 import { useToday } from '../lib/hooks'
 import { uid } from '../lib/id'
 import { useStore } from '../lib/store'
-import type { Goal, Milestone } from '../lib/types'
+import { metricFor } from '../lib/training'
+import { GOAL_METRICS, type Goal, type GoalLink, type GoalMetric, type Milestone } from '../lib/types'
 import { AreaPicker } from './AreaPicker'
-import { Button, Input, Label, Modal, Segmented, Textarea } from './ui'
+import { useGymFormat } from './training/format'
+import { Button, Input, Label, Modal, Segmented, Select, Textarea } from './ui'
 
-type Draft = Pick<Goal, 'title' | 'why' | 'areaId' | 'kind' | 'startValue' | 'target' | 'unit' | 'startDate' | 'deadline' | 'milestones'>
+type Draft = Pick<Goal, 'title' | 'why' | 'areaId' | 'kind' | 'startValue' | 'target' | 'unit' | 'startDate' | 'deadline' | 'milestones' | 'link'>
 
 export function GoalEditor({ open, onClose, goal, defaults, onCreated }: {
   open: boolean
@@ -22,12 +24,28 @@ export function GoalEditor({ open, onClose, goal, defaults, onCreated }: {
   const today = useToday()
   const add = useStore((s) => s.addGoal)
   const update = useStore((s) => s.updateGoal)
-  const blank: Draft = { title: '', why: '', areaId: null, kind: 'numeric', startValue: 0, target: 10, unit: '', startDate: today, deadline: null, milestones: [] }
+  const exercises = useStore((s) => s.exercises)
+  const fmt = useGymFormat()
+  const blank: Draft = { title: '', why: '', areaId: null, kind: 'numeric', startValue: 0, target: 10, unit: '', startDate: today, deadline: null, milestones: [], link: null }
   const [d, setD] = useState<Draft>(blank)
   const [m, setM] = useState('')
 
   useEffect(() => { if (open) setD(goal ? { ...goal } : { ...blank, ...defaults }) /* eslint-disable-next-line */ }, [open, goal])
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((x) => ({ ...x, [k]: v }))
+
+  // Progress from Training (ADR-027): an exercise's best, or the number of workouts.
+  const pickable = exercises.filter((e) => !e.archived || (d.link?.kind === 'exercise' && d.link.exerciseId === e.id))
+  const setSource = (v: string) => {
+    const first = pickable.find((e) => !e.archived)
+    const link: GoalLink | null =
+      v === 'workouts' ? { kind: 'workouts' }
+        : v === 'exercise' && first ? { kind: 'exercise', exerciseId: first.id, metric: metricFor(first.measure) }
+          : null
+    setD((x) => ({ ...x, link, startValue: 0 }))
+  }
+  const metric = d.link?.kind === 'exercise' ? d.link.metric : null
+  const shown = (v: number) => (metric ? Math.round(fmt.metricIn(metric, v) * 100) / 100 : v)
+  const stored = (v: number) => (metric ? fmt.metricOut(metric, v) : v)
 
   const addMilestone = () => {
     if (!m.trim()) return
@@ -39,11 +57,13 @@ export function GoalEditor({ open, onClose, goal, defaults, onCreated }: {
   const valid = d.title.trim() && (d.kind === 'milestones' ? d.milestones.length > 0 : d.target > 0)
   const save = () => {
     if (!valid) return
-    if (goal) update(goal.id, { ...d, title: d.title.trim() })
+    const link = d.kind === 'numeric' ? d.link : null
+    const clean = { ...d, title: d.title.trim(), link, unit: link ? '' : d.unit }
+    if (goal) update(goal.id, clean)
     else {
       // Create first, then notify: inside an optional call the argument is skipped when there is
       // no onCreated, so the Goals page used to create nothing (2026-10-19, sourceGuards.test.ts).
-      const id = add({ ...d, title: d.title.trim() })
+      const id = add(clean)
       onCreated?.(id)
     }
     onClose()
@@ -76,11 +96,45 @@ export function GoalEditor({ open, onClose, goal, defaults, onCreated }: {
           <Segmented value={d.kind} onChange={(v) => set('kind', v)} options={[{ value: 'numeric', label: msg.goals.editor.aNumber }, { value: 'milestones', label: msg.goals.editor.milestones }]} />
         </div>
         {d.kind === 'numeric' ? (
-          <div className="grid grid-cols-3 gap-2">
-            <div><Label>{msg.goals.editor.alreadyDone}</Label><Input type="number" min={0} value={d.startValue} onChange={(e) => set('startValue', Number(e.target.value))} /></div>
-            <div><Label>{msg.goals.editor.target}</Label><Input type="number" min={1} value={d.target} onChange={(e) => set('target', Number(e.target.value))} /></div>
-            <div><Label>{msg.goals.editor.unit}</Label><Input placeholder={msg.goals.editor.unitPlaceholder} value={d.unit} onChange={(e) => set('unit', e.target.value)} /></div>
-          </div>
+          <>
+            <div>
+              <Label>{msg.goals.editor.source}</Label>
+              <Select value={d.link?.kind ?? 'checkins'} onChange={(e) => setSource(e.target.value)}>
+                <option value="checkins">{msg.goals.editor.sourceCheckins}</option>
+                <option value="exercise" disabled={!pickable.some((e) => !e.archived)}>{msg.goals.editor.sourceExercise}</option>
+                <option value="workouts">{msg.goals.editor.sourceWorkouts}</option>
+              </Select>
+              {d.link?.kind === 'exercise' && (
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <Select
+                    aria-label={msg.goals.editor.exercise}
+                    value={d.link.exerciseId}
+                    onChange={(e) => {
+                      const ex = exercises.find((x) => x.id === e.target.value)
+                      if (ex) set('link', { kind: 'exercise', exerciseId: ex.id, metric: metricFor(ex.measure) })
+                    }}
+                  >
+                    {pickable.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
+                  </Select>
+                  <Select aria-label={msg.goals.editor.metric} value={d.link.metric} onChange={(e) => d.link?.kind === 'exercise' && set('link', { ...d.link, metric: e.target.value as GoalMetric })}>
+                    {GOAL_METRICS.map((x) => <option key={x} value={x}>{msg.goals.editor.metrics[x]}</option>)}
+                  </Select>
+                </div>
+              )}
+              {d.link && <p className="mt-1.5 text-xs text-muted">{d.link.kind === 'exercise' ? msg.goals.editor.exerciseHint : msg.goals.editor.workoutsHint}</p>}
+            </div>
+            <div className={d.link ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-3 gap-2'}>
+              <div>
+                <Label>{d.link?.kind === 'exercise' ? msg.goals.editor.bestBefore : msg.goals.editor.alreadyDone}</Label>
+                <Input type="number" min={0} inputMode="decimal" value={shown(d.startValue)} onChange={(e) => set('startValue', stored(Number(e.target.value)))} />
+              </div>
+              <div>
+                <Label>{metric ? t.f(msg.goals.editor.targetIn, { unit: fmt.metricUnit(metric) }) : msg.goals.editor.target}</Label>
+                <Input type="number" min={1} inputMode="decimal" value={shown(d.target)} onChange={(e) => set('target', stored(Number(e.target.value)))} />
+              </div>
+              {!d.link && <div><Label>{msg.goals.editor.unit}</Label><Input placeholder={msg.goals.editor.unitPlaceholder} value={d.unit} onChange={(e) => set('unit', e.target.value)} /></div>}
+            </div>
+          </>
         ) : (
           <div className="space-y-1.5">
             {d.milestones.map((x, i) => (

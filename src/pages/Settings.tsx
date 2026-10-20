@@ -66,6 +66,10 @@ export function SettingsPage() {
             <Label>{m.settings.profile.weekStartsOn}</Label>
             <Segmented<Settings['weekStartsOn']> value={s.weekStartsOn} onChange={(v) => update({ weekStartsOn: v })} options={([6, 0, 1] as const).map((day) => ({ value: day, label: t.cap(t.weekdays('long')[day]) }))} />
           </div>
+          <div>
+            <Label hint={m.settings.profile.weightUnitHint}>{m.settings.profile.weightUnit}</Label>
+            <Segmented<Settings['weightUnit']> value={s.weightUnit} onChange={(v) => update({ weightUnit: v })} options={[{ value: 'kg', label: m.gym.unitKg }, { value: 'lb', label: m.gym.unitLb }]} />
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <div><Label>{m.settings.profile.focusMinutes}</Label><Input type="number" min={1} value={s.focusMinutes} onChange={(e) => update({ focusMinutes: Math.max(1, Number(e.target.value) || 25) })} /></div>
             <div><Label>{m.settings.profile.breakMinutes}</Label><Input type="number" min={1} value={s.breakMinutes} onChange={(e) => update({ breakMinutes: Math.max(1, Number(e.target.value) || 5) })} /></div>

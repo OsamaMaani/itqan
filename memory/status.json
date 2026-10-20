@@ -4,9 +4,10 @@
   "updated": "2026-10-20",
   "current_stage": 4,
   "next_actions": [
+    "Training is in (More → Training on the phone, or key 7 on the laptop). First run: Exercises → \"Add common exercises\", then Routines → build a routine and choose Fixed days or Rotation, then Start from Overview or Today.",
+    "On the laptop: git pull, then re-run scripts/install_local.sh. Then open Itqan on the iPhone once so it updates (data format v8) — until both are updated, sync pauses on the older one with a message.",
+    "Number keys moved by one after Focus: 7 is now Training, 8 Ideas, 9 Reminders.",
     "In Settings → Profile, pick your interface language (it follows you to your other devices). All four translations have had their independent review (S2-23); if a phrase still reads oddly, note it.",
-    "On the laptop: git pull, then re-run scripts/install_local.sh (it installs new dependencies itself now). Then open Itqan on the iPhone once so it updates (data format v6) and syncs again.",
-    "Look at the new daily card on Today; in Settings → Daily card, choose the word's language and level and switch off anything you don't want.",
     "Record this year's achievements so far; check the suggestions Itqan offers."
   ],
   "stages": [
@@ -330,26 +331,26 @@
           "id": "S2-28",
           "title": "Training screen: exercises, routines, program editor, history (day, exercise chart, calendar, week)",
           "module": "training",
-          "status": "in-progress"
+          "status": "done"
         },
         {
           "id": "S2-29",
           "title": "Live workout: next exercise, last time, one-tap sets, effort, rest timer, finish summary, resume",
           "module": "training",
-          "status": "todo",
+          "status": "done",
           "critical": true
         },
         {
           "id": "S2-30",
           "title": "Training everywhere: Today card, linked habit and goals, weekly review, Settings unit, command bar",
           "module": "training",
-          "status": "todo"
+          "status": "done"
         },
         {
           "id": "S2-31",
           "title": "Training in Arabic, French, Chinese and Spanish, with an independent review",
           "module": "training",
-          "status": "todo"
+          "status": "in-progress"
         }
       ]
     },
@@ -578,6 +579,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-20",
+      "entry": "S2-28 to S2-30: the Training screen. Overview (today's routine from the program, resume, start another or an empty workout, this week vs plan with sets per muscle, recent workouts), History (month calendar, any day's workouts with every set and PRs, any exercise's records and chart), Routines (program by fixed days or rotation, times per week, linked habit; routine editor with per-measure targets), Exercises (editor, search, archive, \"Add common exercises\" in the interface language). The live workout: one exercise at a time, target, last time, next-time suggestion, set rows prefilled so logging is one tap on Easy/Good/Hard/Failed, rest timer, add/reorder/skip, finish summary with records and XP, resumes after reload, keeps the phone screen on. Elsewhere: a Training card on Today, goals that follow an exercise's best or count workouts, kg/lb in Settings, workouts and records in the weekly review, start/resume from Ctrl+K. Tabs built by the builder subagent (Sonnet), live workout and connections in the main session; checked in the browser at 375 px and desktop, light and dark, English and Arabic."
+    },
     {
       "date": "2026-10-20",
       "entry": "S2-27: Training maths in src/lib/training.ts, all tested — what is due (weekdays; rotation replays history so a skipped day waits and A B A C works), last time (same routine slot), next-time suggestion (+1 step when every set hit the top at Easy/Good, −1 after failures two workouts running), records (heaviest, reps, 1RM, volume, reps at each weight; warm-ups never count; a first attempt is no record), workout and week summaries, weeks-on-plan. Goals can follow an exercise's best or count workouts (derived, so deleting a workout can't leave a stale number). Workouts earn 30 XP (+10 per record, max 3); five new badges in all five languages. Each guard was checked by breaking it and seeing a test fail."

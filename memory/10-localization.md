@@ -186,3 +186,21 @@ glossary term flags it.
 | Estimate | المدة المتوقعة | durée estimée | 预计用时 | duración estimada |
 | Daily card | بطاقة اليوم | carte du jour | 每日卡片 | tarjeta del día |
 | Word of the day | كلمة اليوم | mot du jour | 每日一词 | palabra del día |
+
+**Training (ADR-027)** — added 2026-10-20:
+
+| English | العربية | Français | 简体中文 | Español |
+|---|---|---|---|---|
+| Training (screen) | التدريب | Entraînement | 训练 | Entrenamiento |
+| Exercise | تمرين | exercice | 动作 | ejercicio |
+| Routine | روتين | routine | 例行训练 | rutina |
+| Program | البرنامج | programme | 训练计划 | programa |
+| Workout | حصة تدريب | séance | 训练 | entrenamiento |
+| Set | مجموعة | série | 组 | serie |
+| Rep | تكرار | répétition (rép.) | 次 | repetición (rep.) |
+| Warm-up | إحماء | échauffement | 热身 | calentamiento |
+| Rest (between sets / rest day) | راحة | repos | 休息 | descanso |
+| Effort | الجهد | effort | 感受 | esfuerzo |
+| Personal record (PR) | رقم قياسي شخصي | record personnel | 个人纪录 | récord personal |
+
+French *série* already means streak; in Training it means a set, and context keeps them apart.

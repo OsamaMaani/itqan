@@ -13,6 +13,8 @@ export const settings: Messages['settings'] = {
     theme: '主题',
     themes: { system: '跟随系统', light: '浅色', dark: '深色' },
     weekStartsOn: '每周起始日',
+    weightUnit: '重量单位',
+    weightUnitHint: '切换不会改变已记录的内容',
     focusMinutes: '专注（分钟）',
     breakMinutes: '休息（分钟）',
     sounds: '声音',

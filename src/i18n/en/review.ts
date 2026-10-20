@@ -29,4 +29,9 @@ export const review = {
   updateReview: 'Update review',
   toastSaved: 'Review saved · +30 XP',
   toastUpdated: 'Review updated',
+  /** Training (ADR-027). Shown under the number of workouts done this week. */
+  workoutsOfPlanned: { one: 'workouts of {n} planned', other: 'workouts of {n} planned' },
+  workouts: { one: 'workout', other: 'workouts' },
+  /** Under the number of personal records set this week. */
+  records: { one: 'personal record', other: 'personal records' },
 }
