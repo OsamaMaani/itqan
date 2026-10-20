@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { todayKey } from './date'
 import { activeStreak, levelInfo, totalXp, xpEvents, xpOn } from './gamification'
+import type { GoalSources } from './goals'
 import { useStore } from './store'
 import type { Area, Data } from './types'
 import { AREA_HEX, NEUTRAL_HEX } from './colors'
@@ -39,6 +40,11 @@ export function useData(): Data {
       exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, settings: s.settings,
     })),
   )
+}
+
+/** What goal progress is read from (check-ins, workouts, sets), stable while none change. */
+export function useGoalSources(): GoalSources {
+  return useStore(useShallow((s) => ({ goalLogs: s.goalLogs, workouts: s.workouts, workoutSets: s.workoutSets })))
 }
 
 export function useProgress() {

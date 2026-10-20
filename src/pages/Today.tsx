@@ -73,7 +73,7 @@ export function TodayPage() {
     .reduce((s, f) => s + f.minutes, 0)
   const activeGoals = useMemo(
     () => d.goals.filter((g) => g.status === 'active')
-      .map((g) => ({ g, p: goalProgress(g, d.goalLogs), pace: goalPace(g, d.goalLogs, today) }))
+      .map((g) => ({ g, p: goalProgress(g, d), pace: goalPace(g, d, today) }))
       .sort((a, b) => (a.pace.daysLeft ?? 9999) - (b.pace.daysLeft ?? 9999))
       .slice(0, 4),
     [d.goals, d.goalLogs, today],

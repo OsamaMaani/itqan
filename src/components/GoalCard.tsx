@@ -5,7 +5,7 @@ import { tx } from '../i18n/core'
 import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
 import { goalCurrent, goalPace, goalProgress, goalTarget, type Pace } from '../lib/goals'
-import { areaHex, useAreaMap, useToday } from '../lib/hooks'
+import { areaHex, useAreaMap, useGoalSources, useToday } from '../lib/hooks'
 import { useStore } from '../lib/store'
 import { categoryForArea } from '../lib/achievements'
 import { todayKey } from '../lib/date'
@@ -118,17 +118,18 @@ export function GoalLogModal({ goal, open, onClose }: { goal: Goal; open: boolea
 function useGoalView(goal: Goal) {
   const t = useI18n()
   const today = useToday()
-  const logs = useStore((s) => s.goalLogs)
+  const src = useGoalSources()
+  const logs = src.goalLogs
   const linkedOpen = useStore((s) => s.tasks.filter((k) => k.goalId === goal.id && !k.done).length)
   const areas = useAreaMap()
   const area = goal.areaId ? areas.get(goal.areaId) : undefined
   const fmtN = (x: number) => t.n(x, { maximumFractionDigits: 1 })
-  const cur = goalCurrent(goal, logs)
+  const cur = goalCurrent(goal, src)
   const target = goalTarget(goal)
   return {
     t, area, hex: areaHex(area), logs, linkedOpen, fmtN,
-    p: goalProgress(goal, logs),
-    pace: goalPace(goal, logs, today),
+    p: goalProgress(goal, src),
+    pace: goalPace(goal, src, today),
     progressText: goal.kind === 'numeric'
       ? t.f(t.m.goals.card.progressNumeric, { cur: fmtN(cur), target: fmtN(target), unit: goal.unit })
       : t.p(t.m.goals.card.progressMilestones, target, { cur }),

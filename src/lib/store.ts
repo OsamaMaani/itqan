@@ -656,7 +656,7 @@ function completeIfReached(goalId: ID): boolean {
   const s = useStore.getState()
   const g = s.goals.find((x) => x.id === goalId)
   if (!g || g.status === 'done') return false
-  if (goalProgress(g, s.goalLogs) >= 1) {
+  if (goalProgress(g, s) >= 1) {
     s.setGoalStatus(goalId, 'done')
     return true
   }

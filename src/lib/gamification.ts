@@ -1,5 +1,6 @@
 import { addDaysKey, diffDays, toKey } from './date'
 import { isMetOn, streak } from './habits'
+import { bestWeekRun, plannedPerWeek, recordCounts } from './training'
 import type { Data, DateKey } from './types'
 
 /**
@@ -24,9 +25,11 @@ export const XP = {
   checkIn: 5,
   achievement: 5,
   projectDone: 100,
+  workout: 30,
+  record: 10, // per new personal record in a workout, at most three a workout
 } as const
 
-export type XpKind = 'task' | 'habit' | 'focus' | 'goal' | 'review' | 'intention' | 'memory' | 'idea' | 'people' | 'project' | 'achievement'
+export type XpKind = 'task' | 'habit' | 'focus' | 'goal' | 'review' | 'intention' | 'memory' | 'idea' | 'people' | 'project' | 'achievement' | 'training'
 
 export interface XpEvent {
   date: DateKey
@@ -75,6 +78,13 @@ export function xpEvents(d: Data): XpEvent[] {
   for (const a of d.achievements ?? []) ev.push({ date: dayOf(a.createdAt), kind: 'achievement', xp: XP.achievement })
   for (const x of d.interactions ?? []) ev.push({ date: x.date, kind: 'people', xp: XP.checkIn })
   for (const p of d.projects ?? []) if (p.status === 'done') ev.push({ date: dayOf(p.updatedAt), kind: 'project', xp: XP.projectDone })
+  // A finished workout counts on the day it started, like everything in Training (ADR-027).
+  const records = recordCounts(d.workouts ?? [], d.workoutSets ?? [])
+  for (const w of d.workouts ?? []) {
+    if (!w.finishedAt) continue
+    const prs = Math.min(3, records.get(w.id) ?? 0)
+    ev.push({ date: w.date, kind: 'training', xp: XP.workout + prs * XP.record })
+  }
   return ev
 }
 
@@ -145,7 +155,7 @@ export type BadgeId =
   | 'first-step' | 'tasks-50' | 'tasks-250' | 'streak-7' | 'streak-30' | 'streak-100' | 'active-14'
   | 'focus-10h' | 'focus-100h' | 'focus-90' | 'goal-1' | 'goal-5' | 'review-4' | 'early' | 'owl'
   | 'level-5' | 'level-10' | 'days-30' | 'memories-10' | 'ideas-25' | 'idea-done' | 'project-done'
-  | 'proud-10' | 'people-10' | 'people-50'
+  | 'proud-10' | 'people-10' | 'people-50' | 'workout-1' | 'workouts-10' | 'workouts-50' | 'record-1' | 'weeks-4'
 
 export function badges(d: Data, today: DateKey): Badge[] {
   const ev = xpEvents(d)
@@ -164,6 +174,10 @@ export function badges(d: Data, today: DateKey): Badge[] {
   const daysUsed = firstDay ? diffDays(today, firstDay) + 1 : 0
   const memories = (d.memories ?? []).length
   const ideas = d.ideas ?? []
+  const finished = (d.workouts ?? []).filter((w) => w.finishedAt)
+  const records = recordCounts(d.workouts ?? [], d.workoutSets ?? [])
+  const record = finished.some((w) => (records.get(w.id) ?? 0) > 0)
+  const weekRun = bestWeekRun(finished, plannedPerWeek(d.program, d.routines ?? []), d.settings.weekStartsOn, today)
 
   const a = (id: BadgeId, emoji: string, unlocked: boolean): Badge => ({ id, emoji, unlocked })
 
@@ -193,5 +207,10 @@ export function badges(d: Data, today: DateKey): Badge[] {
     a('proud-10', '🏅', (d.achievements ?? []).length >= 10),
     a('people-10', '🫶', (d.interactions ?? []).length >= 10),
     a('people-50', '🤝', (d.interactions ?? []).length >= 50),
+    a('workout-1', '🏋️', finished.length >= 1),
+    a('workouts-10', '💪', finished.length >= 10),
+    a('workouts-50', '🦾', finished.length >= 50),
+    a('record-1', '📈', record),
+    a('weeks-4', '🗓️', weekRun >= 4),
   ]
 }

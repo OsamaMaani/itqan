@@ -113,3 +113,22 @@ describe('program', () => {
     expect(st().program!.weekdays).toHaveLength(7)
   })
 })
+
+describe('linked goals', () => {
+  it('finishing the workout that reaches a linked goal completes it', () => {
+    const { bench, rid } = routineWithBench()
+    const gid = st().addGoal({ title: 'Bench 50', why: '', areaId: null, kind: 'numeric', startValue: 0, target: 50, unit: 'kg', startDate: todayKey(), deadline: null, milestones: [], link: { kind: 'exercise', exerciseId: bench, metric: 'kg' } })
+    const count = st().addGoal({ title: '1 workout', why: '', areaId: null, kind: 'numeric', startValue: 0, target: 1, unit: '', startDate: todayKey(), deadline: null, milestones: [], link: { kind: 'workouts' } })
+    const wid = st().startWorkout(rid, 'Push')
+    st().logSet({ workoutId: wid, itemId: 'i1', exerciseId: bench, warmup: true, reps: 3, kg: 60, seconds: null, meters: null, effort: 'easy' })
+    st().logSet({ workoutId: wid, itemId: 'i1', exerciseId: bench, warmup: false, reps: 5, kg: 47.5, seconds: null, meters: null, effort: 'hard' })
+    st().finishWorkout(wid)
+    expect(st().goals.find((g) => g.id === gid)!.status).toBe('active') // the 60 kg was a warm-up
+    expect(st().goals.find((g) => g.id === count)!.status).toBe('done')
+
+    const w2 = st().startWorkout(rid, 'Push')
+    st().logSet({ workoutId: w2, itemId: 'i1', exerciseId: bench, warmup: false, reps: 3, kg: 50, seconds: null, meters: null, effort: 'hard' })
+    st().finishWorkout(w2)
+    expect(st().goals.find((g) => g.id === gid)!.status).toBe('done')
+  })
+})

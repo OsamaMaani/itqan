@@ -30,4 +30,9 @@ export const badges = {
   'proud-10': { title: 'Proud', desc: 'Record 10 achievements' },
   'people-10': { title: 'Good friend', desc: 'Log 10 check-ins with people' },
   'people-50': { title: 'Connector', desc: 'Log 50 check-ins with people' },
+  'workout-1': { title: 'First rep', desc: 'Finish your first workout' },
+  'workouts-10': { title: 'Gym regular', desc: 'Finish 10 workouts' },
+  'workouts-50': { title: 'Iron will', desc: 'Finish 50 workouts' },
+  'record-1': { title: 'Stronger', desc: 'Set a personal record' },
+  'weeks-4': { title: 'Four solid weeks', desc: 'Meet your training plan 4 weeks in a row' },
 }

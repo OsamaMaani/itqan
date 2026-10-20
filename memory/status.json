@@ -323,14 +323,14 @@
           "id": "S2-27",
           "title": "Training maths, tested: next routine, last time, suggestions, PRs, 1RM, totals, weekly; linked goals; workout XP and badges",
           "module": "training",
-          "status": "in-progress",
+          "status": "done",
           "critical": true
         },
         {
           "id": "S2-28",
           "title": "Training screen: exercises, routines, program editor, history (day, exercise chart, calendar, week)",
           "module": "training",
-          "status": "todo"
+          "status": "in-progress"
         },
         {
           "id": "S2-29",
@@ -578,6 +578,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-20",
+      "entry": "S2-27: Training maths in src/lib/training.ts, all tested — what is due (weekdays; rotation replays history so a skipped day waits and A B A C works), last time (same routine slot), next-time suggestion (+1 step when every set hit the top at Easy/Good, −1 after failures two workouts running), records (heaviest, reps, 1RM, volume, reps at each weight; warm-ups never count; a first attempt is no record), workout and week summaries, weeks-on-plan. Goals can follow an exercise's best or count workouts (derived, so deleting a workout can't leave a stale number). Workouts earn 30 XP (+10 per record, max 3); five new badges in all five languages. Each guard was checked by breaking it and seeing a test fail."
+    },
     {
       "date": "2026-10-20",
       "entry": "S2-26: data format v8 for Training — exercises, routines, program, workouts and sets (sets as their own collection so two devices logging one workout keep every set), Goal.link, Settings.weightUnit (kg). The upgrade adds only empty collections and defaults; tested from v7 data and a v7 backup, through sync (program absent until saved, so a fresh device stays fresh), and every store action incl. the linked-habit tick and its undo. Nothing visible yet."

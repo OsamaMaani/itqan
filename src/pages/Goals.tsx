@@ -17,7 +17,7 @@ export function GoalsPage() {
 
   const list = d.goals.filter((g) => g.status === tab)
   const active = d.goals.filter((g) => g.status === 'active')
-  const avg = active.length ? active.reduce((s, g) => s + goalProgress(g, d.goalLogs), 0) / active.length : 0
+  const avg = active.length ? active.reduce((s, g) => s + goalProgress(g, d), 0) / active.length : 0
   const counts = { active: active.length, paused: d.goals.filter((g) => g.status === 'paused').length, done: d.goals.filter((g) => g.status === 'done').length }
 
   return (

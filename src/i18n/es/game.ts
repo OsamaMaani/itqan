@@ -33,4 +33,9 @@ export const badges: Messages['badges'] = {
   'proud-10': { title: 'Orgullo', desc: 'Registra 10 logros' },
   'people-10': { title: 'Buena compañía', desc: 'Registra 10 contactos con tu gente' },
   'people-50': { title: 'Lazos que unen', desc: 'Registra 50 contactos con tu gente' },
+  'workout-1': { title: 'Primera repetición', desc: 'Termina tu primer entrenamiento' },
+  'workouts-10': { title: 'Habitual del gimnasio', desc: 'Termina 10 entrenamientos' },
+  'workouts-50': { title: 'Voluntad de hierro', desc: 'Termina 50 entrenamientos' },
+  'record-1': { title: 'Más fuerte', desc: 'Logra un récord personal' },
+  'weeks-4': { title: 'Cuatro semanas firmes', desc: 'Cumple tu programa 4 semanas seguidas' },
 }

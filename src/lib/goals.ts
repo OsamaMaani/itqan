@@ -1,9 +1,18 @@
 import { diffDays } from './date'
-import type { DateKey, Goal, GoalLog } from './types'
+import { exerciseBest } from './training'
+import type { Data, DateKey, Goal } from './types'
 
-export function goalCurrent(g: Goal, logs: GoalLog[]): number {
+/** What goal progress is read from: check-ins, or Training for a linked goal (ADR-027). */
+export type GoalSources = Pick<Data, 'goalLogs' | 'workouts' | 'workoutSets'>
+
+export function goalCurrent(g: Goal, src: GoalSources): number {
   if (g.kind === 'milestones') return g.milestones.filter((m) => m.done).length
-  return g.startValue + logs.filter((l) => l.goalId === g.id).reduce((s, l) => s + l.amount, 0)
+  const link = g.link
+  // An exercise goal follows its best — `startValue` is the best from before Itqan knew about it.
+  if (link?.kind === 'exercise') return Math.max(g.startValue, exerciseBest(link.exerciseId, link.metric, src.workoutSets))
+  // A workouts goal counts finished workouts from the goal's start day.
+  if (link?.kind === 'workouts') return g.startValue + src.workouts.filter((w) => w.finishedAt && w.date >= g.startDate).length
+  return g.startValue + src.goalLogs.filter((l) => l.goalId === g.id).reduce((s, l) => s + l.amount, 0)
 }
 
 export function goalTarget(g: Goal): number {
@@ -11,11 +20,11 @@ export function goalTarget(g: Goal): number {
 }
 
 /** 0..1 */
-export function goalProgress(g: Goal, logs: GoalLog[]): number {
+export function goalProgress(g: Goal, src: GoalSources): number {
   if (g.status === 'done') return 1
   const t = goalTarget(g)
   if (t <= 0) return 0
-  return Math.min(1, Math.max(0, goalCurrent(g, logs) / t))
+  return Math.min(1, Math.max(0, goalCurrent(g, src) / t))
 }
 
 export type Pace = 'ahead' | 'on-track' | 'behind' | 'overdue' | 'none'
@@ -27,8 +36,8 @@ export interface PaceInfo {
   perDay: number | null // amount needed per day to finish on time
 }
 
-export function goalPace(g: Goal, logs: GoalLog[], today: DateKey): PaceInfo {
-  const progress = goalProgress(g, logs)
+export function goalPace(g: Goal, src: GoalSources, today: DateKey): PaceInfo {
+  const progress = goalProgress(g, src)
   if (!g.deadline || g.status !== 'active') {
     return { pace: 'none', expected: 0, daysLeft: null, perDay: null }
   }
@@ -36,7 +45,7 @@ export function goalPace(g: Goal, logs: GoalLog[], today: DateKey): PaceInfo {
   const elapsed = Math.min(total, Math.max(0, diffDays(today, g.startDate)))
   const expected = elapsed / total
   const daysLeft = diffDays(g.deadline, today)
-  const remaining = Math.max(0, goalTarget(g) - goalCurrent(g, logs))
+  const remaining = Math.max(0, goalTarget(g) - goalCurrent(g, src))
   const perDay = daysLeft > 0 ? remaining / daysLeft : null
 
   let pace: Pace
