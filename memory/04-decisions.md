@@ -510,3 +510,47 @@ goal page with its own route (heavier than the content needs, and loses the list
 side drawer (a new overlay pattern for one screen, and phones would need the sheet anyway); a
 "⋯" menu for the actions on the card (still a crowded card, and actions hide behind a second tap
 without the context the details give).
+
+## ADR-027 | 2026-10-20 | accepted | Training: exercises, routines, a program, workouts and sets
+
+**Context:** The owner asked for exercise and gym tracking: build a full plan, follow it, see the
+next exercise and last time's numbers, log reps, weight and how hard each set was, and look back
+at any day. Spec agreed in chat and kept in `memory/11-training.md`. Schema v8.
+**Decision:**
+- **Five new shapes** (`types.ts`): `exercises`, `routines` (each with its `items` inline),
+  `workouts`, `workoutSets` — four array collections, synced one entity per item like everything
+  else — and `program: TrainingProgram | null`, plus `Settings.weightUnit` (shared, synced).
+- **Sets are their own collection, not an array inside the workout.** Sync merges per entity
+  (ADR-016); sets nested in a workout would make two devices logging the same workout overwrite
+  each other's sets. As separate entities every set survives.
+- **A workout snapshots its routine's items when it starts** (`Workout.items`), and sets point at
+  the item (`WorkoutSet.itemId`). Editing a routine never rewrites history, the same exercise can
+  appear twice in one workout, and adding or reordering during a workout edits only the snapshot.
+- **The program is `null` until first saved**, and is one entity `program:main`. A default
+  object would exist on every device from the upgrade on: it would count as "user data" and stop
+  a fresh device being recognised as fresh, and a fresh device's default could overwrite the real
+  program. Null means only a device where the program was really set up ever sends one.
+- **Weights are stored in kg, full precision**; lb is display only (`Settings.weightUnit`), so
+  switching never changes history. Distance in metres, time in seconds.
+- **A workout's day is `todayKey()` when it starts** and never changes (day-boundary rule).
+- **An unfinished workout is just a workout with `finishedAt: null`** — saved and synced like any
+  other, so reopening Itqan (on either device) resumes it. The rest timer is device-local: its end
+  time lives in its own localStorage key outside `Data`, never synced or migrated.
+- **Linked habit:** `program.habitId`. Finishing a workout adds 1 to that habit on the workout's
+  day; deleting a finished workout takes the 1 back (never below 0). Written, not derived:
+  deriving would change `amountOn()` and every habit call site for one link.
+- **Linked goals are derived:** `Goal.link` (`null` | follow an exercise's best weight / reps /
+  time | count workouts). `goalCurrent()` reads workouts and sets for a linked goal instead of
+  check-ins, so deleting a workout can never leave a stale number. Goal functions take the data
+  (`GoalSources`) instead of only the check-ins.
+- **Every training number is a pure tested function** in `src/lib/training.ts`: next routine,
+  last time, suggestions, PRs (warm-ups excluded), estimated one-rep max (Epley), workout totals,
+  weekly sets per muscle. Components never compute them.
+- **Starter exercises are opt-in** ("Add common exercises", in the interface language). The
+  upgrade adds nothing to existing data.
+**Rejected:** sets inside the workout (sync would lose sets logged on two devices); a default
+program object (fresh-device detection and overwrite risk, above); storing the unit with each
+set (every comparison and PR would need converting; one canonical unit is simpler and exact
+enough at full precision); deriving the linked habit (touches all habit maths for one feature);
+check-in logs for linked goals (go stale when a workout is deleted); "Plan" or "Session" as names
+(both already mean something in Itqan).

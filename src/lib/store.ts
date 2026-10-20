@@ -7,8 +7,8 @@ import { migrate, SCHEMA_VERSION } from './migrations'
 import { emptyData, starterData } from './seed'
 import { todayKey } from './date'
 import type {
-  Achievement, ActiveTimer, Area, Contact, Data, DateKey, DayNote, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory,
-  Project, ProjectUpdate, Reminder, Settings, Task, TaskStage, WeeklyReview,
+  Achievement, ActiveTimer, Area, Contact, Data, DateKey, DayNote, Exercise, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory,
+  Project, ProjectUpdate, Reminder, Routine, RoutineItem, Settings, Task, TaskStage, TrainingProgram, WeeklyReview, Workout, WorkoutSet,
 } from './types'
 import { birthdayReminderDate } from './connections'
 
@@ -42,7 +42,7 @@ interface Actions {
   deleteHabit: (id: ID) => void
   setHabitAmount: (id: ID, day: DateKey, amount: number) => void
   // goals
-  addGoal: (g: Omit<Goal, 'id' | 'createdAt' | 'status' | 'completedAt'>) => ID
+  addGoal: (g: Omit<Goal, 'id' | 'createdAt' | 'status' | 'completedAt' | 'link'> & Partial<Pick<Goal, 'link'>>) => ID
   updateGoal: (id: ID, patch: Partial<Goal>) => void
   deleteGoal: (id: ID) => void
   /** returns true when this log completed the goal */
@@ -106,6 +106,28 @@ interface Actions {
   updateAchievement: (id: ID, patch: Partial<Achievement>) => void
   deleteAchievement: (id: ID) => Achievement | undefined
   restoreAchievement: (a: Achievement) => void
+  // training (ADR-027)
+  addExercise: (e: Pick<Exercise, 'name'> & Partial<Omit<Exercise, 'id' | 'createdAt' | 'updatedAt'>>) => ID
+  updateExercise: (id: ID, patch: Partial<Exercise>) => void
+  /** Archives an exercise that has history (kept for history); deletes one that has none. */
+  deleteExercise: (id: ID) => 'archived' | 'deleted'
+  addRoutine: (r: Pick<Routine, 'name'> & Partial<Omit<Routine, 'id' | 'createdAt' | 'updatedAt' | 'order'>>) => ID
+  updateRoutine: (id: ID, patch: Partial<Routine>) => void
+  /** Removes the routine and takes it out of the program; past workouts keep their copy. */
+  deleteRoutine: (id: ID) => void
+  /** Creates the program on first use. */
+  updateProgram: (patch: Partial<Omit<TrainingProgram, 'updatedAt'>>) => void
+  /** Starts a workout on today's local day, copying the routine's items. */
+  startWorkout: (routineId: ID | null, name: string) => ID
+  updateWorkout: (id: ID, patch: Partial<Pick<Workout, 'name' | 'note' | 'items'>>) => void
+  addWorkoutItem: (workoutId: ID, item: Pick<RoutineItem, 'exerciseId'> & Partial<Omit<RoutineItem, 'id'>>) => ID
+  logSet: (s: Omit<WorkoutSet, 'id' | 'createdAt'>) => ID
+  updateSet: (id: ID, patch: Partial<Omit<WorkoutSet, 'id' | 'workoutId' | 'createdAt'>>) => void
+  deleteSet: (id: ID) => void
+  /** Finishes once: ticks the program's habit on the workout's day and completes linked goals. */
+  finishWorkout: (id: ID) => void
+  /** Deletes the workout and its sets, and takes back the habit tick it gave. */
+  deleteWorkout: (id: ID) => void
   // settings & data
   updateSettings: (patch: Partial<Settings>) => void
   completeOnboarding: (name: string, starter: boolean) => void
@@ -216,7 +238,11 @@ export const useStore = create<Store>()(
         set((s) => {
           const habitLogs = { ...s.habitLogs }
           delete habitLogs[id]
-          return { habits: s.habits.filter((h) => h.id !== id), habitLogs }
+          return {
+            habits: s.habits.filter((h) => h.id !== id),
+            habitLogs,
+            program: s.program?.habitId === id ? { ...s.program, habitId: null, updatedAt: now() } : s.program,
+          }
         }),
       setHabitAmount: (id, day, amount) =>
         set((s) => {
@@ -229,7 +255,7 @@ export const useStore = create<Store>()(
       // --- goals -----------------------------------------------------------------
       addGoal: (g) => {
         const id = uid()
-        set((s) => ({ goals: [...s.goals, { ...g, id, status: 'active', completedAt: null, createdAt: now() }] }))
+        set((s) => ({ goals: [...s.goals, { link: null, ...g, id, status: 'active', completedAt: null, createdAt: now() }] }))
         return id
       },
       updateGoal: (id, patch) =>
@@ -485,6 +511,120 @@ export const useStore = create<Store>()(
       },
       restoreAchievement: (a) => set((s) => ({ achievements: [...s.achievements, a] })),
 
+      // --- training (ADR-027) -------------------------------------------------------
+      addExercise: (e) => {
+        const id = uid()
+        const t = now()
+        set((s) => ({
+          exercises: [...s.exercises, {
+            equipment: 'other', measure: 'weight', muscle: null, notes: '', incrementKg: 2.5, archived: false, ...e, id, createdAt: t, updatedAt: t,
+          }],
+        }))
+        return id
+      },
+      updateExercise: (id, patch) =>
+        set((s) => ({ exercises: s.exercises.map((e) => (e.id === id ? { ...e, ...patch, updatedAt: now() } : e)) })),
+      deleteExercise: (id) => {
+        if (get().workoutSets.some((x) => x.exerciseId === id)) {
+          get().updateExercise(id, { archived: true })
+          return 'archived'
+        }
+        set((s) => ({
+          exercises: s.exercises.filter((e) => e.id !== id),
+          routines: s.routines.map((r) =>
+            r.items.some((i) => i.exerciseId === id) ? { ...r, items: r.items.filter((i) => i.exerciseId !== id), updatedAt: now() } : r,
+          ),
+          goals: s.goals.map((g) => (g.link?.kind === 'exercise' && g.link.exerciseId === id ? { ...g, link: null } : g)),
+        }))
+        return 'deleted'
+      },
+      addRoutine: (r) => {
+        const id = uid()
+        const t = now()
+        set((s) => ({
+          routines: [...s.routines, { emoji: '🏋️', items: [], notes: '', archived: false, ...r, id, order: s.routines.length, createdAt: t, updatedAt: t }],
+        }))
+        return id
+      },
+      updateRoutine: (id, patch) =>
+        set((s) => ({ routines: s.routines.map((r) => (r.id === id ? { ...r, ...patch, updatedAt: now() } : r)) })),
+      deleteRoutine: (id) =>
+        set((s) => ({
+          routines: s.routines.filter((r) => r.id !== id),
+          program: s.program && (s.program.weekdays.includes(id) || s.program.rotation.includes(id))
+            ? {
+                ...s.program,
+                weekdays: s.program.weekdays.map((w) => (w === id ? null : w)),
+                rotation: s.program.rotation.filter((r) => r !== id),
+                updatedAt: now(),
+              }
+            : s.program,
+        })),
+      updateProgram: (patch) =>
+        set((s) => ({
+          program: {
+            mode: 'weekdays', weekdays: [null, null, null, null, null, null, null], rotation: [], perWeek: 3, habitId: null,
+            ...s.program, ...patch, updatedAt: now(),
+          },
+        })),
+      startWorkout: (routineId, name) => {
+        const id = uid()
+        const t = now()
+        const routine = routineId ? get().routines.find((r) => r.id === routineId) : undefined
+        const workout: Workout = {
+          id, routineId: routine?.id ?? null, name, date: todayKey(), startedAt: t, finishedAt: null,
+          // A copy: editing the routine later never changes this workout (ADR-027).
+          items: routine ? routine.items.map((i) => ({ ...i })) : [],
+          note: '', tickedHabitId: null, createdAt: t, updatedAt: t,
+        }
+        set((s) => ({ workouts: [...s.workouts, workout] }))
+        return id
+      },
+      updateWorkout: (id, patch) =>
+        set((s) => ({ workouts: s.workouts.map((w) => (w.id === id ? { ...w, ...patch, updatedAt: now() } : w)) })),
+      addWorkoutItem: (workoutId, item) => {
+        const id = uid()
+        const full: RoutineItem = {
+          sets: 3, warmupSets: 0, repsMin: null, repsMax: null, kg: null, seconds: null, meters: null, restSec: 90, ...item, id,
+        }
+        set((s) => ({
+          workouts: s.workouts.map((w) => (w.id === workoutId ? { ...w, items: [...w.items, full], updatedAt: now() } : w)),
+        }))
+        return id
+      },
+      logSet: (x) => {
+        const id = uid()
+        set((s) => ({ workoutSets: [...s.workoutSets, { ...x, id, createdAt: now() }] }))
+        return id
+      },
+      updateSet: (id, patch) =>
+        set((s) => ({ workoutSets: s.workoutSets.map((x) => (x.id === id ? { ...x, ...patch } : x)) })),
+      deleteSet: (id) => set((s) => ({ workoutSets: s.workoutSets.filter((x) => x.id !== id) })),
+      finishWorkout: (id) => {
+        const s = get()
+        const w = s.workouts.find((x) => x.id === id)
+        if (!w || w.finishedAt) return
+        const habitId = s.program?.habitId && s.habits.some((h) => h.id === s.program?.habitId) ? s.program.habitId : null
+        set((st) => ({
+          workouts: st.workouts.map((x) => (x.id === id ? { ...x, finishedAt: now(), tickedHabitId: habitId, updatedAt: now() } : x)),
+        }))
+        if (habitId) s.setHabitAmount(habitId, w.date, (s.habitLogs[habitId]?.[w.date] ?? 0) + 1)
+        for (const g of get().goals) if (g.link) completeIfReached(g.id)
+      },
+      deleteWorkout: (id) => {
+        const w = get().workouts.find((x) => x.id === id)
+        if (!w) return
+        set((s) => ({
+          workouts: s.workouts.filter((x) => x.id !== id),
+          workoutSets: s.workoutSets.filter((x) => x.workoutId !== id),
+        }))
+        const hid = w.tickedHabitId
+        if (w.finishedAt && hid) {
+          const have = get().habitLogs[hid]?.[w.date] ?? 0
+          if (have > 0) get().setHabitAmount(hid, w.date, have - 1)
+        }
+      },
+
       // --- settings & data -------------------------------------------------------
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
       completeOnboarding: (name, starter) =>
@@ -504,6 +644,7 @@ export const useStore = create<Store>()(
         goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
         reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
         projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
+        exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets,
         settings: s.settings,
       }),
       migrate: (persisted, version) => migrate(persisted, version) as unknown as Store,
@@ -529,6 +670,7 @@ export function snapshot(s: Store): Data {
     goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
     reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
     projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
+    exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets,
     settings: s.settings,
   }
 }

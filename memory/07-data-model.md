@@ -14,7 +14,7 @@ Zustand as `{ state: Data, version: SCHEMA_VERSION }`.
 | `tasks` | `Task[]` | `date: null` = Inbox. `doneAt` drives XP day and the review |
 | `habits` | `Habit[]` | `schedule` + `target` + `unit` |
 | `habitLogs` | `{ [habitId]: { [DateKey]: amount } }` | A map, not an array: O(1) per day, compact. Amount 0 = key removed |
-| `goals` | `Goal[]` | `startValue` = progress before tracking began; milestones inline |
+| `goals` | `Goal[]` | `startValue` = progress before tracking began; milestones inline; `link` = follow Training instead of check-ins (v8) |
 | `goalLogs` | `GoalLog[]` | Check-ins; current value = startValue + Σ amounts |
 | `focusSessions` | `FocusSession[]` | Only *finished* focus time is stored |
 | `timer` | `ActiveTimer \| null` | Persisted so a running timer survives reload; `endsAt` is epoch ms |
@@ -28,7 +28,12 @@ Zustand as `{ state: Data, version: SCHEMA_VERSION }`.
 | `contacts` | `Contact[]` | Circle, rhythm (`cadenceDays`), birthday `YYYY-MM-DD` or `MM-DD`, `birthdayReminderId` (ADR-018) |
 | `interactions` | `Interaction[]` | Check-ins with a person: kind, date, note |
 | `reminders` | `Reminder[]` | `date` = first/original occurrence; `time` null = all-day; `repeat`; `alerts` = minutes before (ADR-013) |
-| `settings` | `Settings` | Includes `onboarded`, `lastBackupAt`, `daily` — the daily card's switches, word language and level (ADR-023) — and `language`, the interface language `en`/`ar`/`fr`/`zh`/`es` (schema v7, ADR-024; synced). `normalize()` merges `daily` with its defaults key by key and falls back to `en` for an unknown language |
+| `exercises` | `Exercise[]` | Equipment, measure (weight / reps / time / distance), muscle, weight step. Deleted only without history, else archived (ADR-027) |
+| `routines` | `Routine[]` | Ordered `items` inline: sets, warm-ups, rep range, kg, seconds, metres, rest |
+| `program` | `TrainingProgram \| null` | Weekdays or rotation, per-week target, linked habit. **null until first saved** — synced as `program:main` only then (ADR-027) |
+| `workouts` | `Workout[]` | `date` = local day it started; `finishedAt` null = in progress; `items` = a copy of the routine's; `tickedHabitId` |
+| `workoutSets` | `WorkoutSet[]` | Own collection so sets from two devices both survive sync. kg, metres, seconds — always; `warmup`; `effort` |
+| `settings` | `Settings` | Includes `onboarded`, `lastBackupAt`, `daily` — the daily card's switches, word language and level (ADR-023) — and `language`, the interface language `en`/`ar`/`fr`/`zh`/`es` (schema v7, ADR-024; synced), and `weightUnit` `kg`/`lb`, display only (v8, synced). `normalize()` merges `daily` with its defaults key by key and falls back to `en` for an unknown language |
 
 ## The sync document (ADR-016)
 
@@ -57,7 +62,8 @@ ADR-006). Storing them would let them drift from the history they summarise.
 4. `normalize()` must still produce a complete `Data` from partial input.
 5. Backups from the old version must import (they pass through the same `migrate`).
 
-Current version: **6**. History: 1 = initial; 2 = `memories`, `ideas`, `reminders`; 3 = `projects`,
+Current version: **8**. History: 1 = initial; 2 = `memories`, `ideas`, `reminders`; 3 = `projects`,
 `contacts`, `interactions`, `Task.projectId`, `Reminder.contactId`, `Reminder.countYears`; 4 = `Task.stage`,
 `Task.blocked`, `Project.progressMode/manualProgress/view/pinned`, `projectUpdates`; 5 = `achievements`
-(all 2026-10-16); 6 = `Settings.daily` (2026-10-17).
+(all 2026-10-16); 6 = `Settings.daily` (2026-10-17); 7 = `Settings.language` (2026-10-17); 8 = Training — `exercises`,
+`routines`, `program`, `workouts`, `workoutSets`, `Goal.link`, `Settings.weightUnit` (2026-10-20, ADR-027).

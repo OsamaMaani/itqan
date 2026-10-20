@@ -35,6 +35,36 @@ describe('entities', () => {
     const remote = { ...data(), settings: { ...data().settings, language: 'fr' as const } }
     expect(fromEntities(toEntities(remote), emptyData()).settings.language).toBe('fr')
   })
+  it('training data, the program and the weight unit follow you to the other device', () => {
+    const remote: Data = {
+      ...data(),
+      exercises: [{ id: 'e1', name: 'Bench', equipment: 'barbell', measure: 'weight', muscle: 'chest', notes: '', incrementKg: 2.5, archived: false, createdAt: '2026-10-20T08:00:00Z', updatedAt: '' }],
+      routines: [{ id: 'r1', name: 'Push', emoji: '', items: [], notes: '', archived: false, order: 0, createdAt: '2026-10-20T08:00:00Z', updatedAt: '' }],
+      program: { mode: 'rotation', weekdays: [null, null, null, null, null, null, null], rotation: ['r1'], perWeek: 3, habitId: null, updatedAt: '' },
+      workouts: [{ id: 'w1', routineId: 'r1', name: 'Push', date: '2026-10-20', startedAt: '2026-10-20T08:00:00Z', finishedAt: null, items: [], note: '', tickedHabitId: null, createdAt: '2026-10-20T08:00:00Z', updatedAt: '' }],
+      workoutSets: [{ id: 's1', workoutId: 'w1', itemId: 'i1', exerciseId: 'e1', warmup: false, reps: 8, kg: 40, seconds: null, meters: null, effort: 'good', createdAt: '2026-10-20T08:05:00Z' }],
+      settings: { ...data().settings, weightUnit: 'lb' },
+    }
+    expect(fromEntities(toEntities(remote), remote)).toEqual(remote)
+    const out = fromEntities(toEntities(remote), emptyData())
+    expect(out.program).toEqual(remote.program)
+    expect(out.workoutSets).toEqual(remote.workoutSets)
+    expect(out.settings.weightUnit).toBe('lb')
+  })
+  it('an unset program is no entity, so a fresh device stays fresh and cannot overwrite a real one', () => {
+    expect(Object.keys(toEntities(emptyData())).some((k) => k.startsWith('program'))).toBe(false)
+    const withProgram = { ...emptyData(), program: { mode: 'weekdays' as const, weekdays: [null, null, null, null, null, null, null], rotation: [], perWeek: 3, habitId: null, updatedAt: '' } }
+    const r = merge({ entities: toEntities(emptyData()), meta: {} }, { entities: toEntities(withProgram), meta: { 'program:main': { u: 10 } } })
+    expect(fromEntities(r.entities, emptyData()).program).toEqual(withProgram.program)
+  })
+  it('sets logged on two devices in the same workout both survive', () => {
+    const s = (id: string) => ({ id, workoutId: 'w1', itemId: 'i1', exerciseId: 'e1', warmup: false, reps: 8, kg: 40, seconds: null, meters: null, effort: 'good' as const, createdAt: `2026-10-20T08:0${id.length}:00Z` })
+    const base = toEntities(emptyData())
+    const laptop = { entities: { ...base, 'workoutSets:a': s('a') }, meta: { 'workoutSets:a': { u: 100 } } }
+    const phone = { entities: { ...base, 'workoutSets:bb': s('bb') }, meta: { 'workoutSets:bb': { u: 200 } } }
+    const r = merge(laptop, phone)
+    expect(fromEntities(r.entities, emptyData()).workoutSets.map((x) => x.id).sort()).toEqual(['a', 'bb'])
+  })
   it('an empty device has no user data', () => {
     expect(hasUserData(toEntities(emptyData()))).toBe(false)
     expect(hasUserData(toEntities(data()))).toBe(true)

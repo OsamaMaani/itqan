@@ -8,6 +8,7 @@ import type { Data, Settings } from '../types'
  *   habitLogs:<habitId>|<day>         one per habit per day
  *   dayNotes:<day>  reviews:<week>    one per day / week
  *   settings:shared                   the settings that should follow you across devices
+ *   program:main                      the training program, only once it has been saved (ADR-027)
  *
  * Device-local, never synced: the running focus timer, theme, sounds, onboarding and backup
  * dates — each device keeps its own.
@@ -18,10 +19,11 @@ export type Entities = Record<string, unknown>
 export const ARRAY_COLLECTIONS = [
   'areas', 'tasks', 'habits', 'goals', 'goalLogs', 'focusSessions', 'memories', 'ideas', 'reminders',
   'projects', 'projectUpdates', 'contacts', 'interactions', 'achievements',
+  'exercises', 'routines', 'workouts', 'workoutSets',
 ] as const
 type ArrayCollection = (typeof ARRAY_COLLECTIONS)[number]
 
-export const SHARED_SETTINGS = ['name', 'weekStartsOn', 'focusMinutes', 'breakMinutes', 'showHijri', 'daily', 'language'] as const
+export const SHARED_SETTINGS = ['name', 'weekStartsOn', 'focusMinutes', 'breakMinutes', 'showHijri', 'daily', 'language', 'weightUnit'] as const
 
 export function toEntities(d: Data): Entities {
   const e: Entities = {}
@@ -33,6 +35,9 @@ export function toEntities(d: Data): Entities {
   }
   for (const [day, note] of Object.entries(d.dayNotes)) e[`dayNotes:${day}`] = note
   for (const [week, r] of Object.entries(d.reviews)) e[`reviews:${week}`] = r
+  // Absent until saved: a default here would make every upgraded or fresh device look like it
+  // has data, and could overwrite the real program from another device (ADR-027).
+  if (d.program) e['program:main'] = d.program
   // A string, so an unchanged value compares equal by === (objects would be new every time).
   e['settings:shared'] = JSON.stringify(Object.fromEntries(SHARED_SETTINGS.map((k) => [k, d.settings[k]])))
   return e
@@ -52,6 +57,7 @@ export function fromEntities(e: Entities, local: Data): Data {
     habitLogs: {},
     dayNotes: {},
     reviews: {},
+    program: (e['program:main'] as Data['program'] | undefined) ?? null,
   }
   for (const col of ARRAY_COLLECTIONS) {
     const prefix = `${col}:`

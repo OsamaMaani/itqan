@@ -1,7 +1,7 @@
 {
   "project": "Itqan",
   "subtitle": "إتقان — daily tasks, habits and long-term goals in one calm place",
-  "updated": "2026-10-19",
+  "updated": "2026-10-20",
   "current_stage": 4,
   "next_actions": [
     "In Settings → Profile, pick your interface language (it follows you to your other devices). All four translations have had their independent review (S2-23); if a phrase still reads oddly, note it.",
@@ -311,6 +311,45 @@
           "title": "Goals: \"New goal\" created nothing (fixed, guarded by a test); compact goal cards with a details dialog (ADR-026)",
           "module": "goals",
           "status": "done"
+        },
+        {
+          "id": "S2-26",
+          "title": "Training data: schema v8 (exercises, routines, program, workouts, sets, weight unit), migration + sync + backup, store actions (ADR-027)",
+          "module": "training",
+          "status": "done",
+          "critical": true
+        },
+        {
+          "id": "S2-27",
+          "title": "Training maths, tested: next routine, last time, suggestions, PRs, 1RM, totals, weekly; linked goals; workout XP and badges",
+          "module": "training",
+          "status": "in-progress",
+          "critical": true
+        },
+        {
+          "id": "S2-28",
+          "title": "Training screen: exercises, routines, program editor, history (day, exercise chart, calendar, week)",
+          "module": "training",
+          "status": "todo"
+        },
+        {
+          "id": "S2-29",
+          "title": "Live workout: next exercise, last time, one-tap sets, effort, rest timer, finish summary, resume",
+          "module": "training",
+          "status": "todo",
+          "critical": true
+        },
+        {
+          "id": "S2-30",
+          "title": "Training everywhere: Today card, linked habit and goals, weekly review, Settings unit, command bar",
+          "module": "training",
+          "status": "todo"
+        },
+        {
+          "id": "S2-31",
+          "title": "Training in Arabic, French, Chinese and Spanish, with an independent review",
+          "module": "training",
+          "status": "todo"
         }
       ]
     },
@@ -487,6 +526,11 @@
       "slug": "sync",
       "name": "Sync",
       "status": "done"
+    },
+    {
+      "slug": "training",
+      "name": "Training",
+      "status": "in-progress"
     }
   ],
   "open_questions": [
@@ -534,6 +578,14 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-20",
+      "entry": "S2-26: data format v8 for Training — exercises, routines, program, workouts and sets (sets as their own collection so two devices logging one workout keep every set), Goal.link, Settings.weightUnit (kg). The upgrade adds only empty collections and defaults; tested from v7 data and a v7 backup, through sync (program absent until saved, so a fresh device stays fresh), and every store action incl. the linked-habit tick and its undo. Nothing visible yet."
+    },
+    {
+      "date": "2026-10-20",
+      "entry": "Training (exercise and gym tracking), at the owner's request: spec agreed in chat and kept in memory/11-training.md — exercises, routines, a program by weekdays or rotation (customizable), live workouts with last time, effort per set, rest timer and suggestions, PRs, history by day and exercise, kg by default, logging on laptop and phone. Decision record ADR-027; built as S2-26 to S2-31."
+    },
     {
       "date": "2026-10-19",
       "entry": "S2-25, from the owner's report: \"New goal\" on the Goals page closed without creating anything — since the first commit. Cause: the editor saved with onCreated?.(add(goal)), and an optional call skips its arguments when there is no callback, which is exactly the Goals page (Plan and Projects passed one, so it worked there). Fixed, and src/lib/__tests__/sourceGuards.test.ts now fails on any optional call with a call in its arguments. Also at the owner's request: goal cards are about half as tall — progress ring, title, area and pace, one line of facts, and a quick + (numeric) or the next milestone to tick; the whole card opens a details dialog with the why, all milestones, the progress history and every action (ADR-026). Checked in the browser at 375 and 1280 px, light and dark, English and Arabic."

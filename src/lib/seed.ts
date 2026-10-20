@@ -15,12 +15,14 @@ export const DEFAULT_SETTINGS: Settings = {
   onboarded: false,
   daily: { verse: true, hadith: true, word: true, wisdom: true, fact: true, meaning: true, wordLanguage: 'fr', wordLevel: 'B1' },
   language: 'en',
+  weightUnit: 'kg',
 }
 
 export function emptyData(): Data {
   return {
     areas: [], tasks: [], habits: [], habitLogs: {}, goals: [], goalLogs: [],
     focusSessions: [], timer: null, dayNotes: {}, reviews: {}, memories: [], ideas: [], reminders: [], projects: [], projectUpdates: [], contacts: [], interactions: [], achievements: [],
+    exercises: [], routines: [], program: null, workouts: [], workoutSets: [],
     settings: { ...DEFAULT_SETTINGS },
   }
 }
@@ -57,7 +59,7 @@ export function starterData(today: string, t: I18n = tx()): Pick<Data, 'areas' |
 
   const goal = (g: Partial<Goal> & Pick<Goal, 'title' | 'kind'>): Goal => ({
     id: uid(), why: '', areaId: null, startValue: 0, target: 0, unit: '', startDate: today,
-    deadline: null, milestones: [], status: 'active', completedAt: null, createdAt: now, ...g,
+    deadline: null, milestones: [], status: 'active', completedAt: null, createdAt: now, link: null, ...g,
   })
   const ms = (...titles: string[]) => titles.map((title) => ({ id: uid(), title, done: false, doneAt: null }))
 

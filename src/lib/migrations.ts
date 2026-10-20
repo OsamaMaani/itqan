@@ -6,7 +6,7 @@ import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 7
+export const SCHEMA_VERSION = 8
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -48,6 +48,21 @@ const steps: Record<number, Step> = {
     const settings = (d.settings as Record<string, unknown> | undefined) ?? {}
     return { ...d, settings: { ...settings, language: settings.language ?? 'en' } }
   },
+  // 7 → 8 (2026-10-20): Training (ADR-027). New collections start empty and the program unset;
+  // goals gain a null link (check-ins as before); weights show in kg. Nothing existing changes.
+  7: (d) => {
+    const settings = (d.settings as Record<string, unknown> | undefined) ?? {}
+    return {
+      ...d,
+      goals: ((d.goals as Record<string, unknown>[] | undefined) ?? []).map((g) => ({ link: null, ...g })),
+      exercises: d.exercises ?? [],
+      routines: d.routines ?? [],
+      program: d.program ?? null,
+      workouts: d.workouts ?? [],
+      workoutSets: d.workoutSets ?? [],
+      settings: { ...settings, weightUnit: settings.weightUnit ?? 'kg' },
+    }
+  },
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {
@@ -82,6 +97,11 @@ export function normalize(d: Record<string, unknown>): Data {
     contacts: pick('contacts'),
     interactions: pick('interactions'),
     achievements: pick('achievements'),
+    exercises: pick('exercises'),
+    routines: pick('routines'),
+    program: pick('program'),
+    workouts: pick('workouts'),
+    workoutSets: pick('workoutSets'),
     settings: normalizeSettings(d.settings),
   }
 }
@@ -90,5 +110,6 @@ export function normalize(d: Record<string, unknown>): Data {
 function normalizeSettings(raw: unknown): Settings {
   const s = (raw && typeof raw === 'object' ? raw : {}) as Partial<Settings>
   const language = UI_LANGUAGES.includes(s.language as UiLanguage) ? (s.language as UiLanguage) : DEFAULT_SETTINGS.language
-  return { ...DEFAULT_SETTINGS, ...s, daily: { ...DEFAULT_SETTINGS.daily, ...(s.daily ?? {}) }, language }
+  const weightUnit = s.weightUnit === 'lb' ? 'lb' : 'kg'
+  return { ...DEFAULT_SETTINGS, ...s, daily: { ...DEFAULT_SETTINGS.daily, ...(s.daily ?? {}) }, language, weightUnit }
 }

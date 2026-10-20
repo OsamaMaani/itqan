@@ -36,7 +36,7 @@ describe('suggestions from the rest of Itqan', () => {
   const base = (): Data => ({
     ...emptyData(),
     areas: [{ id: 'q', name: 'Quran', emoji: '', color: 'emerald', archived: false, createdAt: '' }],
-    goals: [{ id: 'g1', title: 'Complete a full revision', why: 'Keep it strong', areaId: 'q', kind: 'numeric', startValue: 0, target: 30, unit: 'juz', startDate: '2026-01-01', deadline: null, milestones: [], status: 'done', completedAt: '2026-09-30T20:00:00', createdAt: '' }],
+    goals: [{ id: 'g1', title: 'Complete a full revision', why: 'Keep it strong', areaId: 'q', kind: 'numeric', startValue: 0, target: 30, unit: 'juz', startDate: '2026-01-01', deadline: null, milestones: [], status: 'done', completedAt: '2026-09-30T20:00:00', createdAt: '', link: null }],
     focusSessions: Array.from({ length: 25 }, (_, i) => ({ id: `f${i}`, startedAt: '2026-10-01T10:00:00', minutes: 30, label: '', areaId: null, goalId: null, taskId: null })),
   })
   it('offers completed goals (with a category from their area) and focus milestones', () => {

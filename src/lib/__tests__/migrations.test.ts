@@ -154,3 +154,50 @@ describe('v6 → v7 (interface language)', () => {
     expect(parseBackup(JSON.stringify(b)).settings.language).toBe('en')
   })
 })
+
+describe('v7 → v8 (training)', () => {
+  const v7 = () => ({
+    tasks: [{ id: 't', title: 'Read', stage: 'todo', blocked: false, projectId: null }],
+    habits: [{ id: 'h1', name: 'Exercise' }],
+    habitLogs: { h1: { '2026-10-19': 1 } },
+    goals: [{ id: 'g1', title: 'Read 12 books', kind: 'numeric', startValue: 2, target: 12 }],
+    goalLogs: [{ id: 'l1', goalId: 'g1', date: '2026-10-19', amount: 1 }],
+    settings: { name: 'Sam', onboarded: true, language: 'ar' },
+  })
+  it('adds empty training data, an unset program and kg — and keeps every existing record', () => {
+    const before = v7()
+    const d = migrate(before, 7)
+    expect(d.exercises).toEqual([])
+    expect(d.routines).toEqual([])
+    expect(d.workouts).toEqual([])
+    expect(d.workoutSets).toEqual([])
+    expect(d.program).toBeNull()
+    expect(d.settings.weightUnit).toBe('kg')
+    expect(d.settings).toMatchObject({ name: 'Sam', onboarded: true, language: 'ar' })
+    expect(d.goals).toEqual([{ ...before.goals[0], link: null }])
+    expect(d.goalLogs).toEqual(before.goalLogs)
+    expect(d.tasks).toEqual(before.tasks)
+    expect(d.habits).toEqual(before.habits)
+    expect(d.habitLogs).toEqual(before.habitLogs)
+  })
+  it('never overwrites training data or choices already there', () => {
+    const program = { mode: 'rotation', weekdays: [], rotation: ['r1'], perWeek: 4, habitId: 'h1', updatedAt: '' }
+    const d = migrate({
+      goals: [{ id: 'g', link: { kind: 'workouts' } }], exercises: [{ id: 'e1' }], program, settings: { weightUnit: 'lb' },
+    }, 7)
+    expect(d.goals[0].link).toEqual({ kind: 'workouts' })
+    expect(d.exercises).toEqual([{ id: 'e1' }])
+    expect(d.program).toEqual(program)
+    expect(d.settings.weightUnit).toBe('lb')
+  })
+  it('an unknown unit falls back to kg', () => {
+    expect(migrate({ settings: { weightUnit: 'stone' } }, SCHEMA_VERSION).settings.weightUnit).toBe('kg')
+  })
+  it('a v7 backup restores with training added and nothing lost', () => {
+    const b = { app: 'itqan', schemaVersion: 7, exportedAt: '', data: { areas: [], ...v7() } }
+    const d = parseBackup(JSON.stringify(b))
+    expect(d.workouts).toEqual([])
+    expect(d.goals[0].link).toBeNull()
+    expect(d.tasks).toEqual(v7().tasks)
+  })
+})

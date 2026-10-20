@@ -35,7 +35,8 @@ export function useData(): Data {
       areas: s.areas, tasks: s.tasks, habits: s.habits, habitLogs: s.habitLogs, goals: s.goals,
       goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
       reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
-      projectUpdates: s.projectUpdates, achievements: s.achievements, contacts: s.contacts, interactions: s.interactions, settings: s.settings,
+      projectUpdates: s.projectUpdates, achievements: s.achievements, contacts: s.contacts, interactions: s.interactions,
+      exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, settings: s.settings,
     })),
   )
 }

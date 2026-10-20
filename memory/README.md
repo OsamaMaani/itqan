@@ -18,6 +18,7 @@ directory and understand the project completely.
 | `08-design-system.md` | Tokens, components, motion and copy rules |
 | `09-workflow.md` | How every session works: the four phases and which model runs what |
 | `10-localization.md` | How interface text works in code, how each language is written, the glossary |
+| `11-training.md` | The Training feature's agreed spec (exercise and gym tracking, ADR-027) |
 | `status.json` | Machine-readable state — drives `dashboard/index.html` |
 
 ## Maintenance rules

@@ -49,4 +49,12 @@ The vocabulary is fixed. Use these words in code, UI and memory alike.
 | **Daily card** | The card on Today with one verse, hadith, word, piece of wisdom and fact a day (ADR-023). | `DailyCard`, `Settings.daily` |
 | **Verse / Hadith / Word / Wisdom / Fact** | The five kinds on the daily card. "Wisdom" = a saying or proverb, never a hadith. | `DailyKind` |
 | **Word of the day** | A word in the chosen language and CEFR level, with an example. | `Word`, `WordPack` |
+| **Training** | The exercise and gym screen (ADR-027, `memory/11-training.md`). | route `training` |
+| **Exercise** | One movement: Bench press, Plank, Running. Measured by weight, reps, time or distance. | `Exercise` |
+| **Routine** | A saved, ordered list of exercises with targets ("Push day"). Never "plan" or "template". | `Routine`, `RoutineItem` |
+| **Program** | How routines are scheduled: fixed weekdays or a rotation. | `TrainingProgram` |
+| **Workout** | One time you trained, on the local day it started. Never "session" (that is Focus). | `Workout` |
+| **Set** | One logged set: reps, weight, time or distance, and effort. Warm-up sets never count for PRs. | `WorkoutSet` |
+| **Effort** | How hard a set was: Easy, Good, Hard, Failed. | `Effort` |
+| **PR** | Personal record on an exercise. | `personalRecords()` |
 | **DateKey** | A local-time day as `yyyy-MM-dd`. Never UTC. | `DateKey` |

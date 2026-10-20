@@ -102,7 +102,14 @@ export interface Goal {
   status: 'active' | 'paused' | 'done'
   completedAt: string | null
   createdAt: string
+  /** Progress read from Training instead of check-ins (ADR-027). null = check-ins as usual. Schema v8. */
+  link: GoalLink | null
 }
+
+/** A numeric goal that follows Training: an exercise's best, or a count of finished workouts. */
+export type GoalLink =
+  | { kind: 'exercise'; exerciseId: ID; metric: 'kg' | 'reps' | 'seconds' }
+  | { kind: 'workouts' }
 
 export interface GoalLog {
   id: ID
@@ -315,6 +322,117 @@ export interface Interaction {
   createdAt: string
 }
 
+// --- Training (ADR-027, memory/11-training.md; schema v8) ----------------------------------------
+// Weights are kg, distances metres, durations seconds — always; lb is only a display choice.
+
+export const EQUIPMENT = ['bodyweight', 'dumbbell', 'barbell', 'machine', 'cable', 'kettlebell', 'band', 'other'] as const
+export type Equipment = (typeof EQUIPMENT)[number]
+
+/** weight = reps × kg; reps = reps, optionally with added kg; time = seconds; distance = metres in seconds. */
+export const MEASURES = ['weight', 'reps', 'time', 'distance'] as const
+export type Measure = (typeof MEASURES)[number]
+
+export const MUSCLES = [
+  'chest', 'back', 'shoulders', 'biceps', 'triceps', 'forearms', 'core', 'glutes', 'quads', 'hamstrings', 'calves', 'fullBody', 'cardio',
+] as const
+export type Muscle = (typeof MUSCLES)[number]
+
+export interface Exercise {
+  id: ID
+  name: string
+  equipment: Equipment
+  measure: Measure
+  muscle: Muscle | null
+  /** "Seat at 4", "left cable station" */
+  notes: string
+  /** The step a "go heavier" suggestion adds, in kg */
+  incrementKg: number
+  /** Hidden from pickers; its history is kept */
+  archived: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+/** One exercise in a routine (or in a workout's snapshot of it), with its target. */
+export interface RoutineItem {
+  id: ID
+  exerciseId: ID
+  /** Work sets */
+  sets: number
+  /** Warm-up sets before them; never count toward PRs */
+  warmupSets: number
+  repsMin: number | null
+  repsMax: number | null
+  kg: number | null
+  seconds: number | null
+  meters: number | null
+  /** Rest after each set */
+  restSec: number
+}
+
+export interface Routine {
+  id: ID
+  name: string
+  emoji: string
+  items: RoutineItem[]
+  notes: string
+  archived: boolean
+  order: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TrainingProgram {
+  mode: 'weekdays' | 'rotation'
+  /** Index = day of week, 0 Sunday … 6 Saturday; null = rest day */
+  weekdays: (ID | null)[]
+  /** Routines in order, for mode 'rotation' */
+  rotation: ID[]
+  /** Workouts a week the rotation aims for */
+  perWeek: number
+  /** Finishing a workout ticks this habit on the workout's day */
+  habitId: ID | null
+  updatedAt: string
+}
+
+export interface Workout {
+  id: ID
+  routineId: ID | null
+  /** The routine's name when the workout started (or what the person typed) */
+  name: string
+  /** The local day it started on — never changes (day-boundary rule) */
+  date: DateKey
+  startedAt: string
+  /** null = still in progress */
+  finishedAt: string | null
+  /** The routine's items as they were at the start, plus anything added or reordered during it */
+  items: RoutineItem[]
+  note: string
+  /** The habit finishing this workout ticked, so deleting it takes back exactly that tick */
+  tickedHabitId: ID | null
+  createdAt: string
+  updatedAt: string
+}
+
+export const EFFORTS = ['easy', 'good', 'hard', 'failed'] as const
+export type Effort = (typeof EFFORTS)[number]
+
+/** One set. Its own collection, so sets logged on two devices at once both survive sync. */
+export interface WorkoutSet {
+  id: ID
+  workoutId: ID
+  /** The RoutineItem inside the workout's `items` this set belongs to */
+  itemId: ID
+  exerciseId: ID
+  warmup: boolean
+  reps: number | null
+  kg: number | null
+  seconds: number | null
+  meters: number | null
+  effort: Effort | null
+  createdAt: string
+}
+
 export interface Settings {
   name: string
   theme: 'system' | 'light' | 'dark'
@@ -330,7 +448,11 @@ export interface Settings {
   daily: DailySettings
   /** Interface language (ADR-024). Synced across devices. */
   language: UiLanguage
+  /** How weights are shown (ADR-027). Stored weights are always kg. Synced. Schema v8. */
+  weightUnit: WeightUnit
 }
+
+export type WeightUnit = 'kg' | 'lb'
 
 export const UI_LANGUAGES = ['en', 'ar', 'fr', 'zh', 'es'] as const
 export type UiLanguage = (typeof UI_LANGUAGES)[number]
@@ -371,5 +493,11 @@ export interface Data {
   achievements: Achievement[]
   ideas: Idea[]
   reminders: Reminder[]
+  exercises: Exercise[]
+  routines: Routine[]
+  /** null until the program is first saved (ADR-027) */
+  program: TrainingProgram | null
+  workouts: Workout[]
+  workoutSets: WorkoutSet[]
   settings: Settings
 }
