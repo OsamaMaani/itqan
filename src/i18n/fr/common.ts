@@ -16,7 +16,7 @@ export const common: Messages['common'] = {
   more: 'Plus',
   search: 'Rechercher',
   all: 'Tout',
-  none: { task: 'Aucune', goal: 'Aucun', project: 'Aucun', priority: 'Aucune', area: 'Aucun' },
+  none: { task: 'Aucune', goal: 'Aucun', project: 'Aucun', priority: 'Aucune', area: 'Aucun', habit: 'Aucune' },
   other: 'Autre',
   optional: 'facultatif',
   loading: 'Chargement…',

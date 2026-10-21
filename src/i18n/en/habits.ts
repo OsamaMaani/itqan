@@ -6,6 +6,7 @@ export const habits = {
   emptyTitle: 'No habits yet',
   emptyBody: 'Start with one you can do even on a bad day — 5 minutes of French, 1 page of Quran.',
   editHabit: 'Edit habit',
+  focusOnThis: 'Focus on this habit',
   /** {target} is a number, {unit} is the unit the owner typed (pages, min…). */
   targetPerDay: '{target} {unit}/day',
   /** Label under the current-streak number on a habit card; must read right under any number (1, 2, 11…). */

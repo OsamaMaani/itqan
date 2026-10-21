@@ -132,6 +132,10 @@ export interface FocusSession {
   areaId: ID | null
   goalId: ID | null
   taskId: ID | null
+  /** The habit this session was for (ADR-029). Schema v10. */
+  habitId: ID | null
+  /** What finishing it added to that habit's log on the session's day — taken back exactly on delete. */
+  habitAmount: number
 }
 
 export interface ActiveTimer {
@@ -146,6 +150,7 @@ export interface ActiveTimer {
   areaId: ID | null
   goalId: ID | null
   taskId: ID | null
+  habitId: ID | null
 }
 
 export interface DayNote {

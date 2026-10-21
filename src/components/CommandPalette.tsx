@@ -68,7 +68,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     const focusLabel = t.f(m.palette.startFocus, { n: st.settings.focusMinutes })
     list.push({
       id: 'focus', icon: <Timer size={16} />, label: focusLabel, keywords: `${focusLabel} focus timer pomodoro start`,
-      run: () => { st.startTimer({ mode: 'focus', totalMs: st.settings.focusMinutes * 60000, label: m.palette.focusLabel, areaId: null, goalId: null, taskId: null }); navigate('focus') },
+      run: () => { st.startTimer({ mode: 'focus', totalMs: st.settings.focusMinutes * 60000, label: m.palette.focusLabel, areaId: null, goalId: null, taskId: null, habitId: null }); navigate('focus') },
     })
     // Training (ADR-027): resume the workout in progress, or start what today calls for.
     const active = activeWorkout(st.workouts)

@@ -16,7 +16,7 @@ export const common: Messages['common'] = {
   more: 'المزيد',
   search: 'بحث',
   all: 'الكل',
-  none: { task: 'بلا مهمة', goal: 'بلا هدف', project: 'بلا مشروع', priority: 'بلا أولوية', area: 'بلا مجال' },
+  none: { task: 'بلا مهمة', goal: 'بلا هدف', project: 'بلا مشروع', priority: 'بلا أولوية', area: 'بلا مجال', habit: 'بلا عادة' },
   other: 'أخرى',
   optional: 'اختياري',
   loading: 'جارٍ التحميل…',

@@ -14,6 +14,11 @@ export const focus = {
   breakLabel: 'Break',
   labelPlaceholder: 'What are you working on?',
   task: 'Task',
+  habit: 'Habit',
+  /** Under the habit picker: finishing the session adds its minutes to the habit. {name} is the habit's name. */
+  habitAddsMinutes: 'Counts its minutes toward “{name}”',
+  /** Under the habit picker: finishing the session checks the habit in once. {name} is the habit's name. */
+  habitChecksIn: 'Checks in “{name}” when you finish',
   start: 'Start focus',
   /** Button: start a break. */
   takeBreak: 'Break',

@@ -1,4 +1,4 @@
-import { Check, Flame, Pencil, Plus, Trophy } from 'lucide-react'
+import { Check, Flame, Pencil, Plus, Timer, Trophy } from 'lucide-react'
 import { useState } from 'react'
 import { HabitEditor } from '../components/HabitEditor'
 import { Heatmap } from '../components/Heatmap'
@@ -6,8 +6,9 @@ import { AreaChip, Button, Card, cx, EmptyState, IconButton, PageHeader } from '
 import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
 import { addDaysKey } from '../lib/date'
-import { amountOn, completionRate, isMetOn, isScheduled, scheduleLabel, streak } from '../lib/habits'
+import { amountOn, completionRate, countsMinutes, isMetOn, isScheduled, scheduleLabel, streak } from '../lib/habits'
 import { areaHex, useAreaMap, useData, useToday } from '../lib/hooks'
+import { navigate } from '../lib/router'
 import { useStore } from '../lib/store'
 import type { Habit } from '../lib/types'
 
@@ -51,6 +52,15 @@ function HabitRow({ habit }: { habit: Habit }) {
   const last7 = Array.from({ length: 7 }, (_, i) => addDaysKey(today, i - 6))
   const target = Math.max(1, habit.target)
 
+  // A habit counted in minutes gets a session for what is left of today's target.
+  const onFocus = () => {
+    const st = useStore.getState()
+    const left = countsMinutes(habit) ? habit.target - amountOn(logs, habit.id, today) : 0
+    const minutes = left >= 1 ? Math.min(240, left) : st.settings.focusMinutes
+    st.startTimer({ mode: 'focus', totalMs: minutes * 60000, label: habit.name, areaId: habit.areaId, goalId: null, taskId: null, habitId: habit.id })
+    navigate('focus')
+  }
+
   const toggle = (day: string) => {
     const met = isMetOn(habit, logs, day)
     setAmount(habit.id, day, met ? 0 : target)
@@ -65,6 +75,7 @@ function HabitRow({ habit }: { habit: Habit }) {
           <div className="flex items-center gap-2">
             <h3 className="truncate text-lg font-bold">{habit.name}</h3>
             <IconButton label={m.habits.editHabit} onClick={() => setEditing(true)}><Pencil size={14} /></IconButton>
+            <IconButton label={m.habits.focusOnThis} onClick={onFocus}><Timer size={14} /></IconButton>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
             <AreaChip area={area} />

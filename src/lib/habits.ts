@@ -142,3 +142,21 @@ export function scheduleLabel(h: Habit, t: I18n = tx()): string {
   const names = t.weekdays('short')
   return [...s.days].sort().map((d) => names[d]).join(' · ')
 }
+
+/** Unit names that mean minutes, in every interface language (lower-cased, trailing dot dropped). */
+const MINUTE_UNITS = new Set([
+  'min', 'mins', 'minute', 'minutes', 'mn', 'minuto', 'minutos', 'دقيقة', 'دقيقه', 'دقائق', 'د', '分钟', '分',
+])
+
+/** Is this habit counted in minutes ("Meditate 10 min")? Then a focus session can count its minutes toward it. */
+export function countsMinutes(h: Pick<Habit, 'unit'>): boolean {
+  return MINUTE_UNITS.has(h.unit.trim().toLowerCase().replace(/\.$/, ''))
+}
+
+/**
+ * What a finished focus session adds to its habit's log (ADR-029): its minutes when the habit is
+ * counted in minutes, otherwise one check-in.
+ */
+export function focusHabitAmount(h: Pick<Habit, 'unit'>, minutes: number): number {
+  return countsMinutes(h) ? minutes : 1
+}

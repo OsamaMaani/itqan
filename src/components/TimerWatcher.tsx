@@ -39,7 +39,7 @@ export function TimerWatcher() {
       if (wasFocus) {
         toast({
           emoji: '🎯', message: t.p(m.focus.focusLogged, minutes),
-          action: { label: m.focus.startBreak, run: () => startTimer({ mode: 'break', totalMs: settings.breakMinutes * 60000, label: m.focus.breakLabel, areaId: null, goalId: null, taskId: null }) },
+          action: { label: m.focus.startBreak, run: () => startTimer({ mode: 'break', totalMs: settings.breakMinutes * 60000, label: m.focus.breakLabel, areaId: null, goalId: null, taskId: null, habitId: null }) },
         }, 10000)
       } else {
         toast({ emoji: '☕', message: m.focus.breakFinished })

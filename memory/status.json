@@ -4,7 +4,8 @@
   "updated": "2026-10-21",
   "current_stage": 4,
   "next_actions": [
-    "Open Itqan on the iPhone once so it updates (data format v9); sync resumes after that.",
+    "Open Itqan on the iPhone once so it updates (data format v10); sync resumes after that.",
+    "Focus can now be for a habit: pick it on Focus, or press the timer on a habit card. Finishing checks the habit in — its minutes for a minutes habit (e.g. \"10 min\"), otherwise one check.",
     "Training → Routines → Program now offers \"Whenever I can\" (no schedule). Fixed days and Rotation still work as before.",
     "Number keys moved by one after Focus: 7 is now Training, 8 Ideas, 9 Reminders.",
     "In Settings → Profile, pick your interface language (it follows you to your other devices). All four translations have had their independent review (S2-23); if a phrase still reads oddly, note it.",
@@ -357,6 +358,12 @@
           "title": "Training \"Whenever I can\": no-schedule program (default), suggests the routine left longest, optional weekly aim (ADR-028, schema v9)",
           "module": "training",
           "status": "done"
+        },
+        {
+          "id": "S2-33",
+          "title": "Focus sessions for a habit — finishing checks the habit in (ADR-029, schema v10)",
+          "module": "focus",
+          "status": "done"
         }
       ]
     },
@@ -585,6 +592,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-21",
+      "entry": "S2-33, at the owner's request: a focus session can be for a habit (ADR-029). Pick a habit on Focus or press the new timer button on a habit card; finishing logs it on the session's start day — its minutes when the habit is counted in minutes (units recognised in all five languages), otherwise one check-in — and deleting the session takes back exactly that. Deleting a habit unlinks its sessions and keeps their minutes. Schema v10 (sessions and a running timer gain habitId: null). Tested (late-night day, take-back never below zero, discard and breaks add nothing, migration, backup), checked in the browser."
+    },
     {
       "date": "2026-10-21",
       "entry": "S2-32, at the owner's request: training without a schedule. A third program mode, \"Whenever I can\" — now the default for anyone new — where nothing is due or missed: Overview and Today say \"Ready when you are\" and suggest the routine you've left longest (never-done first), with \"last done …\" and \"Last workout: …\" as plain information; an optional weekly aim (0 = none). Schema v9 changes no data; it makes a not-yet-updated device pause sync instead of misreading the mode. Tested (suggestion order, unfinished workouts ignored, the migration, the new default), checked in the browser in English and Arabic. Also: finished work is now pushed and installed without asking (memory/09-workflow.md)."

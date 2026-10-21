@@ -8,6 +8,7 @@ export const habits: Messages['habits'] = {
   emptyTitle: '还没有习惯',
   emptyBody: '从状态再差也能做到的一件小事开始——5 分钟法语、1 页古兰经。',
   editHabit: '编辑习惯',
+  focusOnThis: '专注于这个习惯',
   targetPerDay: '每天 {target} {unit}',
   dayStreak: '连续天数',
   weekStreak: '连续周数',

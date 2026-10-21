@@ -16,7 +16,7 @@ export const common = {
   search: 'Search',
   all: 'All',
   /** “None” as the first choice of a picker, per thing picked — some languages agree it in gender (fr Aucune tâche, Aucun objectif). */
-  none: { task: 'None', goal: 'None', project: 'None', priority: 'None', area: 'None' },
+  none: { task: 'None', goal: 'None', project: 'None', priority: 'None', area: 'None', habit: 'None' },
   other: 'Other',
   optional: 'optional',
   loading: 'Loading…',

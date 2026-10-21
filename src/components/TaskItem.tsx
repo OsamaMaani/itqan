@@ -66,7 +66,7 @@ export function TaskItem({ task, showDate, hideProject, onToggled }: { task: Tas
   }
 
   const onFocus = () => {
-    startTimer({ mode: 'focus', totalMs: (task.estimateMin ?? focusMinutes) * 60000, label: task.title, areaId: task.areaId, goalId: task.goalId, taskId: task.id })
+    startTimer({ mode: 'focus', totalMs: (task.estimateMin ?? focusMinutes) * 60000, label: task.title, areaId: task.areaId, goalId: task.goalId, taskId: task.id, habitId: null })
     navigate('focus')
   }
 

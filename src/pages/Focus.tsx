@@ -8,6 +8,7 @@ import { tx } from '../i18n/core'
 import { useI18n } from '../i18n/react'
 import { AREA_HEX } from '../lib/colors'
 import { todayKey, weekDays } from '../lib/date'
+import { amountOn, countsMinutes } from '../lib/habits'
 import { useAreaMap, useData, useTick, useToday } from '../lib/hooks'
 import { useStore } from '../lib/store'
 
@@ -28,9 +29,21 @@ export function FocusPage() {
   const [areaId, setAreaId] = useState<string | null>(null)
   const [goalId, setGoalId] = useState<string | null>(null)
   const [taskId, setTaskId] = useState<string | null>(null)
+  const [habitId, setHabitId] = useState<string | null>(null)
 
   const openTasks = d.tasks.filter((x) => !x.done && x.date !== null && x.date <= today)
   const activeGoals = d.goals.filter((g) => g.status === 'active')
+  const habits = d.habits.filter((h) => !h.archived).sort((a, b) => a.order - b.order)
+  const habit = habits.find((h) => h.id === habitId)
+  const habitById = useMemo(() => new Map(d.habits.map((h) => [h.id, h])), [d.habits])
+
+  const pickHabit = (id: string | null) => {
+    setHabitId(id)
+    const h = d.habits.find((x) => x.id === id)
+    // A habit counted in minutes suggests what is left of today's target as the session length.
+    const left = h && countsMinutes(h) ? h.target - amountOn(d.habitLogs, h.id, today) : 0
+    if (left >= 1) setMinutes(Math.min(240, left))
+  }
 
   const left = timer ? remainingMs(timer, now) : minutes * 60000
   const total = timer ? timer.totalMs : minutes * 60000
@@ -41,8 +54,8 @@ export function FocusPage() {
     if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {})
     const task = openTasks.find((x) => x.id === taskId)
     startTimer({
-      mode: 'focus', totalMs: minutes * 60000, label: label || task?.title || m.focus.defaultLabel,
-      areaId: areaId ?? task?.areaId ?? null, goalId: goalId ?? task?.goalId ?? null, taskId,
+      mode: 'focus', totalMs: minutes * 60000, label: label || task?.title || habit?.name || m.focus.defaultLabel,
+      areaId: areaId ?? task?.areaId ?? habit?.areaId ?? null, goalId: goalId ?? task?.goalId ?? null, taskId, habitId: habit?.id ?? null,
     })
     updateSettings({ focusMinutes: minutes })
   }
@@ -114,10 +127,18 @@ export function FocusPage() {
                   </Select>
                 </div>
               </div>
+              <div>
+                <Label>{m.focus.habit}</Label>
+                <Select value={habitId ?? ''} onChange={(e) => pickHabit(e.target.value || null)}>
+                  <option value="">{m.common.none.habit}</option>
+                  {habits.map((h) => <option key={h.id} value={h.id}>{h.emoji} {h.name}</option>)}
+                </Select>
+                {habit && <p className="mt-1.5 text-xs text-muted">{t.f(countsMinutes(habit) ? m.focus.habitAddsMinutes : m.focus.habitChecksIn, { name: habit.name })}</p>}
+              </div>
               <div><Label>{m.common.area}</Label><AreaPicker value={areaId} onChange={setAreaId} /></div>
               <div className="flex justify-center gap-2 pt-2">
                 <Button variant="primary" className="h-12 px-8 text-base" onClick={start}><Play size={18} fill="currentColor" /> {m.focus.start}</Button>
-                <Button variant="soft" className="h-12" onClick={() => startTimer({ mode: 'break', totalMs: d.settings.breakMinutes * 60000, label: m.focus.breakLabel, areaId: null, goalId: null, taskId: null })}>
+                <Button variant="soft" className="h-12" onClick={() => startTimer({ mode: 'break', totalMs: d.settings.breakMinutes * 60000, label: m.focus.breakLabel, areaId: null, goalId: null, taskId: null, habitId: null })}>
                   <Coffee size={18} /> {m.focus.takeBreak}
                 </Button>
               </div>
@@ -162,7 +183,7 @@ export function FocusPage() {
             ) : sessionsToday.map((f) => (
               <div key={f.id} className="group flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-surface-2/60">
                 <span className="w-[4.5rem] shrink-0 text-xs text-muted tabular">{t.d(new Date(f.startedAt), 'time')}</span>
-                <span className="flex-1 truncate text-sm">{f.label}</span>
+                <span className="flex-1 truncate text-sm">{f.habitId && habitById.get(f.habitId) ? `${habitById.get(f.habitId)!.emoji} ` : ''}{f.label}</span>
                 <AreaChip area={f.areaId ? areas.get(f.areaId) : undefined} />
                 <span className="text-sm font-bold tabular">{t.dur(f.minutes)}</span>
                 <IconButton label={m.focus.deleteSession} className="opacity-0 group-hover:opacity-100 hover:text-danger" onClick={() => deleteFocusSession(f.id)}><Trash2 size={14} /></IconButton>

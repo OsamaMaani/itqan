@@ -2,6 +2,7 @@ import { tx } from '../i18n/core'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 import { goalProgress } from './goals'
+import { focusHabitAmount } from './habits'
 import { uid } from './id'
 import { migrate, SCHEMA_VERSION } from './migrations'
 import { emptyData, starterData } from './seed'
@@ -241,6 +242,8 @@ export const useStore = create<Store>()(
           return {
             habits: s.habits.filter((h) => h.id !== id),
             habitLogs,
+            focusSessions: s.focusSessions.map((f) => (f.habitId === id ? { ...f, habitId: null, habitAmount: 0 } : f)),
+            timer: s.timer?.habitId === id ? { ...s.timer, habitId: null } : s.timer,
             program: s.program?.habitId === id ? { ...s.program, habitId: null, updatedAt: now() } : s.program,
           }
         }),
@@ -315,19 +318,39 @@ export const useStore = create<Store>()(
         const remaining = t.endsAt ? Math.max(0, t.endsAt - Date.now()) : t.remainingMs
         const minutes = Math.round((t.totalMs - remaining) / 60000)
         if (save && t.mode === 'focus' && minutes >= 1) {
+          // The habit is checked in on the day the session started — the same day it counts on everywhere else.
+          const habit = t.habitId ? get().habits.find((h) => h.id === t.habitId) : undefined
+          const habitAmount = habit ? focusHabitAmount(habit, minutes) : 0
           set((s) => ({
             timer: null,
             focusSessions: [
               ...s.focusSessions,
-              { id: uid(), startedAt: t.startedAt, minutes, label: t.label, areaId: t.areaId, goalId: t.goalId, taskId: t.taskId },
+              {
+                id: uid(), startedAt: t.startedAt, minutes, label: t.label, areaId: t.areaId, goalId: t.goalId, taskId: t.taskId,
+                habitId: habit?.id ?? null, habitAmount,
+              },
             ],
           }))
+          if (habit) {
+            const day = todayKey(new Date(t.startedAt))
+            get().setHabitAmount(habit.id, day, (get().habitLogs[habit.id]?.[day] ?? 0) + habitAmount)
+          }
           return minutes
         }
         set({ timer: null })
         return 0
       },
-      deleteFocusSession: (id) => set((s) => ({ focusSessions: s.focusSessions.filter((f) => f.id !== id) })),
+      /** Deletes the session and takes back exactly what it added to its habit (ADR-029). */
+      deleteFocusSession: (id) => {
+        const f = get().focusSessions.find((x) => x.id === id)
+        if (!f) return
+        set((s) => ({ focusSessions: s.focusSessions.filter((x) => x.id !== id) }))
+        if (f.habitId && f.habitAmount > 0) {
+          const day = todayKey(new Date(f.startedAt))
+          const have = get().habitLogs[f.habitId]?.[day] ?? 0
+          if (have > 0) get().setHabitAmount(f.habitId, day, Math.max(0, have - f.habitAmount))
+        }
+      },
 
       // --- notes & reviews -------------------------------------------------------
       setDayNote: (day, patch) =>

@@ -8,6 +8,7 @@ export const habits: Messages['habits'] = {
   emptyTitle: 'Aún no hay hábitos',
   emptyBody: 'Empieza por uno que puedas cumplir incluso en un mal día: 5 minutos de francés, 1 página del Corán.',
   editHabit: 'Editar hábito',
+  focusOnThis: 'Concentrarse en este hábito',
   targetPerDay: '{target} {unit}/día',
   dayStreak: 'racha en días',
   weekStreak: 'racha en semanas',

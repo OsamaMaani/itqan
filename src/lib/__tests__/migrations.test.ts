@@ -217,3 +217,23 @@ describe('v8 → v9 (flexible program mode)', () => {
     expect(parseBackup(JSON.stringify(b)).program).toBeNull()
   })
 })
+
+describe('v9 → v10 (focus sessions for a habit)', () => {
+  it('existing sessions and a running timer are for no habit; every other field comes through', () => {
+    const session = { id: 'f1', startedAt: '2026-10-20T08:00:00.000Z', minutes: 25, label: 'Read', areaId: 'a', goalId: 'g', taskId: null }
+    const timer = { mode: 'focus', endsAt: null, remainingMs: 1000, totalMs: 1500000, startedAt: 'x', label: 'L', areaId: null, goalId: null, taskId: 't' }
+    const d = migrate({ focusSessions: [session], timer, habitLogs: { h: { '2026-10-20': 3 } } }, 9)
+    expect(d.focusSessions).toEqual([{ ...session, habitId: null, habitAmount: 0 }])
+    expect(d.timer).toEqual({ ...timer, habitId: null })
+    expect(d.habitLogs).toEqual({ h: { '2026-10-20': 3 } })
+  })
+  it('no timer stays no timer, and fields already there are kept', () => {
+    const d = migrate({ timer: null, focusSessions: [{ id: 'f', habitId: 'h', habitAmount: 2 }] }, 9)
+    expect(d.timer).toBeNull()
+    expect(d.focusSessions).toEqual([{ id: 'f', habitId: 'h', habitAmount: 2 }])
+  })
+  it('a v9 backup restores with its sessions', () => {
+    const b = { app: 'itqan', schemaVersion: 9, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [], focusSessions: [{ id: 'f', minutes: 10 }] } }
+    expect(parseBackup(JSON.stringify(b)).focusSessions).toEqual([{ id: 'f', minutes: 10, habitId: null, habitAmount: 0 }])
+  })
+})

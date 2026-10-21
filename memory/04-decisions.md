@@ -574,3 +574,25 @@ rotation — busy people go when they can — and the app should still be useful
 got busy need to switch to it explicitly); suggesting the next routine in list order (repeats the
 first routine on every irregular visit); a "days since last workout" warning colour (shame, the
 opposite of ADR-006's spirit).
+
+## ADR-029 | 2026-10-21 | accepted | A focus session can be for a habit, and checks it in
+
+**Context:** The owner asked to link a focus session to a habit — until now only to a task or a
+goal. Many of their habits are focused time (meditation, French practice, Quran revision).
+**Decision (product choice the owner's, 2026-10-21: "link + check in"):**
+- `FocusSession.habitId` and `ActiveTimer.habitId`. Finishing a session for a habit adds to that
+  habit's log on the day the session **started** (local `DateKey`, the same day the session counts
+  on everywhere else): its **minutes** when the habit is counted in minutes, otherwise **one**
+  check-in. `countsMinutes()` / `focusHabitAmount()` in `lib/habits.ts` decide this from the unit
+  (`min`, `minutes`, `دقيقة`, `分钟`… in all five languages; `m` is not minutes — it may be metres).
+- `FocusSession.habitAmount` records exactly what was added, so deleting the session takes back
+  that much and no more (never below zero) — the same pattern as `Workout.tickedHabitId`.
+- Deleting a habit unlinks its sessions (their minutes stay) and a running timer.
+- Entry points: a habit picker on Focus (a minutes habit suggests what is left of today's target
+  as the length) and a timer button on each habit card.
+- Schema v10: existing sessions and a running timer get `habitId: null, habitAmount: 0`.
+**Rejected:** link only, without a check-in (the owner chose the check-in); deriving the habit
+amount from sessions at read time (habit logs are the one source the streak maths reads, and a
+second source would split it); counting non-minute habits by session length (a "10 pages" habit
+has no honest conversion from minutes).
+

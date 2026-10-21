@@ -6,7 +6,7 @@ import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 9
+export const SCHEMA_VERSION = 10
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -67,6 +67,13 @@ const steps: Record<number, Step> = {
   // Nothing stored changes; the version moves so a device that doesn't know the mode stops
   // syncing and asks to be updated instead of misreading it.
   8: (d) => d,
+  // 9 → 10 (2026-10-21): a focus session can be for a habit (ADR-029). Existing sessions — and a
+  // timer running during the upgrade — are for no habit and added nothing to one.
+  9: (d) => ({
+    ...d,
+    focusSessions: ((d.focusSessions as Record<string, unknown>[] | undefined) ?? []).map((f) => ({ habitId: null, habitAmount: 0, ...f })),
+    timer: d.timer && typeof d.timer === 'object' ? { habitId: null, ...(d.timer as object) } : (d.timer ?? null),
+  }),
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {
