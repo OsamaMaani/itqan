@@ -371,6 +371,12 @@
           "module": "habits",
           "status": "done",
           "critical": true
+        },
+        {
+          "id": "S2-35",
+          "title": "Fix: the end of a focus session is announced by the desktop helper, so the notification arrives",
+          "module": "focus",
+          "status": "done"
         }
       ]
     },
@@ -599,6 +605,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-21",
+      "entry": "S2-35, reported by the owner: a focus session ended and no notification came, though notifications had been allowed. Only the page announced a timer's end, with a browser notification, and from the file:// app that never reached the desktop (Chrome asked for permission but kept no grant in the profile). The running timer's end now goes on the desktop helper's schedule like a reminder (ADR-013, amended), so it arrives even with Itqan minimised or closed; pausing or stopping early takes it off, and a timer that ran out stays on long enough for the helper to fire it. No duplicate from the page while the helper is connected. Tested, including that the guard against the finish-then-resync race fails when removed."
+    },
     {
       "date": "2026-10-21",
       "entry": "S2-34, a day-boundary fix: a habit's history started on the UTC day of its creation, so a habit made between midnight and 03:00 here began the day before and counted that day as missed in its streak periods, rates and the weekly review. It now starts on the local day; the same slip in a project's pace (no start date set) is fixed too. Tests build the creation time from a local just-after-midnight and just-before-midnight, so they fail on the old code on either side of UTC. No other place in the code takes a day from an ISO timestamp."

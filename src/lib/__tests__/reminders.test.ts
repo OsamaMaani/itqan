@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildSchedule, nextOccurrence, occurrencesBetween, yearsOn } from '../reminders'
-import type { Reminder } from '../types'
+import { buildSchedule, nextOccurrence, occurrencesBetween, timerAlert, yearsOn } from '../reminders'
+import type { ActiveTimer, Reminder } from '../types'
 
 const r = (p: Partial<Reminder>): Reminder => ({
   id: 'r', title: 'T', notes: '', emoji: '', date: '2026-10-16', time: null, repeat: 'none',
@@ -68,5 +68,27 @@ describe('desktop schedule', () => {
   it('says how many years on a birthday', () => {
     const s = buildSchedule([r({ date: '1996-10-17', repeat: 'yearly', title: 'Ahmed’s birthday' })], now, 2)
     expect(s[0].body).toContain('30 years')
+  })
+})
+
+describe('timer alert', () => {
+  const timer = (p: Partial<ActiveTimer>): ActiveTimer => ({
+    mode: 'focus', endsAt: 1_000_000, remainingMs: 1_500_000, totalMs: 1_500_000, startedAt: '2026-10-21T03:30:00',
+    label: 'Read', areaId: null, goalId: null, taskId: null, habitId: 'h', ...p,
+  })
+  it('a running timer alerts when it ends', () => {
+    const a = timerAlert(timer({}))
+    expect(a?.fireAt).toBe(1_000_000)
+    expect(a?.body).toContain('25')
+  })
+  it('a paused timer, or none, has no alert', () => {
+    expect(timerAlert(timer({ endsAt: null }))).toBeNull()
+    expect(timerAlert(null)).toBeNull()
+  })
+  it('resuming moves the alert to a new key, so the old end time is dropped', () => {
+    expect(timerAlert(timer({ endsAt: 2_000_000 }))?.key).not.toBe(timerAlert(timer({}))?.key)
+  })
+  it('a break alerts with the break message', () => {
+    expect(timerAlert(timer({ mode: 'break' }))?.body).not.toBe(timerAlert(timer({}))?.body)
   })
 })

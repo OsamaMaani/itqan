@@ -4,7 +4,7 @@ import {
 } from 'date-fns'
 import { tx, type I18n } from '../i18n/core'
 import { fromKey, toKey } from './date'
-import type { DateKey, Reminder } from './types'
+import type { ActiveTimer, DateKey, Reminder } from './types'
 
 /**
  * Reminder maths: when a reminder occurs, and when its alerts fire. Pure and tested — the
@@ -105,6 +105,23 @@ export interface ScheduledAlert {
   title: string
   body: string
   urgent: boolean
+}
+
+/**
+ * The desktop alert for a running focus or break timer: it fires when the timer runs out, even
+ * if Itqan is minimised or closed. A paused timer has no alert; resuming gives a new key, so the
+ * helper drops the old end time and fires the new one.
+ */
+export function timerAlert(timer: ActiveTimer | null, t: I18n = tx()): ScheduledAlert | null {
+  if (!timer?.endsAt) return null
+  const focus = timer.mode === 'focus'
+  return {
+    key: `timer|${timer.startedAt}|${timer.endsAt}`,
+    fireAt: timer.endsAt,
+    title: `${focus ? '🎯' : '☕'} ${t.m.focus.appName}`,
+    body: focus ? t.f(t.m.focus.focusDoneNotify, { n: Math.round(timer.totalMs / 60000) }) : t.m.focus.breakOverNotify,
+    urgent: false,
+  }
 }
 
 /** "Tomorrow at 9:00 AM · Sat, Oct 17" in the interface language. */

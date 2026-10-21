@@ -182,6 +182,15 @@ Notification — while open.
 LevelDB directly (fragile, undocumented format); duplicating the recurrence rules in Python
 (two implementations drift — the helper is deliberately dumb).
 
+**Amended 2026-10-21 (S2-35):** the end of a running focus or break timer goes on the helper's
+schedule too (`timerAlert()` in `reminders.ts`, key `timer|startedAt|endsAt`), re-synced on every
+timer change. Before, only the page announced it with a browser Notification, and from the
+`file://` app that never reached the owner's desktop (Chrome showed the permission prompt, but the
+profile kept no grant). A timer that ran out keeps its alert for 5 minutes after the app finishes
+it, so the re-sync cannot pull it before the helper's 15-second tick fires it; one stopped early or
+paused is dropped at once. While the helper is connected the page no longer sends its own
+notification (no duplicates); without it the old in-page fallback stands.
+
 ---
 
 ## ADR-014 | 2026-10-16 | accepted | Memories are text (+ emoji, tags) for now — no photos

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
 import { useTick } from '../lib/hooks'
+import { helperAnnouncesTimer } from '../lib/notifier'
 import { useStore } from '../lib/store'
 import { toast } from '../lib/toast'
 
@@ -35,7 +36,8 @@ export function TimerWatcher() {
       const wasFocus = timer.mode === 'focus'
       const minutes = finishTimer(true)
       celebrate.timerDone()
-      notify(wasFocus ? t.f(m.focus.focusDoneNotify, { n: minutes }) : m.focus.breakOverNotify, m.focus.appName)
+      // The desktop helper has this timer's end on its schedule (ADR-013); the page notifies only without it.
+      if (!helperAnnouncesTimer()) notify(wasFocus ? t.f(m.focus.focusDoneNotify, { n: minutes }) : m.focus.breakOverNotify, m.focus.appName)
       if (wasFocus) {
         toast({
           emoji: '🎯', message: t.p(m.focus.focusLogged, minutes),

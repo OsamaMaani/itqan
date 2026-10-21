@@ -2,7 +2,7 @@ import { tx } from '../i18n/core'
 import { create } from 'zustand'
 import { checkIn } from './connections'
 import { toKey } from './date'
-import { at, buildSchedule, type ScheduledAlert } from './reminders'
+import { at, buildSchedule, timerAlert, type ScheduledAlert } from './reminders'
 import { useStore } from './store'
 import { toast } from './toast'
 import type { Reminder } from './types'
@@ -47,10 +47,30 @@ export function checkInAlerts(now: Date): ScheduledAlert[] {
   return out
 }
 
+/**
+ * A timer that ran out keeps its alert in the schedule a little longer: the app finishes it the
+ * moment it ends, and the re-sync that follows must not pull the alert before the helper (which
+ * checks every 15 s) has fired it. One stopped early is dropped at once.
+ */
+const ENDED_KEEP_MS = 5 * 60_000
+let ended: ScheduledAlert[] = []
+
+function timerAlerts(now: number): ScheduledAlert[] {
+  ended = ended.filter((a) => a.fireAt > now - ENDED_KEEP_MS)
+  const live = timerAlert(useStore.getState().timer)
+  return live ? [...ended, live] : ended
+}
+
+/** True when the helper is announcing the timer's end, so the page should not do it as well. */
+export function helperAnnouncesTimer(): boolean {
+  const s = useNotifier.getState().state
+  return s === 'connected' || s === 'checking'
+}
+
 export async function syncReminders(reminders: Reminder[]): Promise<void> {
   if (!TOKEN) return
   try {
-    const items = [...buildSchedule(reminders, new Date()), ...checkInAlerts(new Date())]
+    const items = [...buildSchedule(reminders, new Date()), ...checkInAlerts(new Date()), ...timerAlerts(Date.now())]
     const res = await call('/schedule', { method: 'PUT', body: JSON.stringify({ items }) })
     if (res.status === 401) return void useNotifier.setState({ state: 'unauthorized' })
     if (!res.ok) throw new Error(String(res.status))
@@ -81,7 +101,7 @@ function inAppNotify(title: string, body: string, urgent: boolean): boolean {
 
 let started = false
 
-/** Called once from App. Syncs on load, on every reminder change, and hourly (rolls the horizon). */
+/** Called once from App. Syncs on load, on every reminder or timer change, and hourly (rolls the horizon). */
 export function startNotifier(): void {
   if (started) return
   started = true
@@ -92,7 +112,14 @@ export function startNotifier(): void {
     timer = setTimeout(() => syncReminders(useStore.getState().reminders), 400)
   }
   schedule()
-  useStore.subscribe((s, prev) => { if (s.reminders !== prev.reminders || s.contacts !== prev.contacts || s.interactions !== prev.interactions) schedule() })
+  useStore.subscribe((s, prev) => {
+    if (s.timer !== prev.timer) {
+      const a = timerAlert(prev.timer)
+      if (a && a.fireAt <= Date.now()) ended.push(a)
+      schedule()
+    }
+    if (s.reminders !== prev.reminders || s.contacts !== prev.contacts || s.interactions !== prev.interactions) schedule()
+  })
   setInterval(schedule, 60 * 60 * 1000)
 
   // Fallback while the app is open and the helper is not reachable.
