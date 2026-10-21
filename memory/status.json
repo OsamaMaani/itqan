@@ -364,6 +364,13 @@
           "title": "Focus sessions for a habit — finishing checks the habit in (ADR-029, schema v10)",
           "module": "focus",
           "status": "done"
+        },
+        {
+          "id": "S2-34",
+          "title": "Fix: a habit's (and a project's) first day is the local day it was created, not the UTC one",
+          "module": "habits",
+          "status": "done",
+          "critical": true
         }
       ]
     },
@@ -592,6 +599,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-21",
+      "entry": "S2-34, a day-boundary fix: a habit's history started on the UTC day of its creation, so a habit made between midnight and 03:00 here began the day before and counted that day as missed in its streak periods, rates and the weekly review. It now starts on the local day; the same slip in a project's pace (no start date set) is fixed too. Tests build the creation time from a local just-after-midnight and just-before-midnight, so they fail on the old code on either side of UTC. No other place in the code takes a day from an ISO timestamp."
+    },
     {
       "date": "2026-10-21",
       "entry": "S2-33, at the owner's request: a focus session can be for a habit (ADR-029). Pick a habit on Focus or press the new timer button on a habit card; finishing logs it on the session's start day — its minutes when the habit is counted in minutes (units recognised in all five languages), otherwise one check-in — and deleting the session takes back exactly that. Deleting a habit unlinks its sessions and keeps their minutes. Schema v10 (sessions and a running timer gain habitId: null). Tested (late-night day, take-back never below zero, discard and breaks add nothing, migration, backup), checked in the browser."

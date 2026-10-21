@@ -1,4 +1,4 @@
-import { diffDays } from './date'
+import { diffDays, toKey } from './date'
 import type { DateKey, Data, Project, Task } from './types'
 
 /**
@@ -54,7 +54,7 @@ export function projectPace(p: Project, progress: number, today: DateKey): { pac
   const daysLeft = diffDays(p.dueDate, today)
   if (progress >= 1) return { pace: 'ahead', expected: 1, daysLeft }
   if (daysLeft < 0) return { pace: 'overdue', expected: 1, daysLeft }
-  const start = p.startDate ?? p.createdAt.slice(0, 10)
+  const start = p.startDate ?? toKey(new Date(p.createdAt))
   const total = Math.max(1, diffDays(p.dueDate, start))
   const expected = Math.min(1, Math.max(0, diffDays(today, start) / total))
   const pace: ProjectPace = progress >= expected + 0.1 ? 'ahead' : progress >= expected - 0.1 ? 'on-track' : 'behind'

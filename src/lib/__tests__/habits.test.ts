@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { completionRate, isDueToday, streak } from '../habits'
+import { completionRate, historyStart, isDueToday, periods, streak } from '../habits'
 import type { Habit, HabitLogs } from '../types'
 
 const habit = (schedule: Habit['schedule'], target = 1): Habit => ({
@@ -86,5 +86,23 @@ describe('completion rate', () => {
   it('ignores an unfinished today and future days', () => {
     const h = habit({ type: 'daily' })
     expect(completionRate(h, logs('2026-10-14', '2026-10-15'), '2026-10-14', '2026-10-20', '2026-10-16', 6)).toBe(1)
+  })
+})
+
+// createdAt is a UTC ISO string; the first day must be the *local* day it was made on.
+// 01:00 local is the previous UTC day east of UTC, 23:30 is the next UTC day west of it,
+// so on any machine not on UTC one of these fails if the day is sliced off the ISO string.
+describe('history start is the local day the habit was created', () => {
+  it('a habit made just after midnight starts that day, not the day before', () => {
+    const h = { ...habit({ type: 'daily' }), createdAt: new Date(2026, 9, 21, 1, 0).toISOString() }
+    expect(historyStart(h, {})).toBe('2026-10-21')
+    expect(periods(h, logs('2026-10-21'), '2026-10-22', 6)).toEqual(['met', 'pending'])
+    expect(completionRate(h, logs('2026-10-21'), '2026-10-19', '2026-10-21', '2026-10-22', 6)).toBe(1)
+  })
+
+  it('a habit made just before midnight starts that day, not the day after', () => {
+    const h = { ...habit({ type: 'daily' }), createdAt: new Date(2026, 9, 20, 23, 30).toISOString() }
+    expect(historyStart(h, {})).toBe('2026-10-20')
+    expect(periods(h, logs('2026-10-21'), '2026-10-21', 6)).toEqual(['missed', 'met'])
   })
 })

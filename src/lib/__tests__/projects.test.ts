@@ -43,6 +43,13 @@ describe('project pace', () => {
   it('past the deadline and unfinished is overdue', () => {
     expect(projectPace(due, 0.9, '2026-11-02')).toMatchObject({ pace: 'overdue', daysLeft: -2 })
   })
+  it('without a start date, starts on the local day the project was created', () => {
+    // 01:00 / 23:30 local fall on another UTC day east / west of UTC.
+    for (const made of [new Date(2026, 9, 1, 1, 0), new Date(2026, 9, 1, 23, 30)]) {
+      const q = p({ startDate: null, createdAt: made.toISOString(), dueDate: '2026-10-31' })
+      expect(projectPace(q, 0.5, '2026-10-16').expected).toBe(0.5)
+    }
+  })
   it('no deadline, or done, has no pace', () => {
     expect(projectPace(p(), 0.2, '2026-10-16').pace).toBe('none')
     expect(projectPace({ ...due, status: 'done' }, 1, '2026-10-16').pace).toBe('none')
