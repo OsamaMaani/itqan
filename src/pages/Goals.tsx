@@ -1,4 +1,5 @@
-import { Plus } from 'lucide-react'
+import { Plus, Target } from 'lucide-react'
+import { usePageAction } from '../components/Shell'
 import { useState } from 'react'
 import { GoalCard } from '../components/GoalCard'
 import { GoalEditor } from '../components/GoalEditor'
@@ -14,6 +15,7 @@ export function GoalsPage() {
   const d = useData()
   const [tab, setTab] = useState<Goal['status']>('active')
   const [creating, setCreating] = useState(false)
+  usePageAction({ label: m.goals.newGoal, icon: <Target size={24} />, run: () => setCreating(true) })
 
   const list = d.goals.filter((g) => g.status === tab)
   const active = d.goals.filter((g) => g.status === 'active')

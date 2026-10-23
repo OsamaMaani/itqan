@@ -3,6 +3,7 @@ import { Copy, Download, ExternalLink, FolderKanban, Link2, Plus, Search, Sparkl
 import { useEffect, useMemo, useState } from 'react'
 import { create } from 'zustand'
 import { EmojiInput } from '../components/EmojiInput'
+import { usePageAction } from '../components/Shell'
 import { Button, Card, cx, EmptyState, IconButton, Input, Label, Modal, PageHeader, Segmented, SectionTitle, Select, Textarea } from '../components/ui'
 import { ACHIEVEMENT_CATEGORIES, achievementYears, categoryMeta, IMPACT_KEY, suggestions, toText, yearOf, yearSummary, type Suggestion } from '../lib/achievements'
 import { i18nFor } from '../i18n/core'
@@ -58,6 +59,7 @@ export function AchievementsPage() {
   const d = useData()
   const today = useToday()
   const years = achievementYears(d.achievements, today)
+  usePageAction({ label: L.addAchievement, icon: <Trophy size={24} />, run: () => openAchievement({ date: today }) })
   const [year, setYear] = useState(years[0])
   const [category, setCategory] = useState<string | null>(null)
   const [q, setQ] = useState('')

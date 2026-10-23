@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from 'motion/react'
 import {
-  AlarmClock, ArrowLeft, Bell, Cake, Check, Heart, Link2, Mail, MessageCircle, Pencil, Phone, Plus, Search, Trash2, UserPlus,
+  AlarmClock, ArrowLeft, Bell, Cake, Check, Heart, Link2, Mail, MessageCircle, Pencil, Phone, Plus, Search, Trash2, UserPlus, Users,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { usePageAction } from '../components/Shell'
 import { Button, Card, cx, EmptyState, IconButton, Input, Label, Modal, PageHeader, Segmented, SectionTitle, Select, Textarea } from '../components/ui'
 import type { I18n } from '../i18n/core'
 import { useI18n } from '../i18n/react'
@@ -71,6 +72,7 @@ function ContactList() {
   const [q, setQ] = useState('')
   const [circle, setCircle] = useState<Circle | 'all'>('all')
   const [creating, setCreating] = useState(false)
+  usePageAction({ label: m.connections.list.addPerson, icon: <Users size={24} />, run: () => setCreating(true) })
   const [logging, setLogging] = useState<Contact | null>(null)
   const snooze = useStore((s) => s.snoozeContact)
 
@@ -210,6 +212,7 @@ function ContactDetail({ id }: { id: string }) {
   const [logging, setLogging] = useState(false)
   const [reminding, setReminding] = useState<Reminder | 'new' | null>(null)
   const c = d.contacts.find((x) => x.id === id)
+  usePageAction(c ? { label: m.connections.detail.log, icon: <MessageCircle size={24} />, run: () => setLogging(true) } : null)
 
   if (!c) {
     return (

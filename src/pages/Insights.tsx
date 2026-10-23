@@ -2,6 +2,7 @@ import { motion } from 'motion/react'
 import { CheckCircle2, Clock, Flame, Lock, Trophy, Zap } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Heatmap } from '../components/Heatmap'
+import { usePageAction } from '../components/Shell'
 import { Card, cx, PageHeader, ProgressBar, Segmented, SectionTitle } from '../components/ui'
 import { useI18n } from '../i18n/react'
 import { AREA_HEX } from '../lib/colors'
@@ -11,6 +12,7 @@ import { completionRate, isMetOn, streak } from '../lib/habits'
 import { useData, useProgress, useToday } from '../lib/hooks'
 
 export function InsightsPage() {
+  usePageAction(null)
   const t = useI18n()
   const { m } = t
   const d = useData()

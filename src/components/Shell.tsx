@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import { BarChart3, Bell, BookOpenCheck, CalendarDays, Camera, Dumbbell, FolderKanban, Lightbulb, Menu, Plus, Settings, Sun, Target, Timer, Trophy, Repeat, Users } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { useI18n } from '../i18n/react'
 import { useProgress } from '../lib/hooks'
 import { navigate, type Route } from '../lib/router'
@@ -99,6 +99,28 @@ export function Sidebar({ route, onAdd }: { route: Route; onAdd: () => void }) {
   )
 }
 
+/** What the phone's floating button does on the screen showing. A screen declares it with
+ *  `usePageAction`; one that says nothing gets the default, a new task. `null` hides the button. */
+export type PageAction = { label: string; icon?: ReactNode; run: () => void }
+let pageAction: PageAction | null | undefined
+const pageActionListeners = new Set<() => void>()
+const setPageAction = (a: PageAction | null | undefined) => { pageAction = a; pageActionListeners.forEach((f) => f()) }
+const subscribePageAction = (f: () => void) => { pageActionListeners.add(f); return () => { pageActionListeners.delete(f) } }
+
+/** Makes the phone's "+" add this screen's own thing (a habit on Habits…) while it is mounted. */
+export function usePageAction(action: PageAction | null) {
+  const latest = useRef(action)
+  useEffect(() => { latest.current = action })
+  const label = action === null ? null : action.label
+  useEffect(() => {
+    const a = latest.current
+    const mine = a === null ? null : { label: a.label, icon: a.icon, run: () => latest.current?.run() }
+    setPageAction(mine)
+    // The next screen's effect runs after this cleanup, so only clear what is still ours.
+    return () => { if (pageAction === mine) setPageAction(undefined) }
+  }, [label])
+}
+
 /** The phone's bottom bar: these four screens, then "More", which opens every other screen in a sheet. */
 const MOBILE: Route[] = ['today', 'plan', 'habits', 'goals']
 const MORE = NAV.filter((n) => !MOBILE.includes(n.route))
@@ -108,16 +130,21 @@ export function MobileNav({ route, onAdd }: { route: Route; onAdd: () => void })
   const [open, setOpen] = useState(false)
   const timerRunning = useStore((s) => !!s.timer)
   const inMore = MORE.some((n) => n.route === route)
+  const action = useSyncExternalStore(subscribePageAction, () => pageAction)
   const tab = 'flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold transition'
   return (
     <>
-      {/* Not on Training: the live workout's effort buttons and rest timer sit where it would. */}
-      {route !== 'training' && <button
-        onClick={onAdd}
-        aria-label={m.nav.newTask}
+      {action !== null && <button
+        onClick={action ? action.run : onAdd}
+        aria-label={action?.label ?? m.nav.newTask}
+        title={action?.label ?? m.nav.newTask}
         className="fixed bottom-[calc(84px+env(safe-area-inset-bottom))] end-4 z-40 grid size-14 place-items-center rounded-2xl bg-gradient-accent text-accent-fg shadow-[0_10px_30px_-8px_var(--accent)] active:scale-95 lg:hidden"
       >
-        <Plus size={26} />
+        <motion.span key={action?.label ?? ''} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative grid place-items-center">
+          {action?.icon
+            ? <>{action.icon}<span className="absolute -end-2.5 -top-2 grid size-[18px] place-items-center rounded-full bg-accent-fg text-accent"><Plus size={13} strokeWidth={3} /></span></>
+            : <Plus size={26} />}
+        </motion.span>
       </button>}
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/90 backdrop-blur-xl lg:hidden">
         <div className="mx-auto flex max-w-lg">

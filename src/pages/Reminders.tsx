@@ -1,8 +1,9 @@
 import { format } from 'date-fns'
 import { AnimatePresence, motion } from 'motion/react'
-import { BellRing, CalendarPlus, Check, CheckCircle2, Pencil, Plus, Send, Star, Trash2, TriangleAlert } from 'lucide-react'
+import { Bell, BellRing, CalendarPlus, Check, CheckCircle2, Pencil, Plus, Send, Star, Trash2, TriangleAlert } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { EmojiInput } from '../components/EmojiInput'
+import { usePageAction } from '../components/Shell'
 import { Button, Card, cx, EmptyState, IconButton, Input, Label, Modal, PageHeader, Segmented, SectionTitle, Select, Textarea } from '../components/ui'
 import { rich, useI18n } from '../i18n/react'
 import { diffDays } from '../lib/date'
@@ -52,6 +53,7 @@ export function RemindersPage() {
   const done = reminders.filter((r) => r.repeat === 'none' && r.done)
 
   const openNew = (tpl?: Partial<Draft>) => { setTemplate(tpl); setEditing('new') }
+  usePageAction({ label: m.reminders.newReminder, icon: <Bell size={24} />, run: () => openNew() })
 
   return (
     <div>

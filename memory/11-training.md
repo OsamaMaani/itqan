@@ -76,7 +76,7 @@ Supersets, plate calculator, body weight and measurements, deload weeks, progres
   timer `rest.ts` (device-local key `itqan-rest`); display helpers `format.tsx` (`useGymFormat`,
   `beginWorkout` — never two workouts in progress at once).
 - Text: `m.gym` (shared vocabulary), `m.training` (tabs and editors), `m.workout` (live workout).
-- On the phone the floating "+ task" button is hidden on Training: the effort buttons and the
-  rest timer sit where it would be.
+- On the phone the floating + button is hidden on Training (`usePageAction(null)`, ADR-030): the
+  effort buttons and the rest timer sit where it would be.
 - Elsewhere: `TodayCard.tsx` on Today (hidden until Training is set up), goal links in
   `GoalEditor`/`GoalCard`, `weightUnit` in Settings → Profile, the weekly review, Ctrl+K.

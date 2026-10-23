@@ -605,3 +605,22 @@ amount from sessions at read time (habit logs are the one source the streak math
 second source would split it); counting non-minute habits by session length (a "10 pages" habit
 has no honest conversion from minutes).
 
+
+## ADR-030 | 2026-10-23 | accepted | The phone's floating + adds what the screen is about
+
+**Context:** The owner, on the phone: the floating + opened a new task on every screen, so on
+Habits it offered a task instead of a habit. Desktop has no floating button (sidebar + Ctrl+K).
+**Decision:** each screen declares its own add action with `usePageAction({ label, icon, run })`
+from `components/Shell.tsx`; `MobileNav` reads it through a small module-level store
+(`useSyncExternalStore`). Undeclared → new task (Today, Plan, Focus, Review); `null` → no button
+(Training, Insights, Settings). Habits → new habit, Goals → new goal, Projects → new project and,
+on a project's page, a new task already in that project; Connections → add a person and, on a
+person's page, log a check-in; Reminders, Memories, Achievements → their editor; Ideas → focus
+the one-line capture box (an idea is one line, there is no editor to open). A page-specific
+button shows the screen's icon with a small + badge, so it visibly changes with the screen. The
+hook keeps the latest `run` in a ref and re-registers only when the label changes; its cleanup
+clears only its own registration, because the next screen's effect runs after it.
+**Rejected:** a route → action table in `Shell` (it cannot reach a page's local editor state, so
+it would mean lifting every editor into `App`); an extended button with a text label (covers
+more of the list on a 375 px screen, and five languages make widths unpredictable); keeping
+the task + everywhere and adding page buttons (two "+" on one screen).

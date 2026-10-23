@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowRight, CheckSquare, FolderKanban, Lightbulb, Pencil, Target, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AreaPicker } from '../components/AreaPicker'
 import { GoalEditor } from '../components/GoalEditor'
+import { usePageAction } from '../components/Shell'
 import { AreaChip, Button, Card, cx, EmptyState, IconButton, Input, Label, Modal, PageHeader, ProgressBar, Segmented, Textarea } from '../components/ui'
 import { useI18n } from '../i18n/react'
 import type { I18n } from '../i18n/core'
@@ -45,6 +46,8 @@ export function IdeasPage() {
   const [text, setText] = useState('')
   const [showDropped, setShowDropped] = useState(false)
   const [over, setOver] = useState<IdeaStatus | null>(null)
+  const input = useRef<HTMLInputElement>(null)
+  usePageAction({ label: t.m.nav.ideas, icon: <Lightbulb size={24} />, run: () => { input.current?.scrollIntoView({ block: 'center', behavior: 'smooth' }); input.current?.focus() } })
 
   const capture = () => {
     if (!text.trim()) return
@@ -66,6 +69,7 @@ export function IdeasPage() {
       <div className="mb-6 flex items-center gap-2 rounded-2xl border border-border bg-surface/80 px-3 focus-within:border-accent focus-within:ring-4 focus-within:ring-accent-soft">
         <Lightbulb size={18} className="text-gold" />
         <input
+          ref={input}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && capture()}

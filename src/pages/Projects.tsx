@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react'
 import {
-  ArrowLeft, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Flag, Kanban, Link2, List, ListChecks,
+  ArrowLeft, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Flag, FolderKanban, Kanban, Link2, List, ListChecks,
   MessageSquarePlus, OctagonAlert, Pencil, Pin, PinOff, Plus, Target, Timer, Trash2, X,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -9,6 +9,7 @@ import { EmojiInput } from '../components/EmojiInput'
 import { QuickAdd } from '../components/QuickAdd'
 import { TaskEditor } from '../components/TaskEditor'
 import { TaskItem } from '../components/TaskItem'
+import { usePageAction } from '../components/Shell'
 import { AreaChip, Button, Card, cx, EmptyState, IconButton, Input, Label, Modal, PageHeader, ProgressBar, ProgressRing, Segmented, SectionTitle, Select, Textarea } from '../components/ui'
 import { useI18n } from '../i18n/react'
 import type { I18n } from '../i18n/core'
@@ -64,6 +65,7 @@ function ProjectList() {
   const areas = useAreaMap()
   const [filter, setFilter] = useState<Filter>('current')
   const [creating, setCreating] = useState(false)
+  usePageAction({ label: L.newProject, icon: <FolderKanban size={24} />, run: () => setCreating(true) })
 
   const inFilter = (p: Project, f: Filter) => (f === 'current' ? p.status === 'active' || p.status === 'planning' : p.status === f)
   const list = d.projects.filter((p) => inFilter(p, filter))
@@ -153,7 +155,9 @@ function ProjectDetail({ id }: { id: string }) {
   const remove = useStore((s) => s.deleteProject)
   const [editing, setEditing] = useState(false)
   const [showDone, setShowDone] = useState(false)
+  const [addingTask, setAddingTask] = useState(false)
   const project = d.projects.find((p) => p.id === id)
+  usePageAction(project ? { label: t.m.nav.newTask, run: () => setAddingTask(true) } : null)
 
   if (!project) {
     return (
@@ -299,6 +303,7 @@ function ProjectDetail({ id }: { id: string }) {
       </div>
 
       <ProjectEditor open={editing} onClose={() => setEditing(false)} project={p} />
+      <TaskEditor open={addingTask} onClose={() => setAddingTask(false)} defaults={{ projectId: p.id, areaId: p.areaId, date: null }} />
     </div>
   )
 }

@@ -1,4 +1,5 @@
-import { Check, Flame, Pencil, Plus, Timer, Trophy } from 'lucide-react'
+import { Check, Flame, Pencil, Plus, Repeat, Timer, Trophy } from 'lucide-react'
+import { usePageAction } from '../components/Shell'
 import { useState } from 'react'
 import { HabitEditor } from '../components/HabitEditor'
 import { Heatmap } from '../components/Heatmap'
@@ -16,6 +17,7 @@ export function HabitsPage() {
   const { m } = useI18n()
   const d = useData()
   const [creating, setCreating] = useState(false)
+  usePageAction({ label: m.habits.newHabit, icon: <Repeat size={24} />, run: () => setCreating(true) })
   const habits = d.habits.filter((h) => !h.archived).sort((a, b) => a.order - b.order)
 
   return (

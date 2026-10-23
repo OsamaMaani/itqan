@@ -1,6 +1,7 @@
 import { differenceInCalendarYears } from 'date-fns'
 import { AnimatePresence, motion } from 'motion/react'
-import { Heart, Plus, Search, Shuffle, Trash2 } from 'lucide-react'
+import { Camera, Heart, Plus, Search, Shuffle, Trash2 } from 'lucide-react'
+import { usePageAction } from '../components/Shell'
 import { useEffect, useMemo, useState } from 'react'
 import { EmojiInput } from '../components/EmojiInput'
 import { Button, Card, cx, EmptyState, IconButton, Input, Label, Modal, PageHeader, Textarea } from '../components/ui'
@@ -29,6 +30,7 @@ export function MemoriesPage() {
   const [tag, setTag] = useState<string | null>(null)
   const [favOnly, setFavOnly] = useState(false)
   const [editing, setEditing] = useState<Memory | 'new' | null>(null)
+  usePageAction({ label: L.newMemory, icon: <Camera size={24} />, run: () => setEditing('new') })
   const [shuffle, setShuffle] = useState(0)
 
   const tags = useMemo(() => {

@@ -56,8 +56,10 @@ Shadows are near-invisible; the primary button gets a coloured glow.
 - Phone: top bar (logo, sync badge), bottom tab bar (Today, Plan, Habits, Goals, More), floating
   + button. "More" opens a sheet with every other screen, Focus first among them; a running focus
   timer shows as a dot on More and a countdown on the Focus tile. Bottom padding keeps content
-  clear of the bar. The + button is hidden on Training, where the live workout's effort buttons
-  and rest timer sit (ADR-027).
+  clear of the bar. The + adds what the screen is about (ADR-030): a screen declares it with
+  `usePageAction` from `Shell.tsx` and the button shows that screen's icon with a small + badge;
+  a screen that says nothing gets a new task, and `usePageAction(null)` hides it (Training, where
+  the live workout's effort buttons and rest timer sit — ADR-027 — Insights, Settings).
 
 ## Layout rules that prevent real bugs (2026-10-16)
 

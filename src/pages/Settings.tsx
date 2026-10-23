@@ -2,6 +2,7 @@ import { Download, Pencil, Plus, Trash2, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { EmojiInput } from '../components/EmojiInput'
 import { SyncPanel } from '../components/SyncPanel'
+import { usePageAction } from '../components/Shell'
 import { Button, Card, cx, IconButton, Input, Kbd, Label, Modal, PageHeader, Segmented, SectionTitle } from '../components/ui'
 import { LANG_INFO } from '../i18n/core'
 import { rich, useI18n } from '../i18n/react'
@@ -14,6 +15,7 @@ import { HSK } from '../lib/daily'
 import { AREA_COLORS, CEFR_LEVELS, UI_LANGUAGES, WORD_LANGUAGES, type Area, type AreaColor, type CefrLevel, type DailySettings, type Settings, type UiLanguage, type WordLanguage } from '../lib/types'
 
 export function SettingsPage() {
+  usePageAction(null)
   const t = useI18n()
   const { m } = t
   const d = useData()

@@ -3,6 +3,7 @@ import { HistoryTab } from '../components/training/HistoryTab'
 import { LiveWorkout } from '../components/training/LiveWorkout'
 import { OverviewTab } from '../components/training/OverviewTab'
 import { RoutinesTab } from '../components/training/RoutinesTab'
+import { usePageAction } from '../components/Shell'
 import { PageHeader, Segmented } from '../components/ui'
 import { useI18n } from '../i18n/react'
 import { navigate, useRouteParam } from '../lib/router'
@@ -17,6 +18,8 @@ type Tab = (typeof TABS)[number]
 export function TrainingPage() {
   const { m } = useI18n()
   const param = useRouteParam()
+  // No "+" here: the live workout's effort buttons and rest timer sit where it would.
+  usePageAction(null)
   if (param === 'workout') return <LiveWorkout />
   const tab: Tab = TABS.includes(param as Tab) ? (param as Tab) : 'overview'
 
