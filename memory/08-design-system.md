@@ -61,6 +61,19 @@ Shadows are near-invisible; the primary button gets a coloured glow.
   a screen that says nothing gets a new task, and `usePageAction(null)` hides it (Training, where
   the live workout's effort buttons and rest timer sit — ADR-027 — Insights, Settings).
 
+## Charts (`components/charts.tsx`, ADR-032)
+
+- Hand-drawn, no chart library. `ColumnChart` (axis with round ticks — `MINUTE_STEPS` for
+  durations — hairline gridlines, optional average line, emphasised columns), `Sparkline`,
+  `Delta`, `ShareBar`. Reuse them for any new chart rather than drawing another.
+- Columns are at most 24 px wide with 4 px rounded tops, growing from one baseline; emphasis is
+  the gradient on one or two columns, the rest quieter. Never a number on every column — the
+  axis, the tooltip and the side text carry the values.
+- A change is a `Delta` chip: up in the accent, down in grey, never red.
+- Time runs left to right in every language; text inside a chart is wrapped in `<bdi dir>`.
+- Tooltips open on hover and on tap, and stay after a tap until the next tap elsewhere.
+- Every derived number a chart shows comes from `lib/` with a test (`lib/insights.ts`).
+
 ## Layout rules that prevent real bugs (2026-10-16)
 
 - **Every overlay is portalled to `<body>`** (`Modal` in `ui.tsx` uses `createPortal`). An ancestor

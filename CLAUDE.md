@@ -53,7 +53,7 @@ Everywhere else a bug is an inconvenience. In these three it silently betrays th
    derive one with `toISOString().slice(0, 10)`: that is UTC, and east of UTC it shifts every
    late-night check-in onto the wrong day and breaks streaks.
 3. **Derived numbers** — streaks, XP, levels, goal progress and pace are pure functions in
-   `src/lib/{habits,gamification,goals}.ts` with tests. A wrong streak is a lie told to someone
+   `src/lib/{habits,gamification,goals,insights}.ts` with tests. A wrong streak is a lie told to someone
    trying to build a habit. Components never compute these themselves. The same goes for
    reminder recurrence (`src/lib/reminders.ts`): a wrong date is a missed birthday.
 

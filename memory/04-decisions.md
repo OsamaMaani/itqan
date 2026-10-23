@@ -681,3 +681,39 @@ the crypto in the helper (needs the `cryptography` package, or hand-written P-25
 Python); one shared VAPID key (would need coordinating which device made it; a key per device
 makes each `PushTarget` self-contained); syncing the per-kind choices (a phone and a laptop want
 different things; the phone's wish for pushes travels as its `PushTarget` instead).
+
+## ADR-032 | 2026-10-24 | accepted | Insights: period analytics, and a full Focus section
+
+**Context:** The owner asked for far more about focus sessions on Insights, and for the whole
+screen to feel professional. It showed all-time totals, an XP chart, balance, consistency, a
+heatmap and badges — nothing about *when* or *how* he focuses, and no sense of direction.
+**Decision:** the range chooser (7, 14, 30, 90 days) scopes the whole screen, and every headline
+number is compared with the same number of days just before (the caption says which dates).
+Sections: **Overview** (level card; XP, tasks, focus time and habit consistency for the period,
+each with a change and a trend line, and its all-time total), **Focus** (total, sessions,
+average session, daily average, focus days, focus streak; time per day with an average line;
+time of day; weekday averages; by area as a share bar and a table; what the time went to;
+session-length bands; records), **Habits and areas**, **Progress** (heatmap switchable XP ↔
+focus, badges). All maths is in `lib/insights.ts`, tested; charts are hand-drawn in
+`components/charts.tsx` (no chart library: the laptop app is one offline file).
+Rules for the numbers:
+- A session belongs to the local day it **started** (as on Focus and for habit check-ins); for
+  time of day its minutes are laid out from its start across the hours — pauses are not stored,
+  so that is the best estimate, and it is documented as such.
+- Weekday figures are **averages over every such day** in the range, focused or not — a sum
+  would favour whichever weekday happens to occur five times in the month.
+- Focus streak counts back from today, or from yesterday while today has no session yet (like
+  the activity streak).
+- Habit consistency averages only habits that existed in the period, so a new habit never makes
+  the previous period look worse; its change is in percentage points, not percent.
+- What the time went to groups by habit, else goal, else the label (case and spaces ignored).
+- A fall is shown in a quiet grey, never red: a slower week is information, not a failure.
+Charts: time runs left to right in every language (like the heatmap), labels inside them are
+isolated with `<bdi dir>` so Arabic reads correctly; tooltips follow the pointer and stay on a
+tap until the next tap elsewhere (a lifting finger ends the pointer on iOS).
+**Rejected:** a chart library (size and an extra dependency for six simple shapes); tabs inside
+Insights (hides most of it on a phone, and the owner asked for the stats on the page itself);
+attributing a session to every day it spans (breaks agreement with Focus and the habit log);
+relative % change for consistency (60% → 66% would read "+10%").
+
+---

@@ -1,9 +1,10 @@
 {
   "project": "Itqan",
   "subtitle": "إتقان — daily tasks, habits and long-term goals in one calm place",
-  "updated": "2026-10-23",
+  "updated": "2026-10-24",
   "current_stage": 4,
   "next_actions": [
+    "Insights has a new Focus section and compares every number with the previous period — pick 7, 14, 30 or 90 days at the top. Tap a bar on the phone to see its value.",
     "Open Itqan on the iPhone from the Home Screen once so it updates (data format v11); sync resumes after that.",
     "On the iPhone: Settings → Notifications → turn on 'Alerts from my laptop' and allow once. Then on the laptop, Settings → Notifications lists the iPhone — press its send button to test.",
     "Focus can now be for a habit: pick it on Focus, or press the timer on a habit card. Finishing checks the habit in — its minutes for a minutes habit (e.g. \"10 min\"), otherwise one check.",
@@ -391,6 +392,12 @@
           "module": "reminders",
           "status": "done",
           "critical": true
+        },
+        {
+          "id": "S2-38",
+          "title": "Insights: every number for the chosen period with its change, and a full Focus section — rhythm, time of day, weekdays, areas, lengths, records (ADR-032)",
+          "module": "insights",
+          "status": "done"
         }
       ]
     },
@@ -619,6 +626,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-24",
+      "entry": "S2-38, asked for by the owner: Insights was rebuilt (ADR-032). The range (7/14/30/90 days) now scopes the whole screen and every headline number — XP, tasks, focus time, habit consistency — shows its change against the previous period, a trend line and its all-time total. A new Focus section: total, sessions, average session, daily average, focus days, focus streak (current and best); focus time per day with an average line; when you focus (by hour, peak marked); average by weekday (strongest marked); by area (share bar and table); what the time went to (by habit, goal or label); session-length bands; records (longest session, best day). The activity heatmap switches between XP and focus. Maths in lib/insights.ts with 20 tests (late-night sessions, hours past midnight, weekday averages, streak edges, habits created later); charts hand-drawn, no new dependency. Checked in the browser at 1280 and 375 px, light and dark, English and Arabic (RTL)."
+    },
     {
       "date": "2026-10-23",
       "entry": "S2-37, asked for by the owner: the 'allow notifications?' prompt appeared on every focus start — the laptop app is a file:// page, where Chrome never keeps the grant, and Focus asked each time. Now nothing asks on start; Settings → Notifications is the one place: allow once (phone/browser), a master switch and switches for focus/break endings, reminders and check-ins, per device. And a session that ends on the laptop is pushed to the iPhone: the phone turns on 'Alerts from my laptop', sync carries its registration to the laptop, the laptop signs and encrypts a Web Push for it, and the desktop helper (v2) sends it when the timer ends — no server, no new account (ADR-031, schema v11). Encryption matches the RFC example byte for byte; a real push went through Google's push service into Chrome. Not yet seen on the iPhone itself."
