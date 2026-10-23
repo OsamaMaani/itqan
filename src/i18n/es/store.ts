@@ -7,4 +7,5 @@ export const store: Messages['store'] = {
   checkInTitle: 'Contacta con {name}',
   checkInBody: 'Ha pasado un tiempo: basta con un mensaje rápido.',
   notificationsWork: 'Las notificaciones funcionan ✓',
+  pushWorks: 'Los avisos de tu portátil llegan a este dispositivo ✓',
 }

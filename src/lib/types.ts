@@ -460,6 +460,43 @@ export interface Settings {
   language: UiLanguage
   /** How weights are shown (ADR-027). Stored weights are always kg. Synced. Schema v8. */
   weightUnit: WeightUnit
+  /** What this device announces (ADR-031). Device-local, never synced. Schema v11. */
+  notify: NotifySettings
+}
+
+/** Per-device notification choices (ADR-031). The browser's own permission is asked once, from Settings. */
+export interface NotifySettings {
+  /** Master switch: nothing is announced on this device when off. */
+  on: boolean
+  /** The end of a focus session or a break. */
+  timer: boolean
+  reminders: boolean
+  /** A person's check-in falling due (ADR-018). */
+  checkIns: boolean
+}
+
+/**
+ * A device that asked to be pushed alerts from the laptop's helper (ADR-031) — today, the end of a
+ * focus session or break started on the laptop. Created by that device when it subscribes; synced,
+ * so the laptop learns of it; removing it is how the device stops them. Holds everything needed to
+ * send it one Web Push: the subscription and the device's own VAPID key pair. Schema v11.
+ */
+export interface PushTarget {
+  id: ID
+  /** "iPhone", "Android"… — a name for the list in Settings, from the device type. */
+  label: string
+  /** The push service URL from the subscription (https://web.push.apple.com/… on an iPhone). */
+  endpoint: string
+  /** The subscription's keys, base64url: the device's P-256 public key and auth secret (RFC 8291). */
+  p256dh: string
+  auth: string
+  /** The VAPID key pair the device subscribed with (RFC 8292): public as base64url raw point, private as JWK. */
+  vapidPublic: string
+  vapidPrivate: JsonWebKey
+  /** The contact the sender names in the VAPID token — the app's https address on that device. */
+  subject: string
+  createdAt: string
+  updatedAt: string
 }
 
 export type WeightUnit = 'kg' | 'lb'
@@ -509,5 +546,7 @@ export interface Data {
   program: TrainingProgram | null
   workouts: Workout[]
   workoutSets: WorkoutSet[]
+  /** Devices that get the laptop's alerts pushed to them (ADR-031). */
+  pushTargets: PushTarget[]
   settings: Settings
 }

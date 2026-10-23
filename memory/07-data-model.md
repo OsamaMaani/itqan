@@ -33,7 +33,8 @@ Zustand as `{ state: Data, version: SCHEMA_VERSION }`.
 | `program` | `TrainingProgram \| null` | Flexible (default), weekdays or rotation; per-week aim (0 = none in flexible), linked habit. **null until first saved** — synced as `program:main` only then (ADR-027) |
 | `workouts` | `Workout[]` | `date` = local day it started; `finishedAt` null = in progress; `items` = a copy of the routine's; `tickedHabitId` |
 | `workoutSets` | `WorkoutSet[]` | Own collection so sets from two devices both survive sync. kg, metres, seconds — always; `warmup`; `effort` |
-| `settings` | `Settings` | Includes `onboarded`, `lastBackupAt`, `daily` — the daily card's switches, word language and level (ADR-023) — and `language`, the interface language `en`/`ar`/`fr`/`zh`/`es` (schema v7, ADR-024; synced), and `weightUnit` `kg`/`lb`, display only (v8, synced). `normalize()` merges `daily` with its defaults key by key and falls back to `en` for an unknown language |
+| `pushTargets` | `PushTarget[]` | Devices that get the laptop's timer ends pushed: subscription endpoint + keys, the device's own VAPID key pair (private as JWK), `subject`. Created and removed by that device; synced (v11, ADR-031) |
+| `settings` | `Settings` | Includes `onboarded`, `lastBackupAt`, `daily` — the daily card's switches, word language and level (ADR-023) — and `language`, the interface language `en`/`ar`/`fr`/`zh`/`es` (schema v7, ADR-024; synced), and `weightUnit` `kg`/`lb`, display only (v8, synced), and `notify` `{ on, timer, reminders, checkIns }` — what this device announces (v11, device-local, ADR-031). `normalize()` merges `daily` and `notify` with their defaults key by key and falls back to `en` for an unknown language |
 
 ## The sync document (ADR-016)
 

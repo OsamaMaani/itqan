@@ -260,6 +260,9 @@ then alerts natively, offline. The laptop keeps its own helper (ADR-013).
 **Rejected:** a free push relay (third-party service holding a subscription for the owner's phone —
 another account and a dependency for one feature).
 
+*(2026-10-23: the laptop's own helper now sends Web Push to the phone for focus/break endings —
+the "server" is the laptop, ADR-031. Reminders stay with Calendar: they must arrive with the laptop off.)*
+
 ---
 
 ## ADR-018 | 2026-10-16 | accepted | Connections: a personal relationship manager on top of reminders
@@ -624,3 +627,57 @@ clears only its own registration, because the next screen's effect runs after it
 it would mean lifting every editor into `App`); an extended button with a text label (covers
 more of the list on a 375 px screen, and five languages make widths unpredictable); keeping
 the task + everywhere and adding page buttons (two "+" on one screen).
+
+---
+
+## ADR-031 | 2026-10-23 | accepted | Notifications: allowed once in Settings; the laptop pushes timer ends to the phone
+
+**Context:** The owner, 2026-10-23: starting a focus session showed the browser's "allow
+notifications?" prompt every time, and they wanted a session that ends on the laptop announced on
+the iPhone too. Cause of the prompt: Focus called `Notification.requestPermission()` on every
+start while the permission read "default" — and the laptop app is a `file://` page, where Chrome
+never keeps a grant (ADR-013 amendment), so it read "default" forever. The prompt was also
+pointless there: the helper announces the timer.
+
+**Decision:**
+- **One place, asked once.** Settings → Notifications (`components/NotificationsPanel.tsx`) is the
+  only place that asks the browser's permission, from a tap; nothing asks when a timer starts
+  (Focus shows a one-line pointer to Settings while it has not been allowed). The laptop app never
+  asks at all — its alerts come from the helper; the card says so and shows the helper's state.
+- **Per-device choices** in `Settings.notify` `{ on, timer, reminders, checkIns }` (schema v11,
+  device-local like theme): the master switch and one per kind. They filter what this device
+  gives the helper (`notifier.ts`) and what the page shows itself. Page notifications go through
+  `showSystemNotification()` — via the service worker when there is one (the only way on an
+  iPhone home-screen app), else `new Notification`.
+- **Phone pushes without a server.** A device that turns on "Alerts from my laptop" subscribes to
+  Web Push with **its own VAPID key pair** and stores everything needed to reach it as a
+  `PushTarget` (new synced collection `pushTargets`, schema v11). Sync carries it to the laptop.
+  For each timer alert the laptop app builds one request per target with WebCrypto
+  (`lib/push.ts`): VAPID token (RFC 8292, ES256, `aud` = push service origin, `exp` = alert time
+  + 30 min, `sub` = the app's https address on that device) and an aes128gcm body (RFC 8291). The
+  helper (v2) only POSTs it at the alert's time. `public/push-sw.js`, imported into the generated
+  service worker, shows it. Turning off notifications or timer alerts on the phone, removing the
+  device from the list (on any device), or withdrawing permission in iOS unsubscribes it;
+  `refreshPush()` on start re-subscribes when the browser rotated the endpoint.
+- **Helper guards for the new outbound call:** sends only to `web.push.apple.com`,
+  `fcm.googleapis.com`, `updates.push.services.mozilla.com` and `*.notify.windows.com` over https
+  on 443, no userinfo, never follows a redirect; only the Web Push headers, no CR/LF; body valid
+  base64 ≤ 8000 chars; a push more than 10 minutes late is dropped. Still standard-library only.
+  `scripts/test_itqan_reminders.py` checks each guard and runs in `ci:check`.
+
+**Verified:** the encryption reproduces RFC 8291's example byte for byte (test); a real round trip
+— headless Chrome subscribed, `push.ts` built the request, the helper's `send_push` sent it, Google's
+push service answered 201, the service worker decrypted and showed it (2026-10-23).
+
+**Accepted costs:** the phone hears about a laptop session only if the laptop is awake when it
+ends and sync has carried the registration over; each device's VAPID private key sits in the
+encrypted sync file and in backups (worst case if leaked together with the subscription: someone
+can send that phone notifications — no data access). A timer started *on the phone* still only
+announces itself while the app is open — iOS gives web apps no scheduled local notifications, and
+nothing else is awake to push it.
+
+**Rejected:** a push relay service (ADR-017's reason: another account and a dependency); doing
+the crypto in the helper (needs the `cryptography` package, or hand-written P-256/AES-GCM in
+Python); one shared VAPID key (would need coordinating which device made it; a key per device
+makes each `PushTarget` self-contained); syncing the per-kind choices (a phone and a laptop want
+different things; the phone's wish for pushes travels as its `PushTarget` instead).

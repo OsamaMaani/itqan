@@ -11,6 +11,7 @@ import { celebrate } from './lib/celebrate'
 import { useMediaQuery, useProgress } from './lib/hooks'
 import { navigate, ROUTES, useRoute, useRouteParam, type Route } from './lib/router'
 import { startNotifier } from './lib/notifier'
+import { refreshPush } from './lib/pushDevice'
 import { startSync } from './lib/sync/engine'
 import { useStore } from './lib/store'
 import { toast } from './lib/toast'
@@ -52,7 +53,7 @@ export default function App() {
   }, [theme, systemDark])
 
   useEffect(() => { window.scrollTo({ top: 0 }) }, [route, param])
-  useEffect(() => { startSync(); startNotifier() }, [])
+  useEffect(() => { startSync(); startNotifier(); void refreshPush() }, [])
 
   useKeyboard({ openPalette: () => setPalette(true), openNewTask: () => setNewTask(true) })
   useLevelUp()

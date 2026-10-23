@@ -237,3 +237,30 @@ describe('v9 → v10 (focus sessions for a habit)', () => {
     expect(parseBackup(JSON.stringify(b)).focusSessions).toEqual([{ id: 'f', minutes: 10, habitId: null, habitAmount: 0 }])
   })
 })
+
+describe('v10 → v11 (notifications, ADR-031)', () => {
+  it('this device keeps announcing everything and no device is registered for pushes; nothing else changes', () => {
+    const settings = { name: 'Sam', sound: false, daily: { verse: false } }
+    const d = migrate({ settings, tasks: [{ id: 't' }], focusSessions: [{ id: 'f', minutes: 25 }] }, 10)
+    expect(d.settings.notify).toEqual({ on: true, timer: true, reminders: true, checkIns: true })
+    expect(d.settings.name).toBe('Sam')
+    expect(d.settings.sound).toBe(false)
+    expect(d.settings.daily.verse).toBe(false)
+    expect(d.pushTargets).toEqual([])
+    expect(d.tasks).toEqual([{ id: 't' }])
+    expect(d.focusSessions).toEqual([{ id: 'f', minutes: 25 }])
+  })
+  it('choices and registrations already there are kept, and a missing choice gets its default', () => {
+    const target = { id: 'p', label: 'iPhone', endpoint: 'https://web.push.apple.com/x' }
+    const d = migrate({ settings: { notify: { timer: false } }, pushTargets: [target] }, 10)
+    expect(d.settings.notify).toEqual({ on: true, timer: false, reminders: true, checkIns: true })
+    expect(d.pushTargets).toEqual([target])
+  })
+  it('a v10 backup restores with notifications on', () => {
+    const b = { app: 'itqan', schemaVersion: 10, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [], settings: { theme: 'dark' } } }
+    const d = parseBackup(JSON.stringify(b))
+    expect(d.settings.notify.on).toBe(true)
+    expect(d.settings.theme).toBe('dark')
+    expect(d.pushTargets).toEqual([])
+  })
+})

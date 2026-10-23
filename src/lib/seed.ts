@@ -16,13 +16,14 @@ export const DEFAULT_SETTINGS: Settings = {
   daily: { verse: true, hadith: true, word: true, wisdom: true, fact: true, meaning: true, wordLanguage: 'fr', wordLevel: 'B1' },
   language: 'en',
   weightUnit: 'kg',
+  notify: { on: true, timer: true, reminders: true, checkIns: true },
 }
 
 export function emptyData(): Data {
   return {
     areas: [], tasks: [], habits: [], habitLogs: {}, goals: [], goalLogs: [],
     focusSessions: [], timer: null, dayNotes: {}, reviews: {}, memories: [], ideas: [], reminders: [], projects: [], projectUpdates: [], contacts: [], interactions: [], achievements: [],
-    exercises: [], routines: [], program: null, workouts: [], workoutSets: [],
+    exercises: [], routines: [], program: null, workouts: [], workoutSets: [], pushTargets: [],
     settings: { ...DEFAULT_SETTINGS },
   }
 }

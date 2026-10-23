@@ -7,4 +7,6 @@ export const store = {
   checkInTitle: 'Check in with {name}',
   checkInBody: 'It has been a while — a quick message is enough.',
   notificationsWork: 'Notifications are working ✓',
+  /** A test pushed from the laptop to a phone (ADR-031). */
+  pushWorks: 'Alerts from your laptop reach this device ✓',
 }

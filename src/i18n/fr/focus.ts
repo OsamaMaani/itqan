@@ -28,6 +28,8 @@ export const focus: Messages['focus'] = {
   deleteSession: 'Supprimer la session',
   focusDoneNotify: 'Concentration terminée — {n}\u00a0min. Fais une pause.',
   breakOverNotify: 'Pause terminée. On enchaîne\u202f?',
+  notifyHint: 'Une notification à la fin ? {link}',
+  notifyHintLink: 'Activez-les dans les Réglages',
   focusLogged: { one: '{n}\u00a0minute de concentration enregistrée', other: '{n}\u00a0minutes de concentration enregistrées' },
   startBreak: 'Commencer la pause',
   breakFinished: 'Pause terminée',

@@ -28,6 +28,8 @@ export const focus: Messages['focus'] = {
   deleteSession: 'حذف الجلسة',
   focusDoneNotify: 'انتهت جلسة التركيز ({n} د). خذ استراحة.',
   breakOverNotify: 'انتهت الاستراحة. هل أنت مستعد للجلسة التالية؟',
+  notifyHint: 'هل تريد إشعارًا عند انتهائها؟ {link}',
+  notifyHintLink: 'فعّلها من الإعدادات',
   focusLogged: {
     zero: 'لم تُسجَّل أي دقيقة تركيز',
     one: 'تم تسجيل دقيقة واحدة من التركيز',

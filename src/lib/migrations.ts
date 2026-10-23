@@ -6,7 +6,7 @@ import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 10
+export const SCHEMA_VERSION = 11
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -74,6 +74,16 @@ const steps: Record<number, Step> = {
     focusSessions: ((d.focusSessions as Record<string, unknown>[] | undefined) ?? []).map((f) => ({ habitId: null, habitAmount: 0, ...f })),
     timer: d.timer && typeof d.timer === 'object' ? { habitId: null, ...(d.timer as object) } : (d.timer ?? null),
   }),
+  // 10 → 11 (2026-10-23): notifications (ADR-031). This device announces everything, as before;
+  // no device is registered for pushes yet. Nothing existing changes.
+  10: (d) => {
+    const settings = (d.settings as Record<string, unknown> | undefined) ?? {}
+    return {
+      ...d,
+      pushTargets: d.pushTargets ?? [],
+      settings: { ...settings, notify: { ...DEFAULT_SETTINGS.notify, ...((settings.notify as object) ?? {}) } },
+    }
+  },
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {
@@ -113,6 +123,7 @@ export function normalize(d: Record<string, unknown>): Data {
     program: pick('program'),
     workouts: pick('workouts'),
     workoutSets: pick('workoutSets'),
+    pushTargets: pick('pushTargets'),
     settings: normalizeSettings(d.settings),
   }
 }
@@ -122,5 +133,10 @@ function normalizeSettings(raw: unknown): Settings {
   const s = (raw && typeof raw === 'object' ? raw : {}) as Partial<Settings>
   const language = UI_LANGUAGES.includes(s.language as UiLanguage) ? (s.language as UiLanguage) : DEFAULT_SETTINGS.language
   const weightUnit = s.weightUnit === 'lb' ? 'lb' : 'kg'
-  return { ...DEFAULT_SETTINGS, ...s, daily: { ...DEFAULT_SETTINGS.daily, ...(s.daily ?? {}) }, language, weightUnit }
+  return {
+    ...DEFAULT_SETTINGS, ...s,
+    daily: { ...DEFAULT_SETTINGS.daily, ...(s.daily ?? {}) },
+    notify: { ...DEFAULT_SETTINGS.notify, ...(s.notify ?? {}) },
+    language, weightUnit,
+  }
 }

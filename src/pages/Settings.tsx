@@ -1,9 +1,10 @@
 import { Download, Pencil, Plus, Trash2, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { EmojiInput } from '../components/EmojiInput'
+import { NotificationsPanel } from '../components/NotificationsPanel'
 import { SyncPanel } from '../components/SyncPanel'
 import { usePageAction } from '../components/Shell'
-import { Button, Card, cx, IconButton, Input, Kbd, Label, Modal, PageHeader, Segmented, SectionTitle } from '../components/ui'
+import { Button, Card, cx, IconButton, Input, Kbd, Label, Modal, PageHeader, Segmented, SectionTitle, Toggle } from '../components/ui'
 import { LANG_INFO } from '../i18n/core'
 import { rich, useI18n } from '../i18n/react'
 import { downloadBackup, parseBackup } from '../lib/backup'
@@ -82,6 +83,8 @@ export function SettingsPage() {
           <Toggle label={m.settings.profile.showHijri} checked={s.showHijri} onChange={(v) => update({ showHijri: v })} />
         </div>
       </Card>
+
+      <NotificationsPanel />
 
       <DailyCardSettings value={s.daily} onChange={(patch) => update({ daily: { ...s.daily, ...patch } })} />
 
@@ -186,17 +189,6 @@ function DailyCardSettings({ value: v, onChange }: { value: DailySettings; onCha
         </div>
       )}
     </Card>
-  )
-}
-
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className="flex cursor-pointer items-center gap-3 text-sm font-semibold">
-      <button type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)} className={cx('relative h-6 w-11 rounded-full transition', checked ? 'bg-accent' : 'bg-border')}>
-        <span className={cx('absolute top-0.5 size-5 rounded-full bg-white shadow transition-all', checked ? 'start-[22px]' : 'start-0.5')} />
-      </button>
-      {label}
-    </label>
   )
 }
 

@@ -9,7 +9,7 @@ import { emptyData, starterData } from './seed'
 import { todayKey } from './date'
 import type {
   Achievement, ActiveTimer, Area, Contact, Data, DateKey, DayNote, Exercise, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory,
-  Project, ProjectUpdate, Reminder, Routine, RoutineItem, Settings, Task, TaskStage, TrainingProgram, WeeklyReview, Workout, WorkoutSet,
+  Project, ProjectUpdate, PushTarget, Reminder, Routine, RoutineItem, Settings, Task, TaskStage, TrainingProgram, WeeklyReview, Workout, WorkoutSet,
 } from './types'
 import { birthdayReminderDate } from './connections'
 
@@ -129,6 +129,10 @@ interface Actions {
   finishWorkout: (id: ID) => void
   /** Deletes the workout and its sets, and takes back the habit tick it gave. */
   deleteWorkout: (id: ID) => void
+  // notifications (ADR-031)
+  /** Adds this device's push registration, or replaces it (same id) when the subscription changed. */
+  savePushTarget: (t: PushTarget) => void
+  removePushTarget: (id: ID) => void
   // settings & data
   updateSettings: (patch: Partial<Settings>) => void
   completeOnboarding: (name: string, starter: boolean) => void
@@ -649,6 +653,10 @@ export const useStore = create<Store>()(
         }
       },
 
+      // --- notifications (ADR-031) ----------------------------------------------
+      savePushTarget: (t) => set((s) => ({ pushTargets: [...s.pushTargets.filter((x) => x.id !== t.id), t] })),
+      removePushTarget: (id) => set((s) => ({ pushTargets: s.pushTargets.filter((x) => x.id !== id) })),
+
       // --- settings & data -------------------------------------------------------
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
       completeOnboarding: (name, starter) =>
@@ -668,7 +676,7 @@ export const useStore = create<Store>()(
         goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
         reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
         projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
-        exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets,
+        exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets,
         settings: s.settings,
       }),
       migrate: (persisted, version) => migrate(persisted, version) as unknown as Store,
@@ -694,7 +702,7 @@ export function snapshot(s: Store): Data {
     goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
     reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
     projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
-    exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets,
+    exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets,
     settings: s.settings,
   }
 }

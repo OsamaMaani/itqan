@@ -10,8 +10,8 @@ import type { Data, Settings } from '../types'
  *   settings:shared                   the settings that should follow you across devices
  *   program:main                      the training program, only once it has been saved (ADR-027)
  *
- * Device-local, never synced: the running focus timer, theme, sounds, onboarding and backup
- * dates — each device keeps its own.
+ * Device-local, never synced: the running focus timer, theme, sounds, notification choices,
+ * onboarding and backup dates — each device keeps its own.
  */
 
 export type Entities = Record<string, unknown>
@@ -19,7 +19,7 @@ export type Entities = Record<string, unknown>
 export const ARRAY_COLLECTIONS = [
   'areas', 'tasks', 'habits', 'goals', 'goalLogs', 'focusSessions', 'memories', 'ideas', 'reminders',
   'projects', 'projectUpdates', 'contacts', 'interactions', 'achievements',
-  'exercises', 'routines', 'workouts', 'workoutSets',
+  'exercises', 'routines', 'workouts', 'workoutSets', 'pushTargets',
 ] as const
 type ArrayCollection = (typeof ARRAY_COLLECTIONS)[number]
 

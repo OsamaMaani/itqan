@@ -11,6 +11,7 @@ import { useTick, useToday } from '../lib/hooks'
 import { sendTestNotification, useNotifier } from '../lib/notifier'
 import { ALERT_MINUTES, alertLabel, nextOccurrence, REMINDER_ALL_DAY_TIME, whenText, yearsOn } from '../lib/reminders'
 import { openICS } from '../lib/ics'
+import { navigate } from '../lib/router'
 import { useStore } from '../lib/store'
 import { toast } from '../lib/toast'
 import type { Reminder, ReminderRepeat } from '../lib/types'
@@ -112,7 +113,7 @@ function NotifierStatus() {
   const t = useI18n()
   const n = t.m.reminders.notifier
   const { state, next } = useNotifier()
-  const [perm, setPerm] = useState(() => ('Notification' in window ? Notification.permission : 'denied'))
+  const perm = 'Notification' in window ? Notification.permission : 'denied'
 
   const test = async () => {
     const ok = await sendTestNotification()
@@ -144,7 +145,7 @@ function NotifierStatus() {
   }
   return box('info', <BellRing size={18} />, n.openTitle,
     <>{n.openBody}{' '}
-      {perm === 'default' && <button className="font-semibold text-accent" onClick={() => Notification.requestPermission().then(setPerm)}>{n.allowBrowser}</button>}</>)
+      {perm === 'default' && <button className="font-semibold text-accent" onClick={() => navigate('settings')}>{n.allowBrowser}</button>}</>)
 }
 
 function Section({ title, items, onEdit, danger }: { title: string; items: UpcomingItem[]; onEdit: (r: Reminder) => void; danger?: boolean }) {

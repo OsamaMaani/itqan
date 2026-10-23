@@ -28,6 +28,8 @@ export const focus: Messages['focus'] = {
   deleteSession: '删除记录',
   focusDoneNotify: '专注结束——{n} 分钟。休息一下吧。',
   breakOverNotify: '休息结束。准备好开始下一轮了吗？',
+  notifyHint: '想在结束时收到通知吗？{link}',
+  notifyHintLink: '在设置中开启',
   focusLogged: { other: '已记录 {n} 分钟专注' },
   startBreak: '开始休息',
   breakFinished: '休息结束',

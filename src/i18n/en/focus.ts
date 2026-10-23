@@ -36,6 +36,9 @@ export const focus = {
   /** System notification when a focus session ends. {n} is the minutes. */
   focusDoneNotify: 'Focus done — {n} min. Take a break.',
   breakOverNotify: 'Break over. Ready for the next one?',
+  /** Under Start, until notifications are allowed (ADR-031). {link} is a button with notifyHintLink. */
+  notifyHint: 'Want a notification when it ends? {link}',
+  notifyHintLink: 'Turn them on in Settings',
   /** Toast when a focus session ends. */
   focusLogged: { one: '{n} minute of focus logged', other: '{n} minutes of focus logged' },
   startBreak: 'Start break',

@@ -8,6 +8,10 @@ It knows nothing about reminder rules. The app computes a flat list of alerts
 (src/lib/reminders.ts → buildSchedule) and PUTs it here; this helper only fires each alert
 once, at its time, with notify-send.
 
+An alert may also carry ready-made Web Push requests for the owner's phone (ADR-031): the app
+signs and encrypts them (src/lib/push.ts); the helper only POSTs them at the alert's time, and
+only to the known push services — it is never a general-purpose proxy.
+
 Security: listens on 127.0.0.1 only; rejects any Host but 127.0.0.1/localhost (DNS
 rebinding); rejects requests carrying a web Origin (only the file:// app, Origin "null", or
 local tools); and every write needs the token generated at install time, which only the
@@ -20,7 +24,11 @@ import os
 import subprocess
 import sys
 import threading
+import base64
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -32,7 +40,13 @@ FIRED_FILE = DATA / "fired.json"
 ICON = DATA / "icon.png"
 GRACE_MS = 12 * 60 * 60 * 1000  # same as GRACE_MS in src/lib/reminders.ts
 MAX_BODY = 4 * 1024 * 1024
-VERSION = 1
+VERSION = 2
+# A push sent this late is dropped: "your session ended" an hour later is noise (laptop asleep).
+PUSH_LATE_MS = 10 * 60 * 1000
+# Web Push services of Safari/iOS, Chrome/Android, Firefox and Edge. Nothing else is ever contacted.
+PUSH_HOSTS = ("web.push.apple.com", "fcm.googleapis.com", "updates.push.services.mozilla.com")
+PUSH_HOST_SUFFIXES = (".notify.windows.com", ".push.apple.com")
+PUSH_HEADERS = {"Authorization", "Content-Encoding", "Content-Type", "TTL", "Urgency", "Topic"}
 
 lock = threading.Lock()
 schedule: list[dict] = []
@@ -63,6 +77,34 @@ def token() -> str:
         return ""
 
 
+def push_host_ok(endpoint: str) -> bool:
+    try:
+        u = urllib.parse.urlsplit(endpoint)
+        host = (u.hostname or "").lower()
+        return (
+            u.scheme == "https" and u.username is None and u.password is None and u.port in (None, 443)
+            and (host in PUSH_HOSTS or host.endswith(PUSH_HOST_SUFFIXES))
+        )
+    except ValueError:
+        return False
+
+
+def valid_push(p) -> bool:
+    if not isinstance(p, dict) or not isinstance(p.get("endpoint"), str) or len(p["endpoint"]) > 1000:
+        return False
+    headers, body = p.get("headers"), p.get("body")
+    if not isinstance(headers, dict) or not isinstance(body, str) or len(body) > 8000:
+        return False
+    if not all(k in PUSH_HEADERS and isinstance(v, str) and len(v) < 2000 and "\n" not in v and "\r" not in v
+               for k, v in headers.items()):
+        return False
+    try:
+        base64.b64decode(body, validate=True)
+    except Exception:
+        return False
+    return push_host_ok(p["endpoint"])
+
+
 def valid_item(i) -> bool:
     return (
         isinstance(i, dict)
@@ -70,6 +112,9 @@ def valid_item(i) -> bool:
         and isinstance(i.get("fireAt"), (int, float))
         and isinstance(i.get("title"), str) and len(i["title"]) < 500
         and isinstance(i.get("body"), str) and len(i["body"]) < 4000
+        and isinstance(i.get("desktop", True), bool)
+        and isinstance(i.get("push", []), list) and len(i.get("push", [])) <= 10
+        and all(valid_push(p) for p in i.get("push", []))
     )
 
 
@@ -82,6 +127,39 @@ def notify(title: str, body: str, urgent: bool) -> None:
         subprocess.run(cmd, timeout=10, check=False)
     except Exception as e:
         log("notify-send failed:", e)
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    """A push service never redirects; following one could send the request somewhere else."""
+
+    def redirect_request(self, *args, **kwargs):
+        return None
+
+
+opener = urllib.request.build_opener(NoRedirect)
+
+
+def send_push(p: dict) -> None:
+    """POSTs one prepared push; retries twice on a network error or a 5xx/429."""
+    host = urllib.parse.urlsplit(p["endpoint"]).hostname
+    for attempt in range(3):
+        req = urllib.request.Request(p["endpoint"], data=base64.b64decode(p["body"]), headers=p["headers"], method="POST")
+        try:
+            with opener.open(req, timeout=15) as res:
+                log("push:", host, res.status)
+                return
+        except urllib.error.HTTPError as e:
+            log("push:", host, e.code, e.read(300).decode("utf-8", "replace"))
+            if e.code < 500 and e.code != 429:
+                return  # 404/410: the phone unsubscribed; 400/403: bad request — retrying won't help
+        except Exception as e:
+            log("push failed:", host, e)
+        time.sleep(20)
+
+
+def send_pushes(pushes: list) -> None:
+    for p in pushes:
+        threading.Thread(target=send_push, args=(p,), daemon=True).start()
 
 
 def tick() -> None:
@@ -98,7 +176,10 @@ def tick() -> None:
             save_json(FIRED_FILE, sorted(fired))
     for item in due:
         log("alert:", item["title"])
-        notify(item["title"], item["body"], bool(item.get("urgent")))
+        if item.get("desktop", True):
+            notify(item["title"], item["body"], bool(item.get("urgent")))
+        if item.get("push") and now - item["fireAt"] <= PUSH_LATE_MS:
+            send_pushes(item["push"])
 
 
 def loop() -> None:
@@ -174,7 +255,7 @@ class Handler(BaseHTTPRequestHandler):
         now = time.time() * 1000
         with lock:
             upcoming = [i["fireAt"] for i in schedule if i["key"] not in fired and i["fireAt"] > now]
-        self.send(200, {"ok": True, "version": VERSION, "authorized": self.authed(),
+        self.send(200, {"ok": True, "version": VERSION, "authorized": self.authed(), "push": True,
                         "pending": len(upcoming), "next": min(upcoming) if upcoming else None})
 
     def do_PUT(self):
@@ -200,7 +281,15 @@ class Handler(BaseHTTPRequestHandler):
             return
         if self.path != "/test":
             return self.send(404, {"error": "not found"})
-        notify("Itqan", "Desktop notifications are working ✓", False)
+        # {"push": [...]} tests the phones (sent now); without it, the desktop.
+        data = self.read_json()
+        pushes = data.get("push") if isinstance(data, dict) else None
+        if pushes:
+            if not isinstance(pushes, list) or len(pushes) > 10 or not all(valid_push(p) for p in pushes):
+                return self.send(400, {"error": "bad push"})
+            send_pushes(pushes)
+        else:
+            notify("Itqan", "Desktop notifications are working ✓", False)
         self.send(200, {"ok": True})
 
 

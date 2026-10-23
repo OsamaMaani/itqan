@@ -5,11 +5,14 @@ import { AreaPicker } from '../components/AreaPicker'
 import { mmss, remainingMs } from '../components/TimerWatcher'
 import { AreaChip, Button, Card, cx, EmptyState, IconButton, Input, Label, PageHeader, Select } from '../components/ui'
 import { tx } from '../i18n/core'
-import { useI18n } from '../i18n/react'
+import { rich, useI18n } from '../i18n/react'
 import { AREA_HEX } from '../lib/colors'
 import { todayKey, weekDays } from '../lib/date'
 import { amountOn, countsMinutes } from '../lib/habits'
 import { useAreaMap, useData, useTick, useToday } from '../lib/hooks'
+import { HAS_HELPER } from '../lib/notifier'
+import { pushSupport } from '../lib/pushDevice'
+import { navigate } from '../lib/router'
 import { useStore } from '../lib/store'
 
 const PRESETS = [15, 25, 50, 90]
@@ -51,7 +54,6 @@ export function FocusPage() {
   const isBreak = timer?.mode === 'break'
 
   const start = () => {
-    if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {})
     const task = openTasks.find((x) => x.id === taskId)
     startTimer({
       mode: 'focus', totalMs: minutes * 60000, label: label || task?.title || habit?.name || m.focus.defaultLabel,
@@ -142,6 +144,12 @@ export function FocusPage() {
                   <Coffee size={18} /> {m.focus.takeBreak}
                 </Button>
               </div>
+              {/* Permission is asked once, in Settings (ADR-031) — here only a pointer while it hasn't been. */}
+              {!HAS_HELPER && d.settings.notify.on && d.settings.notify.timer && ('Notification' in window ? Notification.permission === 'default' : pushSupport() === 'home-screen') && (
+                <p className="text-center text-xs text-muted">
+                  {rich(m.focus.notifyHint, { link: <button className="font-semibold text-accent" onClick={() => navigate('settings')}>{m.focus.notifyHintLink}</button> })}
+                </p>
+              )}
             </div>
           ) : (
             <div className="mt-8 flex gap-3">

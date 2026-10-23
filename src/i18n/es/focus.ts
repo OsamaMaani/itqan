@@ -28,6 +28,8 @@ export const focus: Messages['focus'] = {
   deleteSession: 'Eliminar sesión',
   focusDoneNotify: 'Concentración terminada: {n} min. Tómate un descanso.',
   breakOverNotify: 'Se acabó el descanso. ¿Vamos con la siguiente?',
+  notifyHint: '¿Quieres una notificación al terminar? {link}',
+  notifyHintLink: 'Actívalas en Ajustes',
   focusLogged: { one: '{n} minuto de concentración registrado', other: '{n} minutos de concentración registrados' },
   startBreak: 'Empezar el descanso',
   breakFinished: 'Descanso terminado',

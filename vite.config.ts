@@ -37,7 +37,8 @@ export default defineConfig({
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
+      // push-sw.js (public/) adds the push and notification-click handlers (ADR-031).
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'], importScripts: ['push-sw.js'] },
     }),
   ],
   build: local

@@ -7,4 +7,5 @@ export const store: Messages['store'] = {
   checkInTitle: 'تواصل مع {name}',
   checkInBody: 'مضى وقت منذ آخر تواصل — تكفي رسالة قصيرة.',
   notificationsWork: 'الإشعارات تعمل ✓',
+  pushWorks: 'تنبيهات حاسوبك تصل إلى هذا الجهاز ✓',
 }

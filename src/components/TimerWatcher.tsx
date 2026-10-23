@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
 import { useTick } from '../lib/hooks'
-import { helperAnnouncesTimer } from '../lib/notifier'
+import { helperAnnouncesTimer, showSystemNotification, wants } from '../lib/notifier'
 import { useStore } from '../lib/store'
 import { toast } from '../lib/toast'
 
@@ -37,7 +37,7 @@ export function TimerWatcher() {
       const minutes = finishTimer(true)
       celebrate.timerDone()
       // The desktop helper has this timer's end on its schedule (ADR-013); the page notifies only without it.
-      if (!helperAnnouncesTimer()) notify(wasFocus ? t.f(m.focus.focusDoneNotify, { n: minutes }) : m.focus.breakOverNotify, m.focus.appName)
+      if (!helperAnnouncesTimer() && wants('timer')) void showSystemNotification(m.focus.appName, wasFocus ? t.f(m.focus.focusDoneNotify, { n: minutes }) : m.focus.breakOverNotify, { tag: 'itqan-timer' })
       if (wasFocus) {
         toast({
           emoji: '🎯', message: t.p(m.focus.focusLogged, minutes),
@@ -50,12 +50,4 @@ export function TimerWatcher() {
   }, [timer, now, t, m])
 
   return null
-}
-
-function notify(body: string, title: string) {
-  try {
-    if ('Notification' in window && Notification.permission === 'granted') new Notification(title, { body, icon: 'icon-192.png' })
-  } catch {
-    /* notifications are optional */
-  }
 }

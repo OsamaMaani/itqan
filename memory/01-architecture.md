@@ -89,6 +89,18 @@ Code: `src/lib/sync/` — `entities.ts` (split/rebuild), `merge.ts` (stamps, tom
 connect/disconnect). UI: `components/SyncPanel.tsx`. Sync state is its own localStorage key
 (`itqan-sync`), so `Data` is untouched by sync.
 
+## Notifications (ADR-013, ADR-031)
+
+```
+ laptop app ──PUT schedule──► helper (127.0.0.1, notify-send) ──Web Push──► Apple/Google push ──► phone's service worker
+     ▲  builds + encrypts each push (lib/push.ts)                                                       │
+     └──────────────── sync carries the phone's PushTarget ◄── phone subscribes (lib/pushDevice.ts) ◄──┘
+```
+
+`lib/notifier.ts` decides what is announced (`Settings.notify`, per device) and talks to the
+helper; `lib/pushDevice.ts` is the receiving device's side; `public/push-sw.js` shows a push;
+`components/NotificationsPanel.tsx` (Settings) is the only place the browser's permission is asked.
+
 ## The path to "others can use it" (not built)
 
 When/if Itqan becomes multi-user (Stage 4), add **sync, not a rewrite**: keep the local store as

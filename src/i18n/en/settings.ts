@@ -40,6 +40,47 @@ export const settings = {
     levelNames: { A1: 'beginner', A2: 'elementary', B1: 'intermediate', B2: 'upper intermediate', C1: 'advanced', C2: 'mastery' },
   },
 
+  /** Settings → Notifications (ADR-031). Each device keeps its own choices. */
+  notifications: {
+    title: 'Notifications',
+    body: 'What Itqan tells you about on this device. Each device keeps its own choices.',
+    test: 'Send a test',
+    helperOn: 'On this laptop, alerts come from Itqan’s desktop helper — even when Itqan is closed. There is nothing to allow.',
+    /** {script} is a file path to a script. */
+    helperOff: 'The desktop helper isn’t running, so alerts show only while Itqan is open. Run {script} once to fix it.',
+    helperChecking: 'Connecting to the desktop helper…',
+    allowed: 'Allowed on this device.',
+    askOnce: 'Allow once — Itqan remembers it and won’t ask again.',
+    allow: 'Allow notifications',
+    blocked: 'Blocked in this browser’s settings. Allow notifications for Itqan there, then come back.',
+    unsupported: 'This browser can’t show notifications — alerts show inside Itqan while it is open.',
+    /** iOS wording: the Share button and its “Add to Home Screen” item. */
+    homeScreen: 'On iPhone, notifications work only in the Home Screen app: tap Share, then “Add to Home Screen”, and open Itqan from there.',
+    on: 'Notifications on this device',
+    timer: 'Focus and break endings',
+    reminders: 'Reminders',
+    checkIns: 'Check-ins with people',
+    /** A switch on a phone: the laptop pushes its focus/break endings to this device. */
+    fromLaptop: 'Alerts from my laptop',
+    fromLaptopHint: 'When a focus session or break you started on the laptop ends, this device is told too. The laptop sends it, so it needs to be awake.',
+    needsSync: 'This needs sync, so your laptop learns about this device — set it up below.',
+    enabled: 'This device will get your laptop’s alerts',
+    denied: 'Notifications are blocked for Itqan on this device',
+    failed: 'Couldn’t turn it on — check your connection and try again',
+    devicesTitle: 'Devices that get your laptop’s alerts',
+    /** {date} is the date the device was added. */
+    added: 'added {date}',
+    thisDevice: 'this device',
+    /** {name} is the label of the switch (fromLaptop). */
+    noDevices: 'None yet. On your phone, open Itqan from the Home Screen, go to Settings → Notifications and turn on “{name}”.',
+    remove: 'Remove',
+    removed: 'Removed — it won’t get alerts any more',
+    testSent: 'Sent — it should arrive in a few seconds',
+    testFailed: 'Couldn’t send — is the desktop helper running?',
+    /** {script} is a file path to a script. */
+    helperOld: 'Run {script} once more so the helper can send to your other devices.',
+  },
+
   areas: {
     title: 'Areas of life',
     add: 'Add area',

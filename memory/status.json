@@ -4,7 +4,8 @@
   "updated": "2026-10-23",
   "current_stage": 4,
   "next_actions": [
-    "Open Itqan on the iPhone once so it updates (data format v10); sync resumes after that.",
+    "Open Itqan on the iPhone from the Home Screen once so it updates (data format v11); sync resumes after that.",
+    "On the iPhone: Settings → Notifications → turn on 'Alerts from my laptop' and allow once. Then on the laptop, Settings → Notifications lists the iPhone — press its send button to test.",
     "Focus can now be for a habit: pick it on Focus, or press the timer on a habit card. Finishing checks the habit in — its minutes for a minutes habit (e.g. \"10 min\"), otherwise one check.",
     "Training → Routines → Program now offers \"Whenever I can\" (no schedule). Fixed days and Rotation still work as before.",
     "Number keys moved by one after Focus: 7 is now Training, 8 Ideas, 9 Reminders.",
@@ -383,6 +384,13 @@
           "title": "Phone: the floating + adds what the screen is about — a habit on Habits, a goal on Goals… (ADR-030)",
           "module": "command-bar",
           "status": "done"
+        },
+        {
+          "id": "S2-37",
+          "title": "Notifications: allowed once in Settings with per-kind switches; a session ending on the laptop is pushed to the phone (ADR-031, schema v11)",
+          "module": "reminders",
+          "status": "done",
+          "critical": true
         }
       ]
     },
@@ -611,6 +619,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-23",
+      "entry": "S2-37, asked for by the owner: the 'allow notifications?' prompt appeared on every focus start — the laptop app is a file:// page, where Chrome never keeps the grant, and Focus asked each time. Now nothing asks on start; Settings → Notifications is the one place: allow once (phone/browser), a master switch and switches for focus/break endings, reminders and check-ins, per device. And a session that ends on the laptop is pushed to the iPhone: the phone turns on 'Alerts from my laptop', sync carries its registration to the laptop, the laptop signs and encrypts a Web Push for it, and the desktop helper (v2) sends it when the timer ends — no server, no new account (ADR-031, schema v11). Encryption matches the RFC example byte for byte; a real push went through Google's push service into Chrome. Not yet seen on the iPhone itself."
+    },
     {
       "date": "2026-10-23",
       "entry": "S2-36, asked for by the owner: on the phone the floating + always opened a new task, even on Habits. Each screen now says what its + adds (ADR-030): a habit on Habits, a goal on Goals, a project, a reminder, a person (or a check-in on a person's page), a memory, an achievement; on Ideas it jumps to the capture line; on a project's page it adds a task already in that project. Today, Plan, Focus and Review keep the new task; Training, Insights and Settings have no +. The button shows the screen's icon with a small + so the change is visible. Phone only — desktop has no floating button. Checked on every screen at phone width."

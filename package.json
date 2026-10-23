@@ -11,7 +11,7 @@
     "typecheck": "tsc -b",
     "test": "vitest run",
     "dashboard": "python3 scripts/build_dashboard.py",
-    "ci:check": "python3 scripts/build_dashboard.py --check && tsc -b && vitest run && vite build",
+    "ci:check": "python3 scripts/build_dashboard.py --check && python3 -I scripts/test_itqan_reminders.py && tsc -b && vitest run && vite build",
     "build:local": "tsc -b && LOCAL=1 vite build"
   },
   "dependencies": {

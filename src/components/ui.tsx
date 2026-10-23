@@ -265,3 +265,14 @@ export function PageHeader({ title, subtitle, right }: { title: ReactNode; subti
 export function Kbd({ children }: { children: ReactNode }) {
   return <kbd className="rounded-md border border-border bg-surface-2 px-1.5 py-0.5 font-sans text-[10px] font-semibold text-muted">{children}</kbd>
 }
+
+export function Toggle({ label, checked, onChange, disabled }: { label: ReactNode; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+  return (
+    <label className={cx('flex items-center gap-3 text-sm font-semibold', disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer')}>
+      <button type="button" role="switch" aria-checked={checked} disabled={disabled} onClick={() => onChange(!checked)} className={cx('relative h-6 w-11 shrink-0 rounded-full transition', checked ? 'bg-accent' : 'bg-border')}>
+        <span className={cx('absolute top-0.5 size-5 rounded-full bg-white shadow transition-all', checked ? 'start-[22px]' : 'start-0.5')} />
+      </button>
+      {label}
+    </label>
+  )
+}
