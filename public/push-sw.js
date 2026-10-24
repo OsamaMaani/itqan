@@ -1,7 +1,7 @@
 /*
  * Pushed alerts (ADR-031), imported into the generated service worker (vite.config.ts →
- * workbox.importScripts). The laptop's helper sends the end of a focus session or break here,
- * encrypted for this device; the browser decrypts it and this shows it. Every push must show a
+ * workbox.importScripts). The laptop's helper sends the end of a focus session or break, reminders
+ * and check-ins (ADR-033) here, encrypted for this device; the browser decrypts it and this shows it. Every push must show a
  * notification (userVisibleOnly), so a malformed one still shows a plain "Itqan".
  */
 self.addEventListener('push', (event) => {

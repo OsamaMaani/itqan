@@ -2,12 +2,13 @@ import { uid } from './id'
 import { HAS_HELPER } from './notifier'
 import { generateVapidKeys, unb64url } from './push'
 import { useStore } from './store'
-import type { NotifySettings, PushTarget } from './types'
+import type { NotifySettings, PushKinds, PushTarget } from './types'
 
 /**
  * This device's side of pushed alerts (ADR-031): a phone (or any browser with a service worker)
  * registers itself as a PushTarget, which sync carries to the laptop; the laptop's helper then
- * pushes it the end of every focus session or break started there.
+ * pushes it the end of every focus session or break started there, and reminders and check-ins
+ * (ADR-033) — each kind only while this device's own choice for it is on.
  *
  * The id of this device's own registration is kept in localStorage (device-local), so the
  * synced list says which entry is "this phone".
@@ -58,6 +59,22 @@ async function registration(): Promise<ServiceWorkerRegistration> {
   return navigator.serviceWorker.ready
 }
 
+/** The kinds this device wants pushed: its own choices, nothing when notifications are off here. */
+export function kindsFrom(n: NotifySettings): PushKinds {
+  return { timer: n.on && n.timer, reminders: n.on && n.reminders, checkIns: n.on && n.checkIns }
+}
+
+const anyKind = (k: PushKinds) => k.timer || k.reminders || k.checkIns
+const sameKinds = (a: PushKinds | undefined, b: PushKinds) => !!a && a.timer === b.timer && a.reminders === b.reminders && a.checkIns === b.checkIns
+
+/** Carries this device's choices to its registration, so the laptop pushes only what is wanted here. */
+function syncKinds(): void {
+  const { pushTargets, settings, savePushTarget } = useStore.getState()
+  const target = pushTargets.find((t) => t.id === thisDeviceId())
+  const kinds = kindsFrom(settings.notify)
+  if (target && !sameKinds(target.kinds, kinds)) savePushTarget({ ...target, kinds, updatedAt: new Date().toISOString() })
+}
+
 function sameKey(a: ArrayBuffer | null | undefined, b: string): boolean {
   if (!a) return false
   const x = new Uint8Array(a)
@@ -66,7 +83,7 @@ function sameKey(a: ArrayBuffer | null | undefined, b: string): boolean {
 }
 
 /** Subscribes with this registration's VAPID key (replacing a subscription made with another) and saves the target. */
-async function subscribe(base: Pick<PushTarget, 'id' | 'vapidPublic' | 'vapidPrivate' | 'createdAt'>): Promise<void> {
+async function subscribe(base: Pick<PushTarget, 'id' | 'vapidPublic' | 'vapidPrivate' | 'createdAt' | 'kinds'>): Promise<void> {
   const reg = await registration()
   let sub = await reg.pushManager.getSubscription()
   if (sub && !sameKey(sub.options.applicationServerKey, base.vapidPublic)) {
@@ -92,15 +109,23 @@ async function subscribe(base: Pick<PushTarget, 'id' | 'vapidPublic' | 'vapidPri
 /**
  * Turns on "alerts from my laptop" for this device. Call straight from a tap: iOS only shows the
  * permission prompt for one. Asks the browser's permission once; after that it is remembered.
+ * With notifications off here, or every kind off, turning this on turns them all on — asking for
+ * alerts from the laptop and then receiving none would make no sense.
  */
 export async function enablePush(): Promise<'ok' | 'denied' | 'failed'> {
   try {
     const perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission()
     if (perm !== 'granted') return 'denied'
+    const { settings, updateSettings } = useStore.getState()
+    let kinds = kindsFrom(settings.notify)
+    if (!anyKind(kinds)) {
+      kinds = { timer: true, reminders: true, checkIns: true }
+      updateSettings({ notify: { on: true, ...kinds } })
+    }
     const id = thisDeviceId()
     const existing = useStore.getState().pushTargets.find((t) => t.id === id)
     const keys = existing ? { publicKey: existing.vapidPublic, privateKey: existing.vapidPrivate } : await generateVapidKeys()
-    await subscribe({ id: existing?.id ?? uid(), vapidPublic: keys.publicKey, vapidPrivate: keys.privateKey, createdAt: existing?.createdAt ?? new Date().toISOString() })
+    await subscribe({ id: existing?.id ?? uid(), vapidPublic: keys.publicKey, vapidPrivate: keys.privateKey, createdAt: existing?.createdAt ?? new Date().toISOString(), kinds })
     return 'ok'
   } catch {
     return 'failed'
@@ -116,14 +141,17 @@ export async function disablePush(): Promise<void> {
 }
 
 /**
- * Changes this device's notification choices. Turning off all notifications, or the timer ones,
- * also stops pushes from the laptop — they are timer alerts shown on this device.
+ * Changes this device's notification choices (ADR-033). Pushes from the laptop follow them: a kind
+ * turned off here is no longer pushed here; turning off all notifications, or every kind, stops
+ * pushes altogether.
  */
 export function setNotify(patch: Partial<NotifySettings>): void {
   const { settings, updateSettings } = useStore.getState()
   const next = { ...settings.notify, ...patch }
   updateSettings({ notify: next })
-  if ((!next.on || !next.timer) && thisDeviceId()) void disablePush()
+  if (!thisDeviceId()) return
+  if (!anyKind(kindsFrom(next))) void disablePush()
+  else syncKinds()
 }
 
 /**
@@ -136,6 +164,7 @@ export async function refreshPush(): Promise<void> {
   if (!id || pushSupport() !== 'ok') return
   const target = useStore.getState().pushTargets.find((t) => t.id === id)
   if (!target || Notification.permission !== 'granted') return void disablePush()
+  syncKinds() // a registration from before ADR-033 was given every kind; narrow it to this device's choices
   try {
     const sub = await (await registration()).pushManager.getSubscription()
     if (sub?.endpoint !== target.endpoint) await subscribe(target)

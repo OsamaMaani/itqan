@@ -55,7 +55,7 @@ export const settings: Messages['settings'] = {
     reminders: 'Rappels',
     checkIns: 'Prendre des nouvelles',
     fromLaptop: 'Alertes de mon ordinateur',
-    fromLaptopHint: 'Quand une session de concentration ou une pause lancée sur l’ordinateur se termine, cet appareil est prévenu aussi. C’est l’ordinateur qui l’envoie : il doit être allumé.',
+    fromLaptopHint: 'Tes rappels, les nouvelles à prendre et la fin des sessions de concentration lancées sur l’ordinateur arrivent aussi ici — ceux qui sont activés ci-dessus. C’est l’ordinateur qui les envoie : il doit être allumé ; s’il était en veille, un rappel arrive quand même à son réveil.',
     needsSync: 'Il faut la synchronisation pour que votre ordinateur connaisse cet appareil — configurez-la plus bas.',
     enabled: 'Cet appareil recevra les alertes de votre ordinateur',
     denied: 'Les notifications sont bloquées pour Itqan sur cet appareil',

@@ -55,7 +55,7 @@ export const settings: Messages['settings'] = {
     reminders: 'Recordatorios',
     checkIns: 'Contactar con personas',
     fromLaptop: 'Avisos de mi portátil',
-    fromLaptopHint: 'Cuando termina una sesión de enfoque o un descanso que empezaste en el portátil, también se avisa a este dispositivo. Lo envía el portátil, así que tiene que estar encendido.',
+    fromLaptopHint: 'Tus recordatorios, los contactos con personas y el fin de las sesiones de enfoque empezadas en el portátil también llegan aquí — los que estén activados arriba. Los envía el portátil, así que tiene que estar encendido; si estaba en reposo, el recordatorio llega igualmente cuando se despierta.',
     needsSync: 'Necesita la sincronización para que tu portátil conozca este dispositivo; configúrala más abajo.',
     enabled: 'Este dispositivo recibirá los avisos de tu portátil',
     denied: 'Las notificaciones de Itqan están bloqueadas en este dispositivo',

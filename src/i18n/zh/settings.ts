@@ -55,7 +55,7 @@ export const settings: Messages['settings'] = {
     reminders: '提醒',
     checkIns: '联系朋友',
     fromLaptop: '来自我电脑的提醒',
-    fromLaptopHint: '在电脑上开始的专注或休息结束时，这台设备也会收到通知。由电脑发送，所以电脑需要处于唤醒状态。',
+    fromLaptopHint: '你的提醒、联系朋友，以及在电脑上开始的专注结束，也会发到这台设备——以上方开启的为准。由电脑发送，所以电脑需要处于唤醒状态；如果电脑在睡眠，提醒会在它唤醒后送达。',
     needsSync: '这需要开启同步，你的电脑才能知道这台设备——请在下方设置。',
     enabled: '这台设备将收到你电脑的提醒',
     denied: '这台设备上 Itqan 的通知已被阻止',

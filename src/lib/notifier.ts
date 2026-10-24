@@ -2,11 +2,11 @@ import { tx } from '../i18n/core'
 import { create } from 'zustand'
 import { checkIn } from './connections'
 import { toKey } from './date'
-import { buildPushRequest, type PushRequest } from './push'
+import { buildPushRequest, type PushMessage, type PushRequest } from './push'
 import { at, buildSchedule, timerAlert, type ScheduledAlert } from './reminders'
 import { useStore } from './store'
 import { toast } from './toast'
-import type { NotifySettings, PushTarget, Reminder } from './types'
+import type { NotifySettings, PushKinds, PushTarget, Reminder } from './types'
 
 /**
  * Keeps the desktop helper (scripts/itqan_reminders.py) in sync with the reminders, so alerts
@@ -14,8 +14,9 @@ import type { NotifySettings, PushTarget, Reminder } from './types'
  * scripts/install_local.sh; builds without it (dev, GitHub Pages) fall back to in-app alerts
  * while the app is open.
  *
- * What is announced follows Settings → Notifications (ADR-031): the device's own choices, and —
- * for a timer — every device registered for pushes, whose push the helper sends at the same time.
+ * What is announced follows Settings → Notifications (ADR-031): the device's own choices, and every
+ * device registered for pushes that wants that kind — timer ends, reminders, check-ins (ADR-033) —
+ * whose push the helper sends at the same time.
  */
 
 const URL = 'http://127.0.0.1:47321'
@@ -78,47 +79,89 @@ function timerAlerts(now: number): ScheduledAlert[] {
 }
 
 /** What the helper receives: an alert, whether it shows on this desktop, and pushes for other devices. */
-export type HelperItem = ScheduledAlert & { desktop?: boolean; push?: PushRequest[] }
+export type HelperItem = ScheduledAlert & { desktop?: boolean; push?: PushRequest[]; pushLateMs?: number }
+
+type Kind = keyof PushKinds
 
 /**
- * A push is valid until shortly after its alert (the helper drops one sent later anyway), and is
- * built once per alert and device — encryption is fresh each time, so rebuilding on every sync
- * would only cost time.
+ * How long after its time a push may still go out (helper v3 honours it; older helpers keep 10
+ * minutes). A timer's end is noise an hour later; a reminder or check-in is still worth hearing
+ * about when the laptop wakes in the morning (ADR-033). The push's own signature expires then too.
  */
-const PUSH_VALID_MS = 30 * 60_000
-const pushCache = new Map<string, Promise<PushRequest | null>>()
+const PUSH_LATE_MS: Record<Kind, number> = { timer: 10 * 60_000, reminders: 12 * 3600_000, checkIns: 12 * 3600_000 }
+/** The push's signature outlives that window a little, so a push sent at its last minute is not refused for clock skew. */
+const PUSH_SIGNATURE_MARGIN_MS = 20 * 60_000
+/**
+ * Pushes are built for the coming week only: each is encrypted and signed separately, and a year of
+ * daily reminders for every phone would not fit what the helper accepts. The hourly re-sync rolls
+ * the window, so this only matters if the laptop app is not opened for a week (ADR-033).
+ */
+export const PUSH_HORIZON_MS = 7 * 86_400_000
 
-function pushFor(t: PushTarget, a: ScheduledAlert): Promise<PushRequest | null> {
-  const k = `${a.key}|${t.id}|${t.endpoint}`
-  let p = pushCache.get(k)
-  if (!p) {
-    p = buildPushRequest(t, { title: a.title, body: a.body, tag: 'itqan-timer' }, a.fireAt + PUSH_VALID_MS).catch(() => null)
-    pushCache.set(k, p)
+/** The helper takes at most this many pushes per alert, and refuses the whole schedule beyond it. */
+const MAX_PUSH_TARGETS = 10
+
+/**
+ * Web Push carries about 4 KB, and the helper refuses a push body over 8000 base64 characters —
+ * again the whole schedule. A reminder's notes can be longer, so the push shows the start of them;
+ * at four bytes a character this still fits.
+ */
+export function pushMessage(kind: Kind, a: ScheduledAlert): PushMessage {
+  const clip = (text: string, n: number) => {
+    const cs = Array.from(text)
+    return cs.length > n ? `${cs.slice(0, n - 1).join('')}…` : text
   }
-  return p
+  return { title: clip(a.title, 120), body: clip(a.body, 480), tag: alertTag(kind, a) }
 }
 
-/** Timer alerts as the helper should fire them, with this device's choice and the registered devices. */
-async function timerItems(now: number): Promise<HelperItem[]> {
-  const desktop = wants('timer')
+/** One push per alert per device, kept across syncs: encryption is fresh each time, so rebuilding would only cost time. */
+let pushCache = new Map<string, Promise<PushRequest | null>>()
+
+/** The notification tag: a newer notification with the same tag replaces the older one, so a push and the page's own alert never stack. */
+export function alertTag(kind: Kind, a: ScheduledAlert): string {
+  return kind === 'timer' ? 'itqan-timer' : `itqan-${a.key}`
+}
+
+/** Every alert the helper should know of, by kind — whether or not this device announces it, since a phone may want it pushed. */
+function allAlerts(reminders: Reminder[], now: Date, horizonDays?: number): { kind: Kind; alert: ScheduledAlert }[] {
+  return [
+    ...timerAlerts(now.getTime()).map((alert) => ({ kind: 'timer' as const, alert })),
+    ...buildSchedule(reminders, now, horizonDays).map((alert) => ({ kind: 'reminders' as const, alert })),
+    ...checkInAlerts(now).map((alert) => ({ kind: 'checkIns' as const, alert })),
+  ]
+}
+
+/**
+ * Alerts as the helper should fire them (ADR-031, ADR-033): on this desktop when this device wants
+ * that kind, and pushed to every registered device that wants it.
+ */
+export async function helperItems(reminders: Reminder[], now: Date): Promise<HelperItem[]> {
   const targets = useStore.getState().pushTargets
-  const alerts = timerAlerts(now)
-  const live = new Set(alerts.map((a) => a.key))
-  for (const k of pushCache.keys()) if (!live.has(k.split('|').slice(0, 3).join('|'))) pushCache.delete(k)
+  const prev = pushCache
+  const next = new Map<string, Promise<PushRequest | null>>()
   const out: HelperItem[] = []
-  for (const a of alerts) {
-    const push = (await Promise.all(targets.map((t) => pushFor(t, a)))).filter((p): p is PushRequest => !!p)
-    if (desktop || push.length) out.push({ ...a, desktop, push })
+  for (const { kind, alert: a } of allAlerts(reminders, now)) {
+    const desktop = wants(kind)
+    const pushable = kind === 'timer' || a.fireAt <= now.getTime() + PUSH_HORIZON_MS
+    const reqs: Promise<PushRequest | null>[] = []
+    for (const t of pushable ? targets.filter((x) => x.kinds?.[kind]).slice(0, MAX_PUSH_TARGETS) : []) {
+      // Everything that goes into the request: an edited title or a renewed subscription builds a new one.
+      const k = JSON.stringify([a.key, a.fireAt, a.title, a.body, t.id, t.endpoint, t.p256dh, t.auth, t.vapidPublic])
+      let p = next.get(k) ?? prev.get(k)
+      if (!p) p = buildPushRequest(t, pushMessage(kind, a), a.fireAt + PUSH_LATE_MS[kind] + PUSH_SIGNATURE_MARGIN_MS).catch(() => null)
+      next.set(k, p)
+      reqs.push(p)
+    }
+    const push = (await Promise.all(reqs)).filter((p): p is PushRequest => !!p)
+    if (desktop || push.length) out.push({ ...a, desktop, push, pushLateMs: PUSH_LATE_MS[kind] })
   }
+  pushCache = next
   return out
 }
 
-/** Reminder and check-in alerts this device announces (ADR-031). */
-function alertsFor(reminders: Reminder[], now: Date, horizonDays?: number): ScheduledAlert[] {
-  return [
-    ...(wants('reminders') ? buildSchedule(reminders, now, horizonDays) : []),
-    ...(wants('checkIns') ? checkInAlerts(now) : []),
-  ]
+/** Reminder and check-in alerts this device announces itself (ADR-031). */
+function alertsFor(reminders: Reminder[], now: Date, horizonDays?: number): { kind: Kind; alert: ScheduledAlert }[] {
+  return allAlerts(reminders, now, horizonDays).filter((x) => x.kind !== 'timer' && wants(x.kind))
 }
 
 /** True when the helper is announcing the timer's end, so the page should not do it as well. */
@@ -130,7 +173,7 @@ export function helperAnnouncesTimer(): boolean {
 export async function syncReminders(reminders: Reminder[]): Promise<void> {
   if (!TOKEN) return
   try {
-    const items: HelperItem[] = [...alertsFor(reminders, new Date()), ...(await timerItems(Date.now()))]
+    const items = await helperItems(reminders, new Date())
     const res = await call('/schedule', { method: 'PUT', body: JSON.stringify({ items }) })
     if (res.status === 401) return void useNotifier.setState({ state: 'unauthorized' })
     if (!res.ok) throw new Error(String(res.status))
@@ -153,7 +196,7 @@ export async function sendTestNotification(): Promise<boolean> {
 export async function sendTestPush(t: PushTarget): Promise<boolean> {
   if (useNotifier.getState().state !== 'connected') return false
   try {
-    const req = await buildPushRequest(t, { title: '🔔 Itqan', body: tx().m.store.pushWorks, tag: 'itqan-test' }, Date.now() + PUSH_VALID_MS)
+    const req = await buildPushRequest(t, { title: '🔔 Itqan', body: tx().m.store.pushWorks, tag: 'itqan-test' }, Date.now() + PUSH_SIGNATURE_MARGIN_MS)
     return (await call('/test', { method: 'POST', body: JSON.stringify({ push: [req] }) })).ok
   } catch {
     return false
@@ -180,9 +223,9 @@ export async function showSystemNotification(title: string, body: string, o: { u
   }
 }
 
-function inAppNotify(title: string, body: string, urgent: boolean): void {
+function inAppNotify(title: string, body: string, urgent: boolean, tag: string): void {
   toast({ emoji: '🔔', message: `${title} — ${body.split('\n')[0]}` }, urgent ? 20000 : 8000)
-  void showSystemNotification(title, body, { urgent })
+  void showSystemNotification(title, body, { urgent, tag })
 }
 
 let started = false
@@ -214,8 +257,8 @@ export function startNotifier(): void {
   setInterval(() => {
     const now = Date.now()
     if (useNotifier.getState().state !== 'connected') {
-      for (const a of alertsFor(useStore.getState().reminders, new Date(now), 1)) {
-        if (a.fireAt > last && a.fireAt <= now) inAppNotify(a.title, a.body, a.urgent)
+      for (const { kind, alert: a } of alertsFor(useStore.getState().reminders, new Date(now), 1)) {
+        if (a.fireAt > last && a.fireAt <= now) inAppNotify(a.title, a.body, a.urgent, alertTag(kind, a))
       }
       if (TOKEN && useNotifier.getState().state === 'offline') schedule() // helper may be back
     }

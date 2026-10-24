@@ -278,7 +278,8 @@ dated, with a note). The check-in rules live in `src/lib/connections.ts` (tested
 **Reuse, not a second engine:** "Remind me about this person" is an ordinary `Reminder` with a
 `contactId`; a birthday is a yearly reminder created by `syncBirthdayReminder` (and removed with
 the person). So desktop notifications (ADR-013), the iPhone Calendar export (ADR-017) and sync all
-work for people without new code. Check-ins also send a 10:00 desktop nudge on their due day.
+work for people without new code. Check-ins also send a 10:00 desktop nudge on their due day
+(pushed to the phone as well since ADR-033).
 A birthday without a year sets `countYears: false` so no wrong age is shown.
 
 **Rejected:** a separate birthday/alert engine for contacts (two recurrence implementations
@@ -672,7 +673,7 @@ push service answered 201, the service worker decrypted and showed it (2026-10-2
 **Accepted costs:** the phone hears about a laptop session only if the laptop is awake when it
 ends and sync has carried the registration over; each device's VAPID private key sits in the
 encrypted sync file and in backups (worst case if leaked together with the subscription: someone
-can send that phone notifications — no data access). A timer started *on the phone* still only
+can send that phone notifications — no data access). (Reminders and check-ins were added to the pushes by ADR-033.) A timer started *on the phone* still only
 announces itself while the app is open — iOS gives web apps no scheduled local notifications, and
 nothing else is awake to push it.
 
@@ -717,3 +718,47 @@ attributing a session to every day it spans (breaks agreement with Focus and the
 relative % change for consistency (60% → 66% would read "+10%").
 
 ---
+
+---
+
+## ADR-033 | 2026-10-24 | accepted | Reminders and check-ins are pushed to the phone too
+
+**Context:** The owner, 2026-10-24: asked that a person's check-in falling due, and reminders,
+arrive as notifications. On the laptop they already did — the helper fires them even with Itqan
+closed (ADR-013, ADR-018). On the iPhone they showed only while Itqan was open: ADR-031's pushes
+carried timer ends only.
+
+**Decision:**
+- **Every kind goes through one path.** `notifier.ts → helperItems()` gives the helper each timer,
+  reminder and check-in alert, with `desktop` = this laptop's own choice for that kind, and a
+  push for every registered device that wants that kind. An alert nobody wants is not sent.
+- **The phone's choices travel with its registration.** `PushTarget.kinds` `{ timer, reminders,
+  checkIns }` (schema v12) mirrors the phone's own `Settings.notify` (which stays device-local, as
+  ADR-031 decided). `setNotify()` updates it on every change; `refreshPush()` re-aligns it on each
+  start. Every kind off, or notifications off, removes the registration (before, turning *timer*
+  off did — it was the only kind). Turning on "Alerts from my laptop" with nothing switched on
+  switches everything on. The v11 → v12 migration gives existing registrations every kind; the
+  phone narrows that the next time it opens.
+- **Pushes are built for the coming 7 days** (`PUSH_HORIZON_MS`); further alerts go to the desktop
+  only until the hourly re-sync brings them into the window. Each push is encrypted and signed
+  separately, and a 400-day horizon of daily reminders per phone would exceed the helper's 4 MB.
+- **Late delivery:** a reminder or check-in may still be pushed up to 12 hours after its time — the
+  laptop asleep at 08:00 still delivers "call Mum" when it wakes at 09:00. A timer end stays at 10
+  minutes. Each item carries `pushLateMs`; helper v3 honours it and refuses anything over 12 hours
+  (tested), and the push's VAPID token expires 20 minutes after that window. An older helper
+  ignores the field and keeps 10 minutes.
+- **Size guards:** at most 10 pushes per alert (the helper refuses the whole schedule beyond it),
+  and the pushed title and body are clipped to 120 / 480 characters, because Web Push carries
+  about 4 KB and the helper refuses a push body over 8000 base64 characters — again, the whole
+  schedule. The notification on the laptop desktop keeps the full text.
+- **No doubles:** each push's tag is `itqan-<alert key>`, and the phone's in-app fallback (while
+  open) shows its own notification with the same tag, so one replaces the other.
+
+**Accepted costs:** as ADR-031 — the phone hears only while the laptop is awake within 12 hours
+of the alert and sync has carried the registration over; an iPhone that also subscribes to the
+reminders calendar (ADR-017) gets a reminder twice (turn one off; each has its own switch).
+
+**Rejected:** pushing the full 400-day horizon (size, and minutes of crypto on first sync);
+filtering on the phone in the service worker (it would still receive and must show every push —
+`userVisibleOnly`); syncing `Settings.notify` itself (ADR-031's reason: the laptop and phone want
+different things — only what the phone wants *pushed* needs to travel).

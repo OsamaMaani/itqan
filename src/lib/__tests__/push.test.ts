@@ -36,7 +36,7 @@ async function device() {
   const target: PushTarget = {
     id: 'p', label: 'iPhone', endpoint: 'https://web.push.apple.com/QGx1abc', subject: 'https://example.github.io/itqan/',
     p256dh: b64url(new Uint8Array(await subtle.exportKey('raw', ua.publicKey))), auth: b64url(auth),
-    vapidPublic: vapid.publicKey, vapidPrivate: vapid.privateKey, createdAt: '', updatedAt: '',
+    vapidPublic: vapid.publicKey, vapidPrivate: vapid.privateKey, kinds: { timer: true, reminders: true, checkIns: true }, createdAt: '', updatedAt: '',
   }
   return { ua, auth, target }
 }

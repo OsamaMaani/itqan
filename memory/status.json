@@ -4,9 +4,9 @@
   "updated": "2026-10-24",
   "current_stage": 4,
   "next_actions": [
+    "Reminders and check-ins with people now reach the iPhone as notifications, even with Itqan closed there (the laptop sends them, so it needs to be awake). Open Itqan on the iPhone from the Home Screen once so it updates (data format v12); sync resumes after that.",
+    "If 'Alerts from my laptop' isn't on yet on the iPhone: Settings → Notifications → turn it on and allow once. The switches above it (focus endings, reminders, check-ins) choose what the phone gets.",
     "Insights has a new Focus section and compares every number with the previous period — pick 7, 14, 30 or 90 days at the top. Tap a bar on the phone to see its value.",
-    "Open Itqan on the iPhone from the Home Screen once so it updates (data format v11); sync resumes after that.",
-    "On the iPhone: Settings → Notifications → turn on 'Alerts from my laptop' and allow once. Then on the laptop, Settings → Notifications lists the iPhone — press its send button to test.",
     "Focus can now be for a habit: pick it on Focus, or press the timer on a habit card. Finishing checks the habit in — its minutes for a minutes habit (e.g. \"10 min\"), otherwise one check.",
     "Training → Routines → Program now offers \"Whenever I can\" (no schedule). Fixed days and Rotation still work as before.",
     "Number keys moved by one after Focus: 7 is now Training, 8 Ideas, 9 Reminders.",
@@ -398,6 +398,13 @@
           "title": "Insights: every number for the chosen period with its change, and a full Focus section — rhythm, time of day, weekdays, areas, lengths, records (ADR-032)",
           "module": "insights",
           "status": "done"
+        },
+        {
+          "id": "S2-39",
+          "title": "Reminders and check-ins are pushed to the phone too, each kind following the phone's own switch (ADR-033, schema v12)",
+          "module": "reminders",
+          "status": "done",
+          "critical": true
         }
       ]
     },
@@ -626,6 +633,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-24",
+      "entry": "S2-39, asked for by the owner: notifications for check-ins and reminders. On the laptop they already arrived (helper, even with the app closed); on the iPhone only while Itqan was open, because pushes carried timer ends only. Now the laptop pushes reminders and check-ins to every registered phone that wants that kind (ADR-033). PushTarget gains `kinds`, mirroring the phone's own switches (schema v12, migration tested; existing registrations get every kind until the phone narrows them). Pushes are built for the coming 7 days; a reminder or check-in may still go out up to 12 hours late (helper v3, `pushLateMs`, capped and tested); pushed text is clipped and at most 10 devices per alert, so one long note can never make the helper refuse the whole schedule. A push and the phone's own in-app alert share a tag, so they never stack."
+    },
     {
       "date": "2026-10-24",
       "entry": "S2-38, asked for by the owner: Insights was rebuilt (ADR-032). The range (7/14/30/90 days) now scopes the whole screen and every headline number — XP, tasks, focus time, habit consistency — shows its change against the previous period, a trend line and its all-time total. A new Focus section: total, sessions, average session, daily average, focus days, focus streak (current and best); focus time per day with an average line; when you focus (by hour, peak marked); average by weekday (strongest marked); by area (share bar and table); what the time went to (by habit, goal or label); session-length bands; records (longest session, best day). The activity heatmap switches between XP and focus. Maths in lib/insights.ts with 20 tests (late-night sessions, hours past midnight, weekday averages, streak edges, habits created later); charts hand-drawn, no new dependency. Checked in the browser at 1280 and 375 px, light and dark, English and Arabic (RTL)."

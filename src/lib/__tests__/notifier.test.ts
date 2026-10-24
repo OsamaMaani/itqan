@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { HelperItem } from '../notifier'
+import type { PushKinds, PushTarget } from '../types'
 import { b64url, generateVapidKeys } from '../push'
 import { toKey } from '../date'
 import { emptyData } from '../seed'
@@ -71,13 +72,13 @@ describe('focus timer on the desktop helper', () => {
   })
 })
 
-async function phone() {
+async function phone(kinds: Partial<PushKinds> = {}, id = 'phone'): Promise<PushTarget> {
   const ua = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits'])
   const v = await generateVapidKeys()
   return {
-    id: 'phone', label: 'iPhone', endpoint: 'https://web.push.apple.com/abc', subject: 'https://example.github.io/itqan/',
+    id, label: 'iPhone', endpoint: `https://web.push.apple.com/${id}`, subject: 'https://example.github.io/itqan/',
     p256dh: b64url(new Uint8Array(await crypto.subtle.exportKey('raw', ua.publicKey))), auth: b64url(crypto.getRandomValues(new Uint8Array(16))),
-    vapidPublic: v.publicKey, vapidPrivate: v.privateKey, createdAt: '', updatedAt: '',
+    vapidPublic: v.publicKey, vapidPrivate: v.privateKey, kinds: { timer: true, reminders: true, checkIns: true, ...kinds }, createdAt: '', updatedAt: '',
   }
 }
 
@@ -98,7 +99,7 @@ describe('notification choices and pushes (ADR-031)', () => {
     const item = lastTimer()!
     expect(item.desktop).toBe(true)
     expect(item.push).toHaveLength(1)
-    expect(item.push![0].endpoint).toBe('https://web.push.apple.com/abc')
+    expect(item.push![0].endpoint).toBe('https://web.push.apple.com/phone')
     expect(item.push![0].headers['Content-Encoding']).toBe('aes128gcm')
   })
 
@@ -136,4 +137,101 @@ describe('notification choices and pushes (ADR-031)', () => {
     await vi.advanceTimersByTimeAsync(500)
     expect(puts.at(-1)).toEqual([])
   })
+})
+
+describe('reminders and check-ins pushed to the phone (ADR-033)', () => {
+  // 08:00 local on a fixed day, so a 10:00 check-in today is still ahead.
+  const NOW = new Date(2026, 9, 24, 8, 0)
+  const day = (n: number) => toKey(new Date(2026, 9, 24 + n))
+  const reminderIn = (store: Awaited<ReturnType<typeof load>>['store'], days: number, notes = '') =>
+    store.getState().addReminder({ title: 'Call', notes, emoji: '📞', date: day(days), time: '10:00', repeat: 'none', alerts: [0], important: false })
+  const reminderItems = () => (puts.at(-1) ?? []).filter((a) => !a.key.startsWith('timer|') && !a.key.startsWith('checkin|'))
+  const checkInItems = () => (puts.at(-1) ?? []).filter((a) => a.key.startsWith('checkin|'))
+
+  beforeEach(() => vi.setSystemTime(NOW))
+
+  it('a reminder this week is pushed to a phone that wants reminders, and may go out up to 12 hours late', async () => {
+    const { store, notifier } = await load()
+    store.setState({ ...emptyData(), pushTargets: [await phone()] })
+    reminderIn(store, 2)
+    notifier.startNotifier()
+    await vi.advanceTimersByTimeAsync(500)
+    await settle()
+    const [item] = reminderItems()
+    expect(item.desktop).toBe(true)
+    expect(item.push).toHaveLength(1)
+    expect(item.pushLateMs).toBe(12 * 3600_000)
+  })
+
+  it('a check-in due today is pushed, at 10:00', async () => {
+    const { store, notifier } = await load()
+    store.setState({ ...emptyData(), pushTargets: [await phone()] })
+    store.getState().addContact({ name: 'Sam', cadenceDays: 7, lastContactManual: day(-7) })
+    notifier.startNotifier()
+    await vi.advanceTimersByTimeAsync(500)
+    await settle()
+    const [item] = checkInItems()
+    expect(item.fireAt).toBe(new Date(2026, 9, 24, 10, 0).getTime())
+    expect(item.push).toHaveLength(1)
+  })
+
+  it('a phone that turned reminders off gets no reminder push, but still its check-ins', async () => {
+    const { store, notifier } = await load()
+    store.setState({ ...emptyData(), pushTargets: [await phone({ reminders: false })] })
+    reminderIn(store, 2)
+    store.getState().addContact({ name: 'Sam', cadenceDays: 7, lastContactManual: day(-7) })
+    notifier.startNotifier()
+    await vi.advanceTimersByTimeAsync(500)
+    await settle()
+    expect(reminderItems()[0].push).toEqual([])
+    expect(checkInItems()[0].push).toHaveLength(1)
+  })
+
+  it('with reminders off on the laptop, the phone still gets its push while the desktop stays quiet', async () => {
+    const { store, notifier } = await load()
+    const s = emptyData()
+    store.setState({ ...s, pushTargets: [await phone()], settings: { ...s.settings, notify: { ...s.settings.notify, reminders: false } } })
+    reminderIn(store, 2)
+    notifier.startNotifier()
+    await vi.advanceTimersByTimeAsync(500)
+    await settle()
+    expect(reminderItems()[0]).toMatchObject({ desktop: false })
+    expect(reminderItems()[0].push).toHaveLength(1)
+  })
+
+  it('a reminder more than a week away goes to the desktop only, until the window reaches it', async () => {
+    const { store, notifier } = await load()
+    store.setState({ ...emptyData(), pushTargets: [await phone()] })
+    reminderIn(store, 10)
+    notifier.startNotifier()
+    await vi.advanceTimersByTimeAsync(500)
+    await settle()
+    expect(reminderItems()[0]).toMatchObject({ desktop: true, push: [] })
+  })
+
+  it('long notes are clipped so the push stays within what Web Push and the helper accept', async () => {
+    const { store, notifier } = await load()
+    store.setState({ ...emptyData(), pushTargets: [await phone()] })
+    reminderIn(store, 1, 'م'.repeat(3900))
+    notifier.startNotifier()
+    await vi.advanceTimersByTimeAsync(500)
+    await settle()
+    const [item] = reminderItems()
+    expect(item.push).toHaveLength(1)
+    expect(item.push![0].body.length).toBeLessThanOrEqual(8000)
+    const msg = notifier.pushMessage('reminders', item)
+    expect(Array.from(msg.body)).toHaveLength(480)
+    expect(msg.body.endsWith('…')).toBe(true)
+    expect(msg.tag).toBe(`itqan-${item.key}`)
+  })
+
+  it('never more pushes per alert than the helper accepts', async () => {
+    const { store, notifier } = await load()
+    store.setState({ ...emptyData(), pushTargets: await Promise.all(Array.from({ length: 12 }, (_, i) => phone({}, `p${i}`))) })
+    reminderIn(store, 1)
+    notifier.startNotifier()
+    await vi.advanceTimersByTimeAsync(500)
+    await vi.waitFor(() => expect(puts.length).toBeGreaterThan(0), { timeout: 10000 })
+    expect(reminderItems()[0].push).toHaveLength(10)
+  }, 15000)
 })

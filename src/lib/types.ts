@@ -475,11 +475,15 @@ export interface NotifySettings {
   checkIns: boolean
 }
 
+/** The kinds of alert one device is pushed (ADR-033): the same kinds as its own NotifySettings. */
+export type PushKinds = Pick<NotifySettings, 'timer' | 'reminders' | 'checkIns'>
+
 /**
- * A device that asked to be pushed alerts from the laptop's helper (ADR-031) — today, the end of a
- * focus session or break started on the laptop. Created by that device when it subscribes; synced,
- * so the laptop learns of it; removing it is how the device stops them. Holds everything needed to
- * send it one Web Push: the subscription and the device's own VAPID key pair. Schema v11.
+ * A device that asked to be pushed alerts from the laptop's helper (ADR-031) — the end of a focus
+ * session or break started on the laptop, and reminders and check-ins (ADR-033). Created by that
+ * device when it subscribes; synced, so the laptop learns of it; removing it is how the device
+ * stops them. Holds everything needed to send it one Web Push: the subscription and the device's
+ * own VAPID key pair. Schema v11.
  */
 export interface PushTarget {
   id: ID
@@ -495,6 +499,11 @@ export interface PushTarget {
   vapidPrivate: JsonWebKey
   /** The contact the sender names in the VAPID token — the app's https address on that device. */
   subject: string
+  /**
+   * Which alerts this device wants pushed — its own notification choices, which are device-local,
+   * carried to the laptop here (ADR-033). Schema v12.
+   */
+  kinds: PushKinds
   createdAt: string
   updatedAt: string
 }

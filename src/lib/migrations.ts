@@ -6,7 +6,7 @@ import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 11
+export const SCHEMA_VERSION = 12
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -84,6 +84,15 @@ const steps: Record<number, Step> = {
       settings: { ...settings, notify: { ...DEFAULT_SETTINGS.notify, ...((settings.notify as object) ?? {}) } },
     }
   },
+  // 11 → 12 (2026-10-24): reminders and check-ins are pushed to the phone too (ADR-033). A device
+  // already registered asked for alerts from the laptop, so it gets every kind; the phone itself
+  // narrows that to its own choices the next time it opens (refreshPush). Nothing else changes.
+  11: (d) => ({
+    ...d,
+    pushTargets: ((d.pushTargets as Record<string, unknown>[] | undefined) ?? []).map((t) => ({
+      ...t, kinds: { timer: true, reminders: true, checkIns: true, ...((t.kinds as object | undefined) ?? {}) },
+    })),
+  }),
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {

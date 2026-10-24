@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Checks for the reminders helper's push sending (ADR-031): only known push services, only safe
-headers, a push sent once and never late, desktop alerts only when asked. Nothing touches the
+headers, a push sent once and never later than allowed, desktop alerts only when asked. Nothing touches the
 network — the opener is replaced. Run by `npm run ci:check`.
 """
 import base64
@@ -37,6 +37,10 @@ checks = {
   "item without push still valid": h.valid_item({"key": "k", "fireAt": 1, "title": "t", "body": "b"}),
   "item with bad push rejected": not h.valid_item({"key": "k", "fireAt": 1, "title": "t", "body": "b", "push": [{**ok, "endpoint": "https://evil.com"}]}),
   "item desktop non-bool rejected": not h.valid_item({"key": "k", "fireAt": 1, "title": "t", "body": "b", "desktop": "no"}),
+  "item pushLateMs within 12 h ok": h.valid_item({"key": "k", "fireAt": 1, "title": "t", "body": "b", "pushLateMs": 12 * 3600_000}),
+  "item pushLateMs over 12 h rejected": not h.valid_item({"key": "k", "fireAt": 1, "title": "t", "body": "b", "pushLateMs": 12 * 3600_000 + 1}),
+  "item pushLateMs non-int rejected": not h.valid_item({"key": "k", "fireAt": 1, "title": "t", "body": "b", "pushLateMs": "1"}),
+  "item pushLateMs zero rejected": not h.valid_item({"key": "k", "fireAt": 1, "title": "t", "body": "b", "pushLateMs": 0}),
 }
 # Sending: capture instead of network; desktop:false skips notify-send; late push is dropped.
 sent, notified = [], []
@@ -51,13 +55,14 @@ h.schedule = [
   {"key": "a", "fireAt": now - 1000, "title": "T", "body": "B", "desktop": False, "push": [ok]},
   {"key": "b", "fireAt": now - 20 * 60 * 1000, "title": "Late", "body": "B", "push": [ok]},
   {"key": "c", "fireAt": now - 1000, "title": "Desk", "body": "B"},
+  {"key": "d", "fireAt": now - 2 * 3600_000, "title": "Reminder", "body": "B", "desktop": False, "pushLateMs": 12 * 3600_000, "push": [ok]},
 ]
 h.fired = set()
 h.tick(); time.sleep(0.3)
-checks["one push sent (late one dropped)"] = len(sent) == 1
+checks["two pushes sent (late timer dropped, late reminder within its allowance kept)"] = len(sent) == 2
 checks["push is POST to endpoint with decoded body"] = sent and sent[0][0] == ok["endpoint"] and sent[0][1] == "POST" and sent[0][3] == b"x" * 100
 checks["desktop only for items not marked desktop:false"] = [n[0] for n in notified] == ["Late", "Desk"]
 h.tick(); time.sleep(0.3)
-checks["fires once"] = len(sent) == 1
+checks["fires once"] = len(sent) == 2
 for k, val in checks.items(): print("PASS" if val else "FAIL", k)
 sys.exit(0 if all(checks.values()) else 1)

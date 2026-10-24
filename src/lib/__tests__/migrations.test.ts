@@ -254,7 +254,7 @@ describe('v10 → v11 (notifications, ADR-031)', () => {
     const target = { id: 'p', label: 'iPhone', endpoint: 'https://web.push.apple.com/x' }
     const d = migrate({ settings: { notify: { timer: false } }, pushTargets: [target] }, 10)
     expect(d.settings.notify).toEqual({ on: true, timer: false, reminders: true, checkIns: true })
-    expect(d.pushTargets).toEqual([target])
+    expect(d.pushTargets).toEqual([{ ...target, kinds: { timer: true, reminders: true, checkIns: true } }])
   })
   it('a v10 backup restores with notifications on', () => {
     const b = { app: 'itqan', schemaVersion: 10, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [], settings: { theme: 'dark' } } }
@@ -262,5 +262,27 @@ describe('v10 → v11 (notifications, ADR-031)', () => {
     expect(d.settings.notify.on).toBe(true)
     expect(d.settings.theme).toBe('dark')
     expect(d.pushTargets).toEqual([])
+  })
+})
+
+describe('v11 → v12 (reminders and check-ins pushed, ADR-033)', () => {
+  it('a registered device gets every kind, and every other field of it comes through', () => {
+    const target = { id: 'p', label: 'iPhone', endpoint: 'https://web.push.apple.com/x', p256dh: 'k', auth: 'a', vapidPublic: 'v', vapidPrivate: { kty: 'EC' }, subject: 's', createdAt: 'c', updatedAt: 'u' }
+    const d = migrate({ pushTargets: [target], tasks: [{ id: 't' }], settings: { notify: { on: true, timer: true, reminders: false, checkIns: true } } }, 11)
+    expect(d.pushTargets).toEqual([{ ...target, kinds: { timer: true, reminders: true, checkIns: true } }])
+    expect(d.tasks).toEqual([{ id: 't' }])
+    expect(d.settings.notify.reminders).toBe(false)
+  })
+  it('choices already there are kept; no devices stays no devices', () => {
+    const d = migrate({ pushTargets: [{ id: 'p', kinds: { reminders: false } }] }, 11)
+    expect(d.pushTargets[0].kinds).toEqual({ timer: true, reminders: false, checkIns: true })
+    expect(migrate({}, 11).pushTargets).toEqual([])
+  })
+  it('a v11 backup restores with its devices registered for every kind', () => {
+    const b = { app: 'itqan', schemaVersion: 11, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [], pushTargets: [{ id: 'p', label: 'iPhone' }] } }
+    expect(parseBackup(JSON.stringify(b)).pushTargets).toEqual([{ id: 'p', label: 'iPhone', kinds: { timer: true, reminders: true, checkIns: true } }])
+  })
+  it('a v10 backup comes all the way up without inventing devices', () => {
+    expect(migrate({ settings: {} }, 10).pushTargets).toEqual([])
   })
 })

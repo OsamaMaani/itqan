@@ -40,9 +40,12 @@ FIRED_FILE = DATA / "fired.json"
 ICON = DATA / "icon.png"
 GRACE_MS = 12 * 60 * 60 * 1000  # same as GRACE_MS in src/lib/reminders.ts
 MAX_BODY = 4 * 1024 * 1024
-VERSION = 2
+VERSION = 3
 # A push sent this late is dropped: "your session ended" an hour later is noise (laptop asleep).
 PUSH_LATE_MS = 10 * 60 * 1000
+# An item may allow more (`pushLateMs`): a reminder or check-in is still worth hearing about
+# hours later. Never more than this — the app signs those pushes to expire then anyway.
+PUSH_LATE_MAX_MS = 12 * 60 * 60 * 1000
 # Web Push services of Safari/iOS, Chrome/Android, Firefox and Edge. Nothing else is ever contacted.
 PUSH_HOSTS = ("web.push.apple.com", "fcm.googleapis.com", "updates.push.services.mozilla.com")
 PUSH_HOST_SUFFIXES = (".notify.windows.com", ".push.apple.com")
@@ -113,6 +116,7 @@ def valid_item(i) -> bool:
         and isinstance(i.get("title"), str) and len(i["title"]) < 500
         and isinstance(i.get("body"), str) and len(i["body"]) < 4000
         and isinstance(i.get("desktop", True), bool)
+        and type(i.get("pushLateMs", PUSH_LATE_MS)) is int and 0 < i.get("pushLateMs", PUSH_LATE_MS) <= PUSH_LATE_MAX_MS
         and isinstance(i.get("push", []), list) and len(i.get("push", [])) <= 10
         and all(valid_push(p) for p in i.get("push", []))
     )
@@ -178,7 +182,7 @@ def tick() -> None:
         log("alert:", item["title"])
         if item.get("desktop", True):
             notify(item["title"], item["body"], bool(item.get("urgent")))
-        if item.get("push") and now - item["fireAt"] <= PUSH_LATE_MS:
+        if item.get("push") and now - item["fireAt"] <= item.get("pushLateMs", PUSH_LATE_MS):
             send_pushes(item["push"])
 
 

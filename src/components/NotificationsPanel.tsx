@@ -47,10 +47,8 @@ export function NotificationsPanel() {
       if (!on) return void (await disablePush())
       const r = await enablePush()
       if ('Notification' in window) setPerm(Notification.permission)
-      if (r === 'ok') {
-        if (!notify.on || !notify.timer) setNotify({ on: true, timer: true })
-        toast({ emoji: '📲', message: n.enabled })
-      } else toast({ emoji: '⚠️', message: r === 'denied' ? n.denied : n.failed }, 6000)
+      if (r === 'ok') toast({ emoji: '📲', message: n.enabled })
+      else toast({ emoji: '⚠️', message: r === 'denied' ? n.denied : n.failed }, 6000)
     } finally {
       setBusy(false)
     }

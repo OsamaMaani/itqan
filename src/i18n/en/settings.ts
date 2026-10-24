@@ -60,9 +60,9 @@ export const settings = {
     timer: 'Focus and break endings',
     reminders: 'Reminders',
     checkIns: 'Check-ins with people',
-    /** A switch on a phone: the laptop pushes its focus/break endings to this device. */
+    /** A switch on a phone: the laptop pushes reminders, check-ins and its focus/break endings to this device. */
     fromLaptop: 'Alerts from my laptop',
-    fromLaptopHint: 'When a focus session or break you started on the laptop ends, this device is told too. The laptop sends it, so it needs to be awake.',
+    fromLaptopHint: 'Your reminders, check-ins with people, and the end of focus sessions started on the laptop arrive here too — whichever are switched on above. The laptop sends them, so it needs to be awake; if it was asleep, a reminder still arrives when it wakes.',
     needsSync: 'This needs sync, so your laptop learns about this device — set it up below.',
     enabled: 'This device will get your laptop’s alerts',
     denied: 'Notifications are blocked for Itqan on this device',
