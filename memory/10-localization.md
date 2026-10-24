@@ -161,6 +161,7 @@ glossary term flags it.
 | Subtask | مهمة فرعية | sous-tâche | 子任务 | subtarea |
 | Habit | عادة | habitude | 习惯 | hábito |
 | Streak | سلسلة | série | 连续天数 | racha |
+| Streak saver (ADR-034) | درع السلسلة | bouclier de série | 连续保护盾 | protector de racha |
 | Goal | هدف | objectif | 目标 | objetivo |
 | Milestone | مرحلة | étape | 里程碑 | hito |
 | Project | مشروع | projet | 项目 | proyecto |

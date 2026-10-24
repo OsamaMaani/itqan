@@ -1,4 +1,4 @@
-import { addDaysKey, diffDays, toKey } from './date'
+import { addDaysKey, diffDays, rangeKeys, toKey } from './date'
 import { isMetOn, streak } from './habits'
 import { bestWeekRun, plannedPerWeek, recordCounts } from './training'
 import type { Data, DateKey } from './types'
@@ -133,12 +133,88 @@ export function levelInfo(xp: number): LevelInfo {
   return { level, into, needed, progress: into / needed, rank }
 }
 
-/** Consecutive days with any activity, ending today (an empty today does not break it). */
-export function activeStreak(events: XpEvent[], today: DateKey): number {
-  const days = new Set(events.map((e) => e.date))
+// --- the day streak and streak savers (ADR-034) -----------------------------------------
+
+/** One streak saver for every `xpPerSaver` XP earned; at most `maxHeld` held at once. */
+export const SAVERS = { xpPerSaver: 500, maxHeld: 2 } as const
+
+export interface DayStreak {
+  /** Active days in the current run. A day a saver covered keeps the run alive but adds nothing. */
+  current: number
+  best: number
+  /** Savers held now. */
+  held: number
+  /** Savers ever received (a threshold crossed while already full gives nothing). */
+  earned: number
+  used: number
+  /** XP earned toward the next saver, out of `SAVERS.xpPerSaver`. */
+  towardNext: number
+  /** Every day a saver covered, oldest first. */
+  saved: DateKey[]
+  /** Has anything been done today? Until then today is pending and never a miss. */
+  todayActive: boolean
+}
+
+/**
+ * The flame on Today: consecutive days with any activity, kept alive by streak savers — derived
+ * from history like everything else here, so nothing is stored and nothing can drift (ADR-005).
+ *
+ * Walking day by day from the first active day:
+ * - an active day adds one to the run, and its XP counts toward savers (they arrive at the end of
+ *   the day they were earned, so they protect the days after it);
+ * - a gap of missed days is covered only if every day of it can be: a gap of g days with g or more
+ *   savers held uses g of them and the run continues; a longer gap ends the run and **keeps** the
+ *   savers, instead of spending them on a streak that was lost anyway;
+ * - today is pending until something is done, and is never part of a gap.
+ * Backfilling a missed day therefore gives its saver back.
+ */
+export function dayStreak(events: XpEvent[], today: DateKey): DayStreak {
+  const xp = new Map<DateKey, number>()
+  for (const e of events) if (e.date <= today) xp.set(e.date, (xp.get(e.date) ?? 0) + e.xp)
+  const out: DayStreak = { current: 0, best: 0, held: 0, earned: 0, used: 0, towardNext: 0, saved: [], todayActive: xp.has(today) }
+  if (!xp.size) return out
+
+  let first = today
+  for (const k of xp.keys()) if (k < first) first = k
+  let total = 0
+  let granted = 0
+  let gap: DateKey[] = []
+  const closeGap = () => {
+    if (!gap.length) return
+    if (out.current > 0 && gap.length <= out.held) {
+      out.held -= gap.length
+      out.used += gap.length
+      out.saved.push(...gap)
+    } else {
+      out.current = 0
+    }
+    gap = []
+  }
+
+  for (const k of rangeKeys(first, today)) {
+    const x = xp.get(k)
+    if (x === undefined) {
+      if (k < today) gap.push(k)
+      continue
+    }
+    closeGap()
+    out.current++
+    out.best = Math.max(out.best, out.current)
+    total += Math.max(0, x)
+    for (const reached = Math.floor(total / SAVERS.xpPerSaver); granted < reached; granted++) {
+      if (out.held < SAVERS.maxHeld) { out.held++; out.earned++ }
+    }
+  }
+  closeGap()
+  out.towardNext = total % SAVERS.xpPerSaver
+  return out
+}
+
+/** How many days just before today a saver covered — the gap it bridged, if it ended yesterday. */
+export function savedJustBefore(s: DayStreak, today: DateKey): number {
   let n = 0
-  let k = days.has(today) ? today : addDaysKey(today, -1)
-  while (days.has(k)) { n++; k = addDaysKey(k, -1) }
+  const set = new Set(s.saved)
+  for (let k = addDaysKey(today, -1); set.has(k); k = addDaysKey(k, -1)) n++
   return n
 }
 
@@ -168,7 +244,8 @@ export function badges(d: Data, today: DateKey): Badge[] {
   const reviews = Object.keys(d.reviews).length
   const early = d.tasks.some((t) => t.doneAt && new Date(t.doneAt).getHours() < 7)
   const owl = d.focusSessions.some((f) => new Date(f.startedAt).getHours() >= 22)
-  const active = activeStreak(ev, today)
+  // The best run, not the current one: a badge once earned is never taken back.
+  const active = dayStreak(ev, today).best
   const longFocus = d.focusSessions.some((f) => f.minutes >= 90)
   const firstDay = ev.reduce<DateKey | null>((m, e) => (m === null || e.date < m ? e.date : m), null)
   const daysUsed = firstDay ? diffDays(today, firstDay) + 1 : 0

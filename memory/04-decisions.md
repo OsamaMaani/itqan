@@ -762,3 +762,37 @@ reminders calendar (ADR-017) gets a reminder twice (turn one off; each has its o
 filtering on the phone in the service worker (it would still receive and must show every push —
 `userVisibleOnly`); syncing `Settings.notify` itself (ADR-031's reason: the laptop and phone want
 different things — only what the phone wants *pushed* needs to travel).
+
+## ADR-034 | 2026-10-24 | accepted | Streak savers keep the day streak alive, derived from XP
+
+**Context:** The owner asked for Duolingo's streak freeze: something earned through XP that saves
+the streak on a missed day.
+**Decision:**
+- **Which streak:** the day streak — the flame on Today, consecutive days with any activity
+  (formerly `activeStreak()`, now `dayStreak()` in `lib/gamification.ts`). It is the one streak
+  that is Itqan-wide, like Duolingo's. Per-habit streaks (ADR-006) are unchanged.
+- **Earning:** one saver for every 500 XP earned (`SAVERS.xpPerSaver`); at most 2 held at once
+  (`SAVERS.maxHeld`, as Duolingo). XP earned while full earns nothing. Savers earned on a day
+  arrive at its end, so they protect the days after it.
+- **Using:** automatic. A gap of g missed days while a streak runs is covered only if all of it
+  can be: g ≤ savers held uses g of them and the run continues; a longer gap ends the run and
+  **keeps** the savers rather than spending them on a streak that was lost anyway. A covered day
+  keeps the run alive but does not add to its count. Today is pending until something is done
+  and is never part of a gap (ADR-006's rule, carried over).
+- **Derived, never stored** (ADR-005): `dayStreak(events, today)` replays the XP history day by day
+  and returns the run, the best run, savers held / earned / used, XP toward the next one and the
+  covered days. No schema change, no migration, nothing synced — both devices compute the same
+  answer from the same history. Backfilling a missed day therefore gives its saver back, and
+  undoing a task can take a saver away, exactly as with XP.
+- **Shown:** the Today button (flame + days, shield + savers held) opens a dialog — streak, best,
+  today's status, the savers with progress to the next, the last four weeks (active / covered /
+  missed), and how savers work. A line on Today appears only while nothing is done yet today:
+  when savers covered the days just before today, or in the evening when no savers are left.
+  A toast and a short chime when a saver is earned (not on load). Insights lists savers held.
+- The `active-14` badge now reads the **best** run, so it is never taken back when a run ends.
+- Colour `--ice` (sky) for savers, beside `--gold` for flames.
+**Rejected:** a stored saver count incremented and spent by actions (drifts on undo, delete,
+restore and sync — the reason ADR-005 exists); spending savers on a gap longer than those held
+(Duolingo does, but it spends them for nothing); savers for each habit (one pool across many
+habits drains on one bad day and is order-dependent; a per-habit variant is possible later if
+the owner wants it); savers by level-up (they would slow down as levels grow).

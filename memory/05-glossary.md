@@ -14,7 +14,8 @@ The vocabulary is fixed. Use these words in code, UI and memory alike.
 | **Target** | Amount per day that counts as done (1 = simple check-off; 20 min; 10 pages). | `Habit.target` |
 | **Met / missed / pending** | State of a scheduled period. Pending = today or this week, not met yet. | `PeriodState` |
 | **Streak** | Consecutive met periods, ignoring pending (ADR-006). | `streak()` |
-| **Active streak** | Consecutive days with *any* activity. Shown as the flame on Today. | `activeStreak()` |
+| **Day streak** | Consecutive days with *any* activity, kept alive by streak savers. The flame on Today. | `dayStreak()` |
+| **Streak saver** | Earned every 500 XP (hold 2); covers a missed day of the day streak automatically (ADR-034). | `SAVERS`, `DayStreak.held` |
 | **Goal** | A long-term objective. *Objective* in conversation = Goal in code. | `Goal` |
 | **Numeric goal** | Progress toward a number (pages, juz, modules). | `kind: 'numeric'` |
 | **Milestone goal** | Progress through a checklist of milestones. | `kind: 'milestones'` |

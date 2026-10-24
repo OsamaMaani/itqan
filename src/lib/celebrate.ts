@@ -53,6 +53,10 @@ export const celebrate = {
     if (reduced()) return
     confetti({ particleCount: 200, spread: 120, startVelocity: 45, origin: { y: 0.6 } })
   },
+  /** A streak saver earned: a short, cool chime. */
+  saver() {
+    tone(988, 0, 0.18, 0.05); tone(1480, 0.09, 0.3, 0.04)
+  },
   timerDone() {
     tone(784, 0, 0.3, 0.1); tone(988, 0.35, 0.3, 0.1); tone(1175, 0.7, 0.5, 0.1)
   },

@@ -8,6 +8,7 @@ import { Toaster } from './components/Toaster'
 import { tx } from './i18n/core'
 import { useDocumentLanguage } from './i18n/react'
 import { celebrate } from './lib/celebrate'
+import { SAVERS } from './lib/gamification'
 import { useMediaQuery, useProgress } from './lib/hooks'
 import { navigate, ROUTES, useRoute, useRouteParam, type Route } from './lib/router'
 import { startNotifier } from './lib/notifier'
@@ -103,10 +104,19 @@ function useKeyboard({ openPalette, openNewTask }: { openPalette: () => void; op
   }, [openPalette, openNewTask])
 }
 
-/** Celebrate when the derived level goes up — never on first load. */
+/** Celebrate when the derived level goes up, or a streak saver is earned — never on first load. */
 function useLevelUp() {
-  const { level } = useProgress()
+  const { level, day } = useProgress()
   const prev = useRef<number | null>(null)
+  const prevSavers = useRef<number | null>(null)
+  useEffect(() => {
+    if (prevSavers.current !== null && day.earned > prevSavers.current) {
+      celebrate.saver()
+      const t = tx()
+      toast({ emoji: '🛡️', message: t.f(t.m.streak.earned, { held: day.held, max: SAVERS.maxHeld }) }, 6000)
+    }
+    prevSavers.current = day.earned
+  }, [day.earned, day.held])
   useEffect(() => {
     if (prev.current !== null && level.level > prev.current) {
       celebrate.levelUp()

@@ -1,0 +1,30 @@
+import type { Messages } from '../core'
+
+export const streak: Messages['streak'] = {
+  title: 'Tu racha',
+  inARow: { one: 'día seguido', other: 'días seguidos' },
+  best: { one: 'Mejor: {n} día', other: 'Mejor: {n} días' },
+  todayDone: 'Hoy cuenta. ¡Bien hecho!',
+  todayStart: 'Haz una cosa hoy para empezar una racha.',
+  todaySafe: 'Haz una cosa hoy para alargarla. Si hoy se te escapa, un protector la mantiene viva.',
+  todayBare: 'Haz una cosa hoy para mantenerla. No te quedan protectores.',
+  savers: 'Protectores de racha',
+  held: '{held} de {max}',
+  saverCount: { one: '{n} protector de racha', other: '{n} protectores de racha' },
+  toNext: 'Te faltan {xp} XP para tu próximo protector',
+  full: 'Completo. Usa uno y el siguiente empieza a llenarse.',
+  used: { one: 'Los protectores han cubierto {n} día hasta ahora.', other: 'Los protectores han cubierto {n} días hasta ahora.' },
+  lastWeeks: 'Últimas cuatro semanas',
+  legend: { active: 'Activo', saved: 'Protegido', missed: 'Perdido' },
+  howTitle: 'Cómo funcionan los protectores',
+  howEarn: 'Cada {xp} XP que ganas te dan un protector de racha. Puedes tener {max} a la vez.',
+  howUse: 'Si te saltas un día, un protector lo cubre solo. La racha sigue; el día cubierto simplemente no suma.',
+  howKeep: 'Si te saltas más días seguidos que protectores tienes, la racha vuelve a empezar, pero conservas tus protectores.',
+  howBackfill: 'Si registras más tarde un día perdido, su protector vuelve a ti.',
+  savedBanner: {
+    one: 'Un protector cubrió el día de ayer. Tu racha está a salvo; haz una cosa hoy para seguir.',
+    other: '{n} protectores cubrieron los días perdidos. Tu racha está a salvo; haz una cosa hoy para seguir.',
+  },
+  atRisk: 'No te quedan protectores: haz una cosa hoy para mantener tu racha.',
+  earned: '¡Protector de racha ganado! Tienes {held} de {max}.',
+}

@@ -1,0 +1,30 @@
+import type { Messages } from '../core'
+
+export const streak: Messages['streak'] = {
+  title: 'Ta série',
+  inARow: { one: 'jour d’affilée', other: 'jours d’affilée' },
+  best: { one: 'Record : {n} jour', other: 'Record : {n} jours' },
+  todayDone: 'Aujourd’hui compte. Bravo.',
+  todayStart: 'Fais une chose aujourd’hui pour lancer une série.',
+  todaySafe: 'Fais une chose aujourd’hui pour l’allonger. Si la journée t’échappe, un bouclier la protège.',
+  todayBare: 'Fais une chose aujourd’hui pour la garder. Il ne te reste aucun bouclier.',
+  savers: 'Boucliers de série',
+  held: '{held} sur {max}',
+  saverCount: { one: '{n} bouclier de série', other: '{n} boucliers de série' },
+  toNext: 'Encore {xp} XP avant ton prochain bouclier',
+  full: 'Complet. Utilises-en un et le suivant commence à se remplir.',
+  used: { one: 'Les boucliers ont couvert {n} jour jusqu’ici.', other: 'Les boucliers ont couvert {n} jours jusqu’ici.' },
+  lastWeeks: 'Les quatre dernières semaines',
+  legend: { active: 'Actif', saved: 'Protégé', missed: 'Manqué' },
+  howTitle: 'Comment fonctionnent les boucliers',
+  howEarn: 'Chaque tranche de {xp} XP gagnés te donne un bouclier de série. Tu peux en garder {max} à la fois.',
+  howUse: 'Si tu manques un jour, un bouclier le couvre tout seul. La série continue ; un jour couvert ne l’allonge simplement pas.',
+  howKeep: 'Si tu manques plus de jours d’affilée que tu n’as de boucliers, la série repart de zéro, mais tes boucliers sont conservés.',
+  howBackfill: 'Enregistre plus tard un jour manqué et son bouclier te revient.',
+  savedBanner: {
+    one: 'Un bouclier a couvert la journée d’hier. Ta série est sauve ; fais une chose aujourd’hui pour la poursuivre.',
+    other: '{n} boucliers ont couvert les jours manqués. Ta série est sauve ; fais une chose aujourd’hui pour la poursuivre.',
+  },
+  atRisk: 'Plus aucun bouclier : fais une chose aujourd’hui pour garder ta série.',
+  earned: 'Bouclier de série gagné. Tu en as {held} sur {max}.',
+}

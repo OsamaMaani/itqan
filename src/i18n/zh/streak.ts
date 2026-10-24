@@ -1,0 +1,27 @@
+import type { Messages } from '../core'
+
+export const streak: Messages['streak'] = {
+  title: '你的连续天数',
+  inARow: { other: '天连续活跃' },
+  best: { other: '最长：{n} 天' },
+  todayDone: '今天已计入，做得好。',
+  todayStart: '今天做一件事，就能开始连续。',
+  todaySafe: '今天做一件事，让它再长一天。若今天错过，保护盾会替你守住。',
+  todayBare: '今天做一件事才能保住它，你已没有保护盾了。',
+  savers: '连续保护盾',
+  held: '{held}/{max}',
+  saverCount: { other: '{n} 个连续保护盾' },
+  toNext: '再获得 {xp} XP 就有下一个保护盾',
+  full: '已满。用掉一个后，下一个才开始累积。',
+  used: { other: '保护盾至今已守住 {n} 天。' },
+  lastWeeks: '最近四周',
+  legend: { active: '活跃', saved: '已保护', missed: '错过' },
+  howTitle: '保护盾怎么用',
+  howEarn: '每获得 {xp} XP，就得到一个连续保护盾，最多同时持有 {max} 个。',
+  howUse: '错过一天时，保护盾会自动守住它。连续不会中断，只是那一天不计入天数。',
+  howKeep: '连续错过的天数多于保护盾时，连续会重新开始，但保护盾会保留。',
+  howBackfill: '之后补记错过的那天，它用掉的保护盾会还给你。',
+  savedBanner: { other: '{n} 个保护盾守住了你错过的日子。连续天数安全了，今天做一件事让它继续。' },
+  atRisk: '保护盾已用完：今天做一件事，保住你的连续天数。',
+  earned: '获得一个连续保护盾，现在有 {held}/{max} 个。',
+}

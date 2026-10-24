@@ -38,6 +38,7 @@
   --accent-soft: rgb(5 150 105 / 0.1);
   --accent-fg: #ffffff;
   --gold: #d97706;
+  --ice: #0284c7;
   --danger: #e11d48;
   --glow: rgb(16 185 129 / 0.12);
   color-scheme: light;
@@ -54,6 +55,7 @@
   --accent-soft: rgb(52 211 153 / 0.12);
   --accent-fg: #052e22;
   --gold: #fbbf24;
+  --ice: #7dd3fc;
   --danger: #fb7185;
   --glow: rgb(52 211 153 / 0.08);
   color-scheme: dark;
@@ -71,6 +73,7 @@
   --color-accent-soft: var(--accent-soft);
   --color-accent-fg: var(--accent-fg);
   --color-gold: var(--gold);
+  --color-ice: var(--ice);
   --color-danger: var(--danger);
   --font-sans: 'Plus Jakarta Sans Variable', 'Vazirmatn Variable', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC', ui-sans-serif, system-ui, sans-serif;
   --font-quran: 'Amiri Quran', 'Amiri', 'Noto Naskh Arabic', 'Geeza Pro', serif;

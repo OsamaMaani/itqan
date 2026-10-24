@@ -29,6 +29,7 @@ import { review } from './review'
 import { seed } from './seed'
 import { settings } from './settings'
 import { store } from './store'
+import { streak } from './streak'
 import { sync } from './sync'
 import { tasks } from './tasks'
 import { time } from './time'
@@ -39,5 +40,5 @@ import { workout } from './workout'
 export const messages: Messages = {
   common, nav, time, app, levels, badges, today, palette, quickAdd, tasks, plan, focus, habits, goals, insights, review,
   projects, ideas, memories, achievements, reminders, connections, settings, sync, onboarding, daily, seed, store, errors,
-  gym, training, workout,
+  gym, training, workout, streak,
 }

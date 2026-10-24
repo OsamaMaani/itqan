@@ -1,4 +1,4 @@
-import { Activity, Award, BarChart3, CheckCircle2, Clock, Flame, Lock, Play, Target, Timer, Trophy, Zap } from 'lucide-react'
+import { Activity, Award, BarChart3, CheckCircle2, Clock, Flame, Lock, Play, Shield, Target, Timer, Trophy, Zap } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { ColumnChart, Delta, MINUTE_STEPS, ShareBar, Sparkline } from '../components/charts'
 import { Heatmap } from '../components/Heatmap'
@@ -28,7 +28,7 @@ export function InsightsPage() {
   const d = useData()
   const today = useToday()
   const wso = d.settings.weekStartsOn
-  const { events, total, level, todayXp, streak: active } = useProgress()
+  const { events, total, level, todayXp, streak: active, day } = useProgress()
   const [range, setRange] = useState<Range>(30)
   const [heat, setHeat] = useState<'xp' | 'focus'>('xp')
 
@@ -105,6 +105,7 @@ export function InsightsPage() {
             <div className="mb-4 mt-1.5 text-xs text-muted tabular">{t.f(mi.levelProgress, { into: level.into, needed: level.needed, total })}</div>
             <div className="mt-auto space-y-1.5 border-t border-border pt-3 text-xs font-semibold">
               <div className="flex items-center gap-2"><Flame size={14} className="text-gold" />{t.p(mi.activeStreak, active)}</div>
+              <div className="flex items-center gap-2"><Shield size={14} className="text-ice" />{t.p(m.streak.saverCount, day.held)}</div>
               <div className="flex items-center gap-2"><Trophy size={14} className="text-gold" />{t.p(mi.bestHabitStreak, bestStreak)}</div>
               <div className="flex items-center gap-2"><Zap size={14} className="text-accent" />{t.f(mi.xpToday, { xp: todayXp })}</div>
               <div className="flex items-center gap-2"><Award size={14} className="text-accent" />{t.f(mi.badges, { unlocked, total: badges.length })}</div>

@@ -50,8 +50,8 @@ that renames an entity key must also carry its `meta` stamp across.
 
 ## Why some things are *not* stored
 
-XP, levels, achievements, streaks, completion rates and goal progress are derived (ADR-005,
-ADR-006). Storing them would let them drift from the history they summarise.
+XP, levels, achievements, streaks, streak savers, completion rates and goal progress are derived
+(ADR-005, ADR-006, ADR-034). Storing them would let them drift from the history they summarise.
 
 ## Changing a persisted shape — the procedure
 

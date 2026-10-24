@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { todayKey } from './date'
-import { activeStreak, levelInfo, totalXp, xpEvents, xpOn } from './gamification'
+import { dayStreak, levelInfo, totalXp, xpEvents, xpOn } from './gamification'
 import type { GoalSources } from './goals'
 import { useStore } from './store'
 import type { Area, Data } from './types'
@@ -53,9 +53,10 @@ export function useProgress() {
   return useMemo(() => {
     const events = xpEvents(d)
     const total = totalXp(events)
-    return { events, total, level: levelInfo(total), todayXp: xpOn(events, today), streak: activeStreak(events, today) }
+    const day = dayStreak(events, today)
+    return { events, total, level: levelInfo(total), todayXp: xpOn(events, today), streak: day.current, day }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [d.tasks, d.habits, d.habitLogs, d.focusSessions, d.goals, d.goalLogs, d.reviews, d.dayNotes, d.memories, d.ideas, d.interactions, d.contacts, d.achievements, d.projects, today])
+  }, [d.tasks, d.habits, d.habitLogs, d.focusSessions, d.goals, d.goalLogs, d.reviews, d.dayNotes, d.memories, d.ideas, d.interactions, d.contacts, d.achievements, d.projects, d.workouts, d.workoutSets, today])
 }
 
 export function useAreaMap(): Map<string, Area> {

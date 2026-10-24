@@ -1,9 +1,10 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { ChevronDown, Flame, Plus, Sparkles, Target, Timer, Zap } from 'lucide-react'
+import { ChevronDown, Plus, Sparkles, Target, Timer, Zap } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { GoalLogButton } from '../components/GoalCard'
 import { TrainingToday } from '../components/training/TodayCard'
 import { HabitTile } from '../components/HabitTile'
+import { StreakBanner, StreakButton, StreakDialog } from '../components/Streak'
 import { QuickAdd } from '../components/QuickAdd'
 import { TaskItem } from '../components/TaskItem'
 import { Button, Card, cx, EmptyState, ProgressBar, ProgressRing, SectionTitle } from '../components/ui'
@@ -44,7 +45,8 @@ export function TodayPage() {
   const { m } = t
   const today = useToday()
   const d = useData()
-  const { level, todayXp, streak } = useProgress()
+  const { level, todayXp } = useProgress()
+  const [streakOpen, setStreakOpen] = useState(false)
   const setDayNote = useStore((s) => s.setDayNote)
   const moveTask = useStore((s) => s.moveTask)
   const areas = useAreaMap()
@@ -102,10 +104,13 @@ export function TodayPage() {
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <Pill icon={<Flame size={15} fill="currentColor" />} className="text-gold" label={t.p(m.today.streakDays, streak)} title={m.today.streakTitle} />
+          <StreakButton onClick={() => setStreakOpen(true)} />
           <Pill icon={<Zap size={15} fill="currentColor" />} className="text-accent" label={t.f(m.today.xpToday, { n: todayXp })} title={m.today.xpTitle} />
         </div>
       </div>
+
+      <StreakBanner onOpen={() => setStreakOpen(true)} />
+      <StreakDialog open={streakOpen} onClose={() => setStreakOpen(false)} />
 
       {/* Hero row */}
       <div className="grid gap-4 lg:grid-cols-[1.1fr_1.4fr]">

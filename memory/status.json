@@ -4,6 +4,7 @@
   "updated": "2026-10-24",
   "current_stage": 4,
   "next_actions": [
+    "New: streak savers. Every 500 XP earns one (you can hold 2); a missed day uses one by itself and your streak on Today survives. Tap the flame on Today to see your savers, the last four weeks and how it works. Your existing history counts, so you may already hold some.",
     "Reminders and check-ins with people now reach the iPhone as notifications, even with Itqan closed there (the laptop sends them, so it needs to be awake). Open Itqan on the iPhone from the Home Screen once so it updates (data format v12); sync resumes after that.",
     "If 'Alerts from my laptop' isn't on yet on the iPhone: Settings → Notifications → turn it on and allow once. The switches above it (focus endings, reminders, check-ins) choose what the phone gets.",
     "Insights has a new Focus section and compares every number with the previous period — pick 7, 14, 30 or 90 days at the top. Tap a bar on the phone to see its value.",
@@ -405,6 +406,13 @@
           "module": "reminders",
           "status": "done",
           "critical": true
+        },
+        {
+          "id": "S2-40",
+          "title": "Streak savers: every 500 XP earns one (hold 2); a missed day uses one automatically and the day streak survives — derived from history, no schema change (ADR-034)",
+          "module": "gamification",
+          "status": "done",
+          "critical": true
         }
       ]
     },
@@ -633,6 +641,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-24",
+      "entry": "S2-40, asked for by the owner: streak savers, like Duolingo's streak freeze (ADR-034). Every 500 XP earns one, at most 2 held; a missed day is covered automatically and the day streak on Today lives on (a covered day doesn't add to the count). A gap longer than the savers held ends the streak but keeps the savers. Everything is derived from the XP history by dayStreak() in lib/gamification.ts (replaces activeStreak; 17 tests: earning, the cap, gaps, today pending, backfilling returning a saver, order independence) — no schema change, nothing synced. The flame on Today now shows savers and opens a dialog (streak, best, savers with progress, last four weeks, how it works); a line on Today when savers just covered the days before, or in the evening with none left; a toast when one is earned; savers held in Insights. The active-14 badge now reads the best run, so it is never taken back. Also: useProgress now recomputes when workouts change (training XP was missed until something else changed). Five languages; checked in the browser at desktop and 375 px, light and dark, English and Arabic (RTL)."
+    },
     {
       "date": "2026-10-24",
       "entry": "S2-39, asked for by the owner: notifications for check-ins and reminders. On the laptop they already arrived (helper, even with the app closed); on the iPhone only while Itqan was open, because pushes carried timer ends only. Now the laptop pushes reminders and check-ins to every registered phone that wants that kind (ADR-033). PushTarget gains `kinds`, mirroring the phone's own switches (schema v12, migration tested; existing registrations get every kind until the phone narrows them). Pushes are built for the coming 7 days; a reminder or check-in may still go out up to 12 hours late (helper v3, `pushLateMs`, capped and tested); pushed text is clipped and at most 10 devices per alert, so one long note can never make the helper refuse the whole schedule. A push and the phone's own in-app alert share a tag, so they never stack."

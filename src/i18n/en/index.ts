@@ -29,6 +29,7 @@ import { nav } from './nav'
 import { reminders } from './reminders'
 import { seed } from './seed'
 import { store } from './store'
+import { streak } from './streak'
 import { time } from './time'
 import { today } from './today'
 import { training } from './training'
@@ -37,5 +38,5 @@ import { workout } from './workout'
 export const en = {
   common, nav, time, app, levels, badges, today, palette, quickAdd, tasks, plan, focus, habits, goals, insights, review,
   projects, ideas, memories, achievements, reminders, connections, settings, sync, onboarding, daily, seed, store, errors,
-  gym, training, workout,
+  gym, training, workout, streak,
 }
