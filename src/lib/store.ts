@@ -426,7 +426,7 @@ export const useStore = create<Store>()(
         const t = now()
         set((s) => ({
           notes: [...s.notes, {
-            title: '', body: '', items: [], color: null, labels: [], pinned: false, archived: false,
+            title: '', body: '', items: [], color: null, labels: [], pinned: false, onToday: false, archived: false,
             areaId: null, projectId: null, goalId: null, ...n, id, taskIds: [], createdAt: t, updatedAt: t,
           }],
         }))

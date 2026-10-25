@@ -303,7 +303,7 @@ describe('v12 → v13 (notes, ADR-035)', () => {
     expect(d.settings).toMatchObject({ name: 'Sam', language: 'ar' })
   })
   it('never overwrites notes already there', () => {
-    const notes = [{ id: 'n', title: 'Gate code', body: '4512', items: [] }]
+    const notes = [{ id: 'n', title: 'Gate code', body: '4512', items: [], onToday: true }]
     expect(migrate({ notes }, 12).notes).toEqual(notes)
     expect(migrate({ notes }, SCHEMA_VERSION).notes).toEqual(notes)
   })
@@ -314,11 +314,28 @@ describe('v12 → v13 (notes, ADR-035)', () => {
     expect(d.tasks).toEqual([{ id: 't' }])
     expect(migrate({ tasks: [] }, 1).notes).toEqual([])
   })
-  it('a backup with notes round-trips exactly', () => {
+  it('a backup with notes round-trips exactly (current shape)', () => {
     const data = { ...emptyData(), notes: [{
       id: 'n', title: 'Shopping', body: '', items: [{ id: 'a', text: 'Milk', done: true, taskId: null }], color: 'amber' as const,
-      labels: ['home'], pinned: true, archived: false, areaId: null, projectId: null, goalId: null, taskIds: [], createdAt: 'c', updatedAt: 'u',
+      labels: ['home'], pinned: true, onToday: true, archived: false, areaId: null, projectId: null, goalId: null, taskIds: [], createdAt: 'c', updatedAt: 'u',
     }] }
     expect(parseBackup(JSON.stringify(toBackup(data)))).toEqual(data)
+  })
+})
+
+describe('v13 → v14 (notes on Today, ADR-036)', () => {
+  it('existing notes are not on Today, pinned ones stay pinned, and every other field comes through', () => {
+    const n = { id: 'n', title: 'Gate code', body: '4512', items: [{ id: 'a', text: 'x', done: true, taskId: 't' }], color: 'sky', labels: ['home'], pinned: true, archived: false, areaId: 'ar', projectId: null, goalId: 'g', taskIds: ['t2'], createdAt: 'c', updatedAt: 'u' }
+    const d = migrate({ notes: [structuredClone(n)], tasks: [{ id: 't' }] }, 13)
+    expect(d.notes).toEqual([{ ...n, onToday: false }])
+    expect(d.tasks).toEqual([{ id: 't' }])
+  })
+  it('no notes stays no notes; a note already on Today stays there', () => {
+    expect(migrate({}, 13).notes).toEqual([])
+    expect(migrate({ notes: [{ id: 'n', onToday: true }] }, 13).notes).toEqual([{ id: 'n', onToday: true }])
+  })
+  it('a v13 backup restores with its notes off Today', () => {
+    const b = { app: 'itqan', schemaVersion: 13, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [], notes: [{ id: 'n', title: 'T', pinned: true }] } }
+    expect(parseBackup(JSON.stringify(b)).notes).toEqual([{ id: 'n', title: 'T', pinned: true, onToday: false }])
   })
 })

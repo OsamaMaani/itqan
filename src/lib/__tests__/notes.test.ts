@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { checklistProgress, itemDone, itemsToText, noteLabels, parseLabels, textToItems, visibleNotes } from '../notes'
+import { checklistProgress, itemDone, itemsToText, noteLabels, parseLabels, textToItems, todayNotes, visibleNotes } from '../notes'
 import { useStore } from '../store'
 import { fromEntities, toEntities } from '../sync/entities'
 import { emptyData } from '../seed'
 import type { Note, Task } from '../types'
 
 const note = (n: Partial<Note> & { id: string }): Note => ({
-  title: '', body: '', items: [], color: null, labels: [], pinned: false, archived: false,
+  title: '', body: '', items: [], color: null, labels: [], pinned: false, onToday: false, archived: false,
   areaId: null, projectId: null, goalId: null, taskIds: [], createdAt: '2026-10-01T10:00:00Z', updatedAt: '2026-10-01T10:00:00Z', ...n,
 })
 
@@ -36,6 +36,24 @@ describe('which notes show, and in what order', () => {
   it('a label filter matches whatever the spelling case', () => {
     const ns = [note({ id: 'a', labels: ['Work'] }), note({ id: 'b', labels: ['work', 'books'] }), note({ id: 'c' })]
     expect(visibleNotes(ns, { label: 'WORK' }).map((n) => n.id).sort()).toEqual(['a', 'b'])
+  })
+})
+
+describe('notes on Today', () => {
+  it('only those pinned to Today and not archived, oldest first whatever changed last', () => {
+    const ns = [
+      note({ id: 'late', onToday: true, createdAt: '2026-10-20T10:00:00Z', updatedAt: '2026-10-20T10:00:00Z' }),
+      note({ id: 'early', onToday: true, createdAt: '2026-10-01T10:00:00Z', updatedAt: '2026-10-25T10:00:00Z' }),
+      note({ id: 'top-only', pinned: true }),
+      note({ id: 'archived', onToday: true, archived: true }),
+    ]
+    expect(todayNotes(ns).map((n) => n.id)).toEqual(['early', 'late'])
+  })
+  it('a new note is not on Today unless asked', () => {
+    const id = useStore.getState().addNote({ title: 'Plain' })
+    expect(useStore.getState().notes.find((n) => n.id === id)!.onToday).toBe(false)
+    const on = useStore.getState().addNote({ title: 'Home', onToday: true })
+    expect(todayNotes(useStore.getState().notes).some((n) => n.id === on)).toBe(true)
   })
 })
 

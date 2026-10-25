@@ -219,7 +219,10 @@ export interface Note {
   color: AreaColor | null
   /** Free labels, stored without "#" */
   labels: string[]
+  /** Kept at the top of the Notes screen */
   pinned: boolean
+  /** Shown on Today, the home screen (schema v14). Separate from `pinned`: many notes may sit at the top of Notes, a few on Today. */
+  onToday: boolean
   archived: boolean
   areaId: ID | null
   projectId: ID | null

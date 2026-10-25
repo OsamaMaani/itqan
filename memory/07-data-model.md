@@ -22,7 +22,7 @@ Zustand as `{ state: Data, version: SCHEMA_VERSION }`.
 | `reviews` | `{ [weekStart]: WeeklyReview }` | Keyed by the week's first DateKey |
 | `memories` | `Memory[]` | `date` = when it happened; text, emoji, tags, favourite (ADR-014) |
 | `ideas` | `Idea[]` | `status` new → exploring → doing → done / dropped; `taskIds`, `goalId` (ADR-015) |
-| `notes` | `Note[]` | Keep-style: `title`, `body`, checklist `items` (text, done, `taskId`), `color` (area palette or null), `labels`, `pinned`, `archived`, optional area / project / goal, `taskIds` (v13, ADR-035). A line made into a task counts as done once the task is — derived, never written back |
+| `notes` | `Note[]` | Keep-style: `title`, `body`, checklist `items` (text, done, `taskId`), `color` (area palette or null), `labels`, `pinned` (top of Notes), `onToday` (shown on Today, v14, ADR-036), `archived`, optional area / project / goal, `taskIds` (v13, ADR-035). A line made into a task counts as done once the task is — derived, never written back |
 | `projects` | `Project[]` | Status, dates, area, goal, notes, links; tasks join via `Task.projectId` (ADR-019) |
 | `projectUpdates` | `ProjectUpdate[]` | Status posts on a project, optionally with a manual progress (ADR-020) |
 | `achievements` | `Achievement[]` | Real wins: category, impact, links, optional goal/project, `source` (ADR-022) |
@@ -64,8 +64,8 @@ XP, levels, achievements, streaks, streak savers, completion rates and goal prog
 4. `normalize()` must still produce a complete `Data` from partial input.
 5. Backups from the old version must import (they pass through the same `migrate`).
 
-Current version: **13**. History: 1 = initial; 2 = `memories`, `ideas`, `reminders`; 3 = `projects`,
+Current version: **14**. History: 1 = initial; 2 = `memories`, `ideas`, `reminders`; 3 = `projects`,
 `contacts`, `interactions`, `Task.projectId`, `Reminder.contactId`, `Reminder.countYears`; 4 = `Task.stage`,
 `Task.blocked`, `Project.progressMode/manualProgress/view/pinned`, `projectUpdates`; 5 = `achievements`
 (all 2026-10-16); 6 = `Settings.daily` (2026-10-17); 7 = `Settings.language` (2026-10-17); 8 = Training — `exercises`,
-`routines`, `program`, `workouts`, `workoutSets`, `Goal.link`, `Settings.weightUnit` (2026-10-20, ADR-027); 9 = program mode `flexible`, no data change (2026-10-21, ADR-028); 10 = `FocusSession.habitId/habitAmount`, `ActiveTimer.habitId` (2026-10-21, ADR-029); 11 = `pushTargets`, `Settings.notify` (2026-10-23, ADR-031); 12 = `PushTarget.kinds` (2026-10-24, ADR-033); 13 = `notes` (2026-10-26, ADR-035).
+`routines`, `program`, `workouts`, `workoutSets`, `Goal.link`, `Settings.weightUnit` (2026-10-20, ADR-027); 9 = program mode `flexible`, no data change (2026-10-21, ADR-028); 10 = `FocusSession.habitId/habitAmount`, `ActiveTimer.habitId` (2026-10-21, ADR-029); 11 = `pushTargets`, `Settings.notify` (2026-10-23, ADR-031); 12 = `PushTarget.kinds` (2026-10-24, ADR-033); 13 = `notes` (2026-10-26, ADR-035); 14 = `Note.onToday` (2026-10-26, ADR-036).

@@ -4,6 +4,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { GoalLogButton } from '../components/GoalCard'
 import { TrainingToday } from '../components/training/TodayCard'
 import { HabitTile } from '../components/HabitTile'
+import { NoteCard } from '../components/NoteEditor'
 import { StreakBanner, StreakButton, StreakDialog } from '../components/Streak'
 import { QuickAdd } from '../components/QuickAdd'
 import { TaskItem } from '../components/TaskItem'
@@ -25,6 +26,7 @@ import { whenText } from '../lib/reminders'
 import { checkIn } from '../lib/connections'
 import { Avatar } from './Connections'
 import { nextAction, projectProgress } from '../lib/projects'
+import { todayNotes } from '../lib/notes'
 
 const GROUPS: { key: TimeOfDay; emoji: string }[] = [
   { key: 'morning', emoji: '🌅' },
@@ -218,6 +220,8 @@ export function TodayPage() {
         <div className="space-y-6">
           {wide && daily}
 
+          <PinnedNotes />
+
           <section>
             <SectionTitle right={<button onClick={() => navigate('habits')} className="text-xs font-semibold text-accent hover:underline">{m.today.allHabits}</button>}>
               {t.f(m.today.habits, { met: habitsMet, total: habits.length })}
@@ -286,6 +290,22 @@ export function TodayPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+/** Notes pinned to Today (ADR-036): at the head of the side column, under the daily card. */
+function PinnedNotes() {
+  const { m } = useI18n()
+  const all = useStore((s) => s.notes)
+  const notes = useMemo(() => todayNotes(all), [all])
+  if (!notes.length) return null
+  return (
+    <section>
+      <SectionTitle right={<button onClick={() => navigate('notes')} className="text-xs font-semibold text-accent hover:underline">{m.today.allNotes}</button>}>{m.nav.notes}</SectionTitle>
+      <div className="space-y-2">
+        {notes.map((n) => <NoteCard key={n.id} note={n} onToday />)}
+      </div>
+    </section>
   )
 }
 

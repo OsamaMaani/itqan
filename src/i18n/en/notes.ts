@@ -27,6 +27,13 @@ export const notes = {
   moreItems: { one: 'and {n} more item', other: 'and {n} more items' },
   pin: 'Pin',
   unpin: 'Unpin',
+  /** Pin to Today, the home screen (ADR-036) — separate from Pin, which keeps a note at the top of Notes. */
+  pinToday: 'Pin to Today',
+  unpinToday: 'Remove from Today',
+  pinnedTodayToast: 'Pinned to Today',
+  unpinnedTodayToast: 'Removed from Today',
+  /** The small mark on a card that is pinned to Today. */
+  onTodayChip: 'On Today',
   archivedToast: 'Note archived',
   unarchivedToast: 'Note moved back to your notes',
   deletedToast: 'Note deleted',

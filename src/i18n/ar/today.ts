@@ -53,6 +53,7 @@ export const today: Messages['today'] = {
   },
   levelLine: 'المستوى {n} · {title} — {xp} XP للمستوى التالي',
   allProjects: 'كل المشاريع',
+  allNotes: 'كل الملاحظات',
   next: 'التالي: {title}',
   comingUp: 'المواعيد القادمة',
   allReminders: 'كل التذكيرات',

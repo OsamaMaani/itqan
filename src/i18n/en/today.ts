@@ -40,6 +40,7 @@ export const today = {
   focusedToday: { one: '{n} min focused today', other: '{n} min focused today' },
   levelLine: 'Level {n} · {title} — {xp} XP to next',
   allProjects: 'All projects',
+  allNotes: 'All notes',
   next: 'Next: {title}',
   comingUp: 'Coming up',
   allReminders: 'All reminders',

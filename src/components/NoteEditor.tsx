@@ -1,4 +1,4 @@
-import { AlignLeft, Archive, ArchiveRestore, CheckSquare, FolderKanban, ListChecks, Pin, PinOff, Plus, Target, Trash2, X } from 'lucide-react'
+import { AlignLeft, Archive, ArchiveRestore, CheckSquare, FolderKanban, ListChecks, Pin, PinOff, Plus, Sun, SunDim, Target, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { create } from 'zustand'
 import { useI18n } from '../i18n/react'
@@ -21,7 +21,7 @@ import { AreaChip, Button, Card, cx, IconButton, Input, Label, Modal, Segmented,
  * bar all open the same one with `openNote`.
  */
 
-type NoteDefaults = Partial<Pick<Note, 'title' | 'body' | 'items' | 'areaId' | 'projectId' | 'goalId' | 'labels' | 'color'>> & {
+type NoteDefaults = Partial<Pick<Note, 'title' | 'body' | 'items' | 'areaId' | 'projectId' | 'goalId' | 'labels' | 'color' | 'onToday'>> & {
   /** Open on an empty checklist instead of text */
   checklist?: boolean
 }
@@ -72,8 +72,11 @@ function useTaskMap(): Map<ID, Task> {
 
 const CARD_LINES = 6
 
-/** A note on a grid. The whole card opens the editor; ticking a line and pinning work in place. */
-export function NoteCard({ note, compact }: { note: Note; compact?: boolean }) {
+/**
+ * A note on a grid. The whole card opens the editor; ticking a line and pinning work in place.
+ * `onToday`: the card as shown on Today, whose one action takes it off Today (ADR-036).
+ */
+export function NoteCard({ note, compact, onToday }: { note: Note; compact?: boolean; onToday?: boolean }) {
   const t = useI18n()
   const L = t.m.notes
   const areas = useAreaMap()
@@ -90,6 +93,11 @@ export function NoteCard({ note, compact }: { note: Note; compact?: boolean }) {
   const area = note.areaId ? areas.get(note.areaId) : undefined
   const empty = !note.title && !note.body.trim() && items.length === 0
 
+  const toggleToday = () => {
+    update(note.id, { onToday: !note.onToday })
+    toast({ emoji: note.onToday ? '📝' : '☀️', message: note.onToday ? L.unpinnedTodayToast : L.pinnedTodayToast, action: { label: t.m.common.undo, run: () => update(note.id, { onToday: note.onToday }) } })
+  }
+
   const archive = () => {
     update(note.id, { archived: !note.archived, pinned: false })
     toast({ emoji: note.archived ? '📝' : '🗃️', message: note.archived ? L.unarchivedToast : L.archivedToast, action: { label: t.m.common.undo, run: () => update(note.id, { archived: note.archived, pinned: note.pinned }) } })
@@ -98,7 +106,12 @@ export function NoteCard({ note, compact }: { note: Note; compact?: boolean }) {
   return (
     <Card className="group relative p-0" style={noteTint(note.color)}>
       <button onClick={() => openNote(note)} aria-label={note.title || L.untitled} className="absolute inset-0 rounded-2xl" />
-      {!compact && (
+      {onToday && (
+        <div className="absolute end-1.5 top-1.5 z-10 flex">
+          <IconButton label={L.unpinToday} onClick={toggleToday} className="size-8 bg-surface/70 sm:opacity-0 sm:group-hover:opacity-100"><SunDim size={15} /></IconButton>
+        </div>
+      )}
+      {!compact && !onToday && (
         <div className="absolute end-1.5 top-1.5 z-10 flex">
           <IconButton label={note.archived ? t.m.common.unarchive : t.m.common.archive} onClick={archive} className="size-8 bg-surface/70 sm:opacity-0 sm:group-hover:opacity-100">
             {note.archived ? <ArchiveRestore size={15} /> : <Archive size={15} />}
@@ -112,7 +125,7 @@ export function NoteCard({ note, compact }: { note: Note; compact?: boolean }) {
           </IconButton>
         </div>
       )}
-      <div className={cx('pointer-events-none relative', compact ? 'p-3' : 'p-4 pe-[4.5rem] sm:pe-10')}>
+      <div className={cx('pointer-events-none relative', compact ? 'p-3' : onToday ? 'p-4 pe-10 sm:pe-4' : 'p-4 pe-[4.5rem] sm:pe-10')}>
         {(note.title || empty) && <div className={cx('break-words font-bold leading-snug', empty && 'text-muted')}><bdi>{note.title || L.untitled}</bdi></div>}
         {note.body.trim() && (
           <p dir="auto" className={cx('whitespace-pre-wrap break-words text-sm leading-relaxed', note.title && 'mt-1.5', compact ? 'line-clamp-3' : 'line-clamp-[12]')}>
@@ -136,6 +149,7 @@ export function NoteCard({ note, compact }: { note: Note; compact?: boolean }) {
         {ordered.length > shown.length && <div className="mt-1 ps-7 text-xs text-muted">{t.p(L.moreItems, ordered.length - shown.length)}</div>}
       </div>
       <div className={cx('pointer-events-none relative flex flex-wrap items-center gap-1.5 text-[11px] text-muted empty:hidden', compact ? '-mt-1 px-3 pb-3' : '-mt-1 px-4 pb-4')}>
+        {note.onToday && !onToday && <span title={L.onTodayChip} className="inline-flex items-center gap-1 rounded-md bg-accent-soft px-1.5 py-0.5 font-semibold text-accent"><Sun size={11} />{L.onTodayChip}</span>}
         {progress.total > 0 && <span className="rounded-md bg-surface-2/70 px-1.5 py-0.5 font-bold tabular">{t.n(progress.done)}/{t.n(progress.total)}</span>}
         {note.labels.map((l) => <span key={l} className="rounded-md bg-surface-2/70 px-1.5 py-0.5 font-semibold"><bdi>#{l}</bdi></span>)}
         {area && <AreaChip area={area} />}
@@ -155,6 +169,7 @@ interface Draft {
   color: AreaColor | null
   labels: string
   pinned: boolean
+  onToday: boolean
   archived: boolean
   areaId: ID | null
   projectId: ID | null
@@ -164,7 +179,7 @@ interface Draft {
 function draftOf(v: Note | NoteDefaults): Draft {
   return {
     title: v.title ?? '', body: v.body ?? '', items: (v.items ?? []).map((i) => ({ ...i })), color: v.color ?? null,
-    labels: (v.labels ?? []).join(', '), pinned: 'id' in v ? v.pinned : false, archived: 'id' in v ? v.archived : false,
+    labels: (v.labels ?? []).join(', '), pinned: 'id' in v ? v.pinned : false, onToday: v.onToday ?? false, archived: 'id' in v ? v.archived : false,
     areaId: v.areaId ?? null, projectId: v.projectId ?? null, goalId: v.goalId ?? null,
   }
 }
@@ -173,7 +188,7 @@ function draftOf(v: Note | NoteDefaults): Draft {
 function fieldsOf(d: Draft) {
   return {
     title: d.title.trim(), body: d.body.replace(/\s+$/, ''), items: d.items.filter((i) => i.text.trim()).map((i) => ({ ...i, text: i.text.trim() })),
-    color: d.color, labels: parseLabels(d.labels), pinned: d.pinned, archived: d.archived, areaId: d.areaId, projectId: d.projectId, goalId: d.goalId,
+    color: d.color, labels: parseLabels(d.labels), pinned: d.pinned, onToday: d.onToday, archived: d.archived, areaId: d.areaId, projectId: d.projectId, goalId: d.goalId,
   }
 }
 
@@ -304,6 +319,7 @@ function NoteEditor({ value, onClose }: { value: Note | NoteDefaults | null; onC
           <>
             {existing && <Button variant="danger" className="me-auto" onClick={remove}><Trash2 size={15} /> {m.common.delete}</Button>}
             <IconButton label={d.pinned ? L.unpin : L.pin} onClick={() => set('pinned', !d.pinned)} className={d.pinned ? 'text-accent' : ''}>{d.pinned ? <PinOff size={16} /> : <Pin size={16} />}</IconButton>
+            <IconButton label={d.onToday ? L.unpinToday : L.pinToday} onClick={() => set('onToday', !d.onToday)} className={d.onToday ? 'text-accent' : ''}>{d.onToday ? <SunDim size={16} /> : <Sun size={16} />}</IconButton>
             <IconButton label={d.archived ? m.common.unarchive : m.common.archive} onClick={() => set('archived', !d.archived)} className={d.archived ? 'text-accent' : ''}>{d.archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}</IconButton>
             <Button variant="ghost" onClick={() => makeTask()} disabled={!d.title.trim() && !d.body.trim()}><CheckSquare size={15} /> {L.editor.makeTask}</Button>
             <Button variant="primary" onClick={close}>{m.common.done}</Button>

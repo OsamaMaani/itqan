@@ -838,3 +838,19 @@ devices could tick different lines of one note at once (rare for one person, and
 note a join across collections); tasks ticking their note line on completion (a write that can
 fight sync — the line reads the task's state instead); saving only on an explicit Save (losing a
 typed note to a stray tap is worse than an edit you meant to discard, which Delete or Undo covers).
+
+## ADR-036 | 2026-10-26 | accepted | A note can be pinned to Today
+
+**Context:** The owner, 2026-10-26: "I want to be able to pin a note to the home screen" — Today.
+**Decision:**
+- **Its own switch, `Note.onToday`** (schema v14), not the existing `pinned`. Pin keeps a note at the
+  top of Notes — that can be many notes; Today should carry only the one or two worth seeing every
+  day. The 13 → 14 migration puts no existing note on Today.
+- **Where:** Today's side column, first, under the daily card (`PinnedNotes`); on a phone that is
+  straight after the day's tasks — never above them (ADR-023's rule). Full cards: lines tick in
+  place, the card opens the editor, and its one action is "Remove from Today" (with Undo).
+  Archived notes leave Today but keep the switch. Order is when they were written
+  (`todayNotes()` in `lib/notes.ts`, tested), so ticking a line never reorders them.
+- **Setting it:** a sun button in the note editor; cards on Notes show an "On Today" mark.
+**Rejected:** reusing `pinned` (every note pinned on Notes would crowd Today); a per-card sun button
+on the Notes grid (a third corner button crowds phone cards; the editor is one tap away).

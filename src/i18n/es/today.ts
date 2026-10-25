@@ -39,6 +39,7 @@ export const today: Messages['today'] = {
   focusedToday: { one: '{n} min de concentración hoy', other: '{n} min de concentración hoy' },
   levelLine: 'Nivel {n} · {title} — {xp} XP para el siguiente',
   allProjects: 'Todos los proyectos',
+  allNotes: 'Todas las notas',
   next: 'Siguiente: {title}',
   comingUp: 'Lo que viene',
   allReminders: 'Todos los recordatorios',

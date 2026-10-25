@@ -6,7 +6,7 @@ import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 13
+export const SCHEMA_VERSION = 14
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -95,6 +95,12 @@ const steps: Record<number, Step> = {
   }),
   // 12 → 13 (2026-10-26): Notes (ADR-035). A new collection; nothing existing changes.
   12: (d) => ({ ...d, notes: d.notes ?? [] }),
+  // 13 → 14 (2026-10-26): a note can be pinned to Today (ADR-036). Existing notes are not on
+  // Today — pinned ones stay pinned on the Notes screen only. Nothing else changes.
+  13: (d) => ({
+    ...d,
+    notes: ((d.notes as Record<string, unknown>[] | undefined) ?? []).map((n) => ({ onToday: false, ...n })),
+  }),
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {

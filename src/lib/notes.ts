@@ -33,6 +33,11 @@ export function visibleNotes(notes: Note[], f: NoteFilter = {}): Note[] {
     .sort((a, b) => (a.pinned === b.pinned ? b.updatedAt.localeCompare(a.updatedAt) : a.pinned ? -1 : 1))
 }
 
+/** The notes pinned to Today: not archived, in the order they were written, so ticking a line never reorders them. */
+export function todayNotes(notes: Note[]): Note[] {
+  return notes.filter((n) => n.onToday && !n.archived).sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+}
+
 /** Every label on these notes, each once (first spelling wins), with how many notes carry it, most used first. */
 export function noteLabels(notes: Note[]): { label: string; count: number }[] {
   const by = new Map<string, { label: string; count: number }>()

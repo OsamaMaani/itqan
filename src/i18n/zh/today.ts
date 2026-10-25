@@ -39,6 +39,7 @@ export const today: Messages['today'] = {
   focusedToday: { other: '今天已专注 {n} 分钟' },
   levelLine: '等级 {n} · {title}——距下一级还差 {xp} XP',
   allProjects: '全部项目',
+  allNotes: '全部笔记',
   next: '下一步：{title}',
   comingUp: '即将到来',
   allReminders: '全部提醒',
