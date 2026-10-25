@@ -9,6 +9,7 @@ export const nav: Messages['nav'] = {
   focus: 'التركيز',
   training: 'التدريب',
   ideas: 'الأفكار',
+  notes: 'الملاحظات',
   reminders: 'التذكيرات',
   connections: 'العلاقات',
   memories: 'الذكريات',

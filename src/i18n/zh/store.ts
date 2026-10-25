@@ -2,6 +2,7 @@ import type { Messages } from '../core'
 
 export const store: Messages['store'] = {
   fromIdea: '来自想法：{title}',
+  fromNote: '来自笔记：{title}',
   newProject: '新项目',
   birthday: '{name}的生日',
   checkInTitle: '联系{name}',

@@ -1,16 +1,17 @@
 {
   "project": "Itqan",
   "subtitle": "إتقان — daily tasks, habits and long-term goals in one calm place",
-  "updated": "2026-10-24",
+  "updated": "2026-10-26",
   "current_stage": 4,
   "next_actions": [
+    "New: Notes (in the menu after Ideas, key 9). Type a line and press Enter to save a note, or start a checklist. Pin, colour and label notes, search them, archive the ones you're done with. Any note or checklist line can become a task. Projects and goals show their notes too, and in Ctrl+K, 'note: …' saves one. Open Itqan on the iPhone once so it updates (data format v13); sync resumes after that.",
     "New: streak savers. Every 500 XP earns one (you can hold 2); a missed day uses one by itself and your streak on Today survives. Tap the flame on Today to see your savers, the last four weeks and how it works. Your existing history counts, so you may already hold some.",
     "Reminders and check-ins with people now reach the iPhone as notifications, even with Itqan closed there (the laptop sends them, so it needs to be awake). Open Itqan on the iPhone from the Home Screen once so it updates (data format v12); sync resumes after that.",
     "If 'Alerts from my laptop' isn't on yet on the iPhone: Settings → Notifications → turn it on and allow once. The switches above it (focus endings, reminders, check-ins) choose what the phone gets.",
     "Insights has a new Focus section and compares every number with the previous period — pick 7, 14, 30 or 90 days at the top. Tap a bar on the phone to see its value.",
     "Focus can now be for a habit: pick it on Focus, or press the timer on a habit card. Finishing checks the habit in — its minutes for a minutes habit (e.g. \"10 min\"), otherwise one check.",
     "Training → Routines → Program now offers \"Whenever I can\" (no schedule). Fixed days and Rotation still work as before.",
-    "Number keys moved by one after Focus: 7 is now Training, 8 Ideas, 9 Reminders.",
+    "Number keys: 7 Training, 8 Ideas, 9 Notes (Reminders no longer has a number key — use Ctrl+K or the menu).",
     "In Settings → Profile, pick your interface language (it follows you to your other devices). All four translations have had their independent review (S2-23); if a phrase still reads oddly, note it.",
     "Record this year's achievements so far; check the suggestions Itqan offers."
   ],
@@ -413,6 +414,13 @@
           "module": "gamification",
           "status": "done",
           "critical": true
+        },
+        {
+          "id": "S2-41",
+          "title": "Notes: Keep-style notes and checklists — pin, colour, labels, search, archive; linked to areas, projects and goals; any note or line becomes a task; note: in the command bar (ADR-035, schema v13)",
+          "module": "notes",
+          "status": "done",
+          "critical": false
         }
       ]
     },
@@ -561,6 +569,11 @@
       "status": "done"
     },
     {
+      "slug": "notes",
+      "name": "Notes",
+      "status": "done"
+    },
+    {
       "slug": "reminders",
       "name": "Reminders & notifications",
       "status": "done"
@@ -641,6 +654,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-26",
+      "entry": "S2-41, asked for by the owner: a note keeper (ADR-035). He chose Keep-style cards linked to the rest of Itqan. New Note entity (schema v13, migration 12 → 13 with tests): title, text and/or a checklist, colour from the area palette, labels, pinned, archived, optional area / project / goal. Notes screen after Ideas: one-line capture, new checklist, search (every word, any case or accent), label chips, Notes / Archive, Pinned and Others in columns; cards tick lines, pin and archive in place with Undo. The editor is opened from anywhere, saves on close (an empty new note is not created) and is remounted per opening — in testing, resetting the draft in an effect let an old note's text into a new one, which would have saved a duplicate. A note or one line becomes a task keeping its area / project / goal; the line counts as done once the task is (derived). Project pages and goal details list and add their notes; Ctrl+K saves 'note: …' (colon required) and opens a new note. Pure logic in lib/notes.ts; 16 new tests (filtering, labels, checklist progress, conversions, store actions, unlinking on delete, sync round trip, migration, quick add in five languages). Five languages; checked in the browser at desktop and 375 px, light and dark, English and Arabic (RTL) — labels isolated with <bdi> there, which also fixes the same # placement on Memories tags. Number key 9 is now Notes."
+    },
     {
       "date": "2026-10-24",
       "entry": "S2-40, asked for by the owner: streak savers, like Duolingo's streak freeze (ADR-034). Every 500 XP earns one, at most 2 held; a missed day is covered automatically and the day streak on Today lives on (a covered day doesn't add to the count). A gap longer than the savers held ends the streak but keeps the savers. Everything is derived from the XP history by dayStreak() in lib/gamification.ts (replaces activeStreak; 17 tests: earning, the cap, gaps, today pending, backfilling returning a saver, order independence) — no schema change, nothing synced. The flame on Today now shows savers and opens a dialog (streak, best, savers with progress, last four weeks, how it works); a line on Today when savers just covered the days before, or in the evening with none left; a toast when one is earned; savers held in Insights. The active-14 badge now reads the best run, so it is never taken back. Also: useProgress now recomputes when workouts change (training XP was missed until something else changed). Five languages; checked in the browser at desktop and 375 px, light and dark, English and Arabic (RTL)."

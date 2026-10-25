@@ -8,7 +8,7 @@ import { migrate, SCHEMA_VERSION } from './migrations'
 import { emptyData, starterData } from './seed'
 import { todayKey } from './date'
 import type {
-  Achievement, ActiveTimer, Area, Contact, Data, DateKey, DayNote, Exercise, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory,
+  Achievement, ActiveTimer, Area, Contact, Data, DateKey, DayNote, Exercise, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory, Note,
   Project, ProjectUpdate, PushTarget, Reminder, Routine, RoutineItem, Settings, Task, TaskStage, TrainingProgram, WeeklyReview, Workout, WorkoutSet,
 } from './types'
 import { birthdayReminderDate } from './connections'
@@ -76,6 +76,14 @@ interface Actions {
   /** Creates a task from an idea and links it; a new idea moves to "doing". */
   ideaToTask: (ideaId: ID, title: string, date: DateKey | null) => ID
   linkIdeaGoal: (ideaId: ID, goalId: ID) => void
+  // notes (ADR-035)
+  addNote: (n: Partial<Omit<Note, 'id' | 'createdAt' | 'updatedAt' | 'taskIds'>>) => ID
+  updateNote: (id: ID, patch: Partial<Omit<Note, 'id' | 'createdAt'>>) => void
+  deleteNote: (id: ID) => Note | undefined
+  restoreNote: (n: Note) => void
+  toggleNoteItem: (noteId: ID, itemId: ID) => void
+  /** Creates a task from the whole note, or from one checklist line when `itemId` is given, and links it. */
+  noteToTask: (noteId: ID, title: string, date: DateKey | null, itemId?: ID) => ID
   // reminders
   addReminder: (r: Omit<Reminder, 'id' | 'createdAt' | 'done' | 'contactId' | 'countYears'> & Partial<Pick<Reminder, 'contactId' | 'countYears'>>) => ID
   updateReminder: (id: ID, patch: Partial<Reminder>) => void
@@ -165,6 +173,7 @@ export const useStore = create<Store>()(
           goals: s.goals.map((g) => (g.areaId === id ? { ...g, areaId: null } : g)),
           focusSessions: s.focusSessions.map((f) => (f.areaId === id ? { ...f, areaId: null } : f)),
           ideas: s.ideas.map((i) => (i.areaId === id ? { ...i, areaId: null } : i)),
+          notes: s.notes.map((n) => (n.areaId === id ? { ...n, areaId: null } : n)),
           projects: s.projects.map((p) => (p.areaId === id ? { ...p, areaId: null } : p)),
         })),
 
@@ -274,6 +283,7 @@ export const useStore = create<Store>()(
           tasks: s.tasks.map((t) => (t.goalId === id ? { ...t, goalId: null } : t)),
           focusSessions: s.focusSessions.map((f) => (f.goalId === id ? { ...f, goalId: null } : f)),
           ideas: s.ideas.map((i) => (i.goalId === id ? { ...i, goalId: null } : i)),
+          notes: s.notes.map((n) => (n.goalId === id ? { ...n, goalId: null } : n)),
           projects: s.projects.map((p) => (p.goalId === id ? { ...p, goalId: null } : p)),
           achievements: s.achievements.map((a) => (a.goalId === id ? { ...a, goalId: null } : a)),
         })),
@@ -410,6 +420,49 @@ export const useStore = create<Store>()(
       },
       linkIdeaGoal: (ideaId, goalId) => get().updateIdea(ideaId, { goalId, status: 'doing' }),
 
+      // --- notes (ADR-035) ---------------------------------------------------------
+      addNote: (n) => {
+        const id = uid()
+        const t = now()
+        set((s) => ({
+          notes: [...s.notes, {
+            title: '', body: '', items: [], color: null, labels: [], pinned: false, archived: false,
+            areaId: null, projectId: null, goalId: null, ...n, id, taskIds: [], createdAt: t, updatedAt: t,
+          }],
+        }))
+        return id
+      },
+      updateNote: (id, patch) =>
+        set((s) => ({ notes: s.notes.map((n) => (n.id === id ? { ...n, ...patch, updatedAt: now() } : n)) })),
+      deleteNote: (id) => {
+        const n = get().notes.find((x) => x.id === id)
+        set((s) => ({ notes: s.notes.filter((x) => x.id !== id) }))
+        return n
+      },
+      restoreNote: (n) => set((s) => ({ notes: [...s.notes, n] })),
+      toggleNoteItem: (noteId, itemId) =>
+        set((s) => ({
+          notes: s.notes.map((n) =>
+            n.id === noteId ? { ...n, items: n.items.map((i) => (i.id === itemId ? { ...i, done: !i.done } : i)), updatedAt: now() } : n,
+          ),
+        })),
+      noteToTask: (noteId, title, date, itemId) => {
+        const note = get().notes.find((n) => n.id === noteId)
+        const fromLine = !!note && !!itemId && note.items.some((i) => i.id === itemId)
+        const taskId = get().addTask({
+          title, date, areaId: note?.areaId ?? null, goalId: note?.goalId ?? null, projectId: note?.projectId ?? null,
+          notes: !note ? '' : fromLine || !note.body ? tx().f(tx().m.store.fromNote, { title: note.title || title }) : note.body,
+        })
+        set((s) => ({
+          notes: s.notes.map((n) =>
+            n.id !== noteId ? n
+              : fromLine ? { ...n, items: n.items.map((i) => (i.id === itemId ? { ...i, taskId } : i)), updatedAt: now() }
+              : { ...n, taskIds: [...n.taskIds, taskId], updatedAt: now() },
+          ),
+        }))
+        return taskId
+      },
+
       // --- reminders -------------------------------------------------------------
       addReminder: (r) => {
         const id = uid()
@@ -445,6 +498,7 @@ export const useStore = create<Store>()(
           projectUpdates: s.projectUpdates.filter((u) => u.projectId !== id),
           achievements: s.achievements.map((a) => (a.projectId === id ? { ...a, projectId: null } : a)),
           tasks: s.tasks.map((t) => (t.projectId === id ? { ...t, projectId: null } : t)),
+          notes: s.notes.map((n) => (n.projectId === id ? { ...n, projectId: null } : n)),
         })),
       setProjectProgress: (id, percent) =>
         get().updateProject(id, { progressMode: 'manual', manualProgress: Math.round(Math.min(100, Math.max(0, percent))) }),
@@ -674,7 +728,7 @@ export const useStore = create<Store>()(
       partialize: (s): Data => ({
         areas: s.areas, tasks: s.tasks, habits: s.habits, habitLogs: s.habitLogs, goals: s.goals,
         goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
-        reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
+        reviews: s.reviews, memories: s.memories, ideas: s.ideas, notes: s.notes, reminders: s.reminders, projects: s.projects,
         projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
         exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets,
         settings: s.settings,
@@ -700,7 +754,7 @@ export function snapshot(s: Store): Data {
   return {
     areas: s.areas, tasks: s.tasks, habits: s.habits, habitLogs: s.habitLogs, goals: s.goals,
     goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
-    reviews: s.reviews, memories: s.memories, ideas: s.ideas, reminders: s.reminders, projects: s.projects,
+    reviews: s.reviews, memories: s.memories, ideas: s.ideas, notes: s.notes, reminders: s.reminders, projects: s.projects,
     projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
     exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets,
     settings: s.settings,

@@ -2,6 +2,7 @@ import type { Messages } from '../core'
 
 export const store: Messages['store'] = {
   fromIdea: 'De una idea: {title}',
+  fromNote: 'De una nota: {title}',
   newProject: 'Nuevo proyecto',
   birthday: 'Cumpleaños de {name}',
   checkInTitle: 'Contacta con {name}',

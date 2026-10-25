@@ -15,6 +15,10 @@ export const palette = {
   saveIdea: 'Save idea “{text}”',
   /** {title} is the parsed task title, shown in bold. */
   addTask: 'Add task “{title}”',
+  /** {text} is what the person typed after the "note:" prefix, shown in bold. */
+  saveNote: 'Save note “{text}”',
+  /** Toast after saving a note from the command bar. */
+  noteSaved: 'Note saved',
   /** Toast after saving an idea from the command bar. */
   ideaSaved: 'Idea saved',
   /** Toast after adding a task from the command bar. */
@@ -32,14 +36,15 @@ export const palette = {
   newReminder: 'New reminder',
   recordAchievement: 'Record an achievement',
   writeMemory: 'Write a memory',
+  newNote: 'New note',
   toggleDark: 'Toggle dark mode',
   downloadBackup: 'Download a backup',
   /**
    * Footer cheat sheet of quick-add syntax. Every {…} is a bold example filled in by the app:
-   * {idea} the idea prefix (see ideaToken), {area} #area, {project} +project, {priority} !1–!3,
+   * {idea} the idea prefix and {note} the note prefix (both shown with ideaToken), {area} #area, {project} +project, {priority} !1–!3,
    * {days} day words joined with " / ", {time} @morning, {estimate} ~30m.
    */
-  hint: '{idea} saves an idea · {area} · {project} · {priority} priority · {days} · {time} · {estimate}',
-  /** The idea prefix as shown in the footer; {word} is this language's idea prefix word. */
+  hint: '{idea} saves an idea · {note} saves a note · {area} · {project} · {priority} priority · {days} · {time} · {estimate}',
+  /** A prefix as shown in the footer; {word} is this language's idea or note prefix word. */
   ideaToken: '{word}: …',
 }

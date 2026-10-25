@@ -121,7 +121,7 @@ export function MemoriesPage() {
           </button>
           {tags.slice(0, 12).map((tg) => (
             <button key={tg} onClick={() => setTag(tag === tg ? null : tg)} className={cx('h-8 rounded-lg px-2.5 text-xs font-semibold transition', tag === tg ? 'bg-accent-soft text-accent' : 'bg-surface-2 text-muted hover:text-text')}>
-              #{tg}
+              <bdi>#{tg}</bdi>
             </button>
           ))}
         </div>
@@ -175,7 +175,7 @@ function MemoryCard({ memory: m, onOpen }: { memory: Memory; onOpen: () => void 
         {m.story && <p className="mt-3 line-clamp-4 whitespace-pre-line text-sm leading-relaxed text-muted">{m.story}</p>}
         {m.tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1">
-            {m.tags.map((tg) => <span key={tg} className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[11px] font-semibold text-muted">#{tg}</span>)}
+            {m.tags.map((tg) => <span key={tg} className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[11px] font-semibold text-muted"><bdi>#{tg}</bdi></span>)}
           </div>
         )}
       </Card>

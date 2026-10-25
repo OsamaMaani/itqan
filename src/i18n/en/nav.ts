@@ -7,6 +7,7 @@ export const nav = {
   focus: 'Focus',
   training: 'Training',
   ideas: 'Ideas',
+  notes: 'Notes',
   reminders: 'Reminders',
   connections: 'Connections',
   memories: 'Memories',

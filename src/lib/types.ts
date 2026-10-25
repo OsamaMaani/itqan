@@ -197,6 +197,39 @@ export interface Idea {
   updatedAt: string
 }
 
+/** One line of a note's checklist (schema v13). */
+export interface NoteItem {
+  id: ID
+  text: string
+  done: boolean
+  /** The task made from this line, if any. Stale ids are ignored on read. */
+  taskId: ID | null
+}
+
+/**
+ * A note (ADR-035, schema v13): Keep-style — a title, free text and/or a checklist, a colour and
+ * labels, optionally about an area, a project or a goal. Archived notes are kept, just out of sight.
+ */
+export interface Note {
+  id: ID
+  title: string
+  body: string
+  items: NoteItem[]
+  /** A tint for the card from the area palette; null = plain */
+  color: AreaColor | null
+  /** Free labels, stored without "#" */
+  labels: string[]
+  pinned: boolean
+  archived: boolean
+  areaId: ID | null
+  projectId: ID | null
+  goalId: ID | null
+  /** Tasks made from the whole note. Stale ids are ignored on read. */
+  taskIds: ID[]
+  createdAt: string
+  updatedAt: string
+}
+
 export type ReminderRepeat = 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'
 
 export interface Reminder {
@@ -548,6 +581,7 @@ export interface Data {
   interactions: Interaction[]
   achievements: Achievement[]
   ideas: Idea[]
+  notes: Note[]
   reminders: Reminder[]
   exercises: Exercise[]
   routines: Routine[]

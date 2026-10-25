@@ -796,3 +796,45 @@ restore and sync — the reason ADR-005 exists); spending savers on a gap longer
 (Duolingo does, but it spends them for nothing); savers for each habit (one pool across many
 habits drains on one bad day and is order-dependent; a per-habit variant is possible later if
 the owner wants it); savers by level-up (they would slow down as levels grow).
+
+## ADR-035 | 2026-10-26 | accepted | Notes: Keep-style cards with checklists, linked to the rest of Itqan
+
+**Context:** The owner asked for a note keeper. Asked how he wants it (2026-10-26), he chose
+Keep-style cards (over notebooks with Markdown, or plain text notes), connected to an area, to a
+project or goal, able to turn into tasks, and savable from the command bar.
+**Decision:**
+- **A new entity, `Note`** (schema v13, `notes`): title, `body` text, a checklist (`items`:
+  `NoteItem` text / done / `taskId`), `color` (the area palette, or none), free `labels` (stored
+  without `#`), `pinned`, `archived`, optional `areaId` / `projectId` / `goalId`, and `taskIds`
+  for tasks made from the whole note. A note may hold text and a checklist at once; "Make a
+  checklist" turns text lines into lines and "Make plain text" turns them back (`textToItems` /
+  `itemsToText`, nothing dropped). Not the same thing as the free `notes` text on tasks, ideas and
+  projects, which stays.
+- **Screen:** Notes, after Ideas. A one-line capture (Enter saves the text as a note), a new-checklist
+  and full-editor button, search over title, text, lines and labels (every word, any case or
+  accent), label chips, Notes / Archive, Pinned and Others in CSS columns (each card as tall as
+  its content). Cards tick lines, pin and archive in place (with Undo); the whole card opens the
+  editor. Logic is pure and tested in `lib/notes.ts` (`visibleNotes`, `noteLabels`,
+  `parseLabels`, `checklistProgress`).
+- **The editor saves when it closes**, as Keep does — tapping outside never loses a note; a new note
+  left empty is not created; an unchanged note is not rewritten. It is mounted once in App
+  (`openNote()` from anywhere) and **remounted for every opening** (keyed by a counter), so a draft
+  can never carry into the next note — a reset in an effect let one through in testing, which
+  would have saved a duplicate.
+- **Into tasks:** the whole note, or one line, becomes a task (dialog: title, today / tomorrow /
+  Inbox) that keeps the note's area, project and goal; the line remembers its task and counts as
+  done once the task is (`itemDone`, derived — never written back). Deleting an area, goal or
+  project unlinks notes and deletes none.
+- **Elsewhere:** a project page lists its notes under its notes box; a goal's details list its
+  notes; both add one already linked. Command bar: `note: …` saves a note (the colon is
+  required, unlike `idea`, because "Note the time" is a task) and "New note" opens the editor;
+  the prefix in five languages (`quickAddWords.note`).
+- **Sync:** `notes` is an array collection — each note its own entity (ADR-016). Two devices
+  editing the *same* note before syncing keep the later edit, as for ideas and projects.
+- No XP for notes: writing things down is not an achievement to game.
+**Rejected:** notebooks with Markdown (the owner chose Keep-style; Markdown rendering is a
+dependency and a second editing mode); storing each checklist line as its own entity so two
+devices could tick different lines of one note at once (rare for one person, and it would make a
+note a join across collections); tasks ticking their note line on completion (a write that can
+fight sync — the line reads the task's state instead); saving only on an explicit Save (losing a
+typed note to a stray tap is worse than an edit you meant to discard, which Delete or Undo covers).

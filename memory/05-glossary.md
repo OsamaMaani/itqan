@@ -30,6 +30,9 @@ The vocabulary is fixed. Use these words in code, UI and memory alike.
 | **Memory** | A moment worth keeping, dated when it happened. | `Memory` |
 | **On this day** | Memories from today's month-day in earlier years. | `onThisDay()` |
 | **Idea** | A captured idea, moved through New → Exploring → Doing → Done (or Dropped). | `Idea` |
+| **Note** | A Keep-style card on the Notes screen: title, text and/or a checklist, colour, labels (ADR-035). Not the free `notes` text field on a task, idea or project. | `Note` |
+| **Label** | A free tag on a note, shown as `#label`; filters the Notes screen. | `Note.labels` |
+| **Checklist line** | One tickable line of a note; may be made into a task. | `NoteItem` |
 | **Reminder** | An important date or time, once or repeating, with alerts. | `Reminder` |
 | **Alert** | One notification for one occurrence, N minutes before it. | `ScheduledAlert` |
 | **Helper** | The local service that shows desktop notifications (ADR-013). | `itqan_reminders.py` |

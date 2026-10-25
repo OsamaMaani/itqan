@@ -9,6 +9,7 @@ export const nav: Messages['nav'] = {
   focus: '专注',
   training: '训练',
   ideas: '想法',
+  notes: '笔记',
   reminders: '提醒',
   connections: '联系人',
   memories: '回忆',

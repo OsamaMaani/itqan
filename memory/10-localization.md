@@ -205,4 +205,15 @@ glossary term flags it.
 | Whenever I can (program mode) | متى استطعت | Quand je peux | 有空就练 | Cuando pueda |
 | Personal record (PR) | رقم قياسي شخصي | record personnel | 个人纪录 | récord personal |
 
+**Notes (ADR-035)** — added 2026-10-26:
+
+| English | العربية | Français | 简体中文 | Español |
+|---|---|---|---|---|
+| Notes (screen) | الملاحظات | Notes | 笔记 | Notas |
+| Note | ملاحظة | note | 笔记 | nota |
+| Label (on a note) | وسم | libellé | 标签 | etiqueta |
+| Checklist | قائمة تحقق | liste à cocher | 清单 | lista de verificación |
+| Pin / Pinned | تثبيت / مثبّتة | épingler / épinglée | 置顶 / 已置顶 | fijar / fijada |
+| Archive (notes) | الأرشيف | archives | 归档 | archivo |
+
 French *série* already means streak; in Training it means a set, and context keeps them apart.

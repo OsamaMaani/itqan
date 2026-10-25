@@ -16,6 +16,7 @@ import { goals } from './goals'
 import { gym } from './gym'
 import { habits } from './habits'
 import { ideas } from './ideas'
+import { notes } from './notes'
 import { insights } from './insights'
 import { memories } from './memories'
 import { nav } from './nav'
@@ -39,6 +40,6 @@ import { workout } from './workout'
 
 export const messages: Messages = {
   common, nav, time, app, levels, badges, today, palette, quickAdd, tasks, plan, focus, habits, goals, insights, review,
-  projects, ideas, memories, achievements, reminders, connections, settings, sync, onboarding, daily, seed, store, errors,
+  projects, ideas, notes, memories, achievements, reminders, connections, settings, sync, onboarding, daily, seed, store, errors,
   gym, training, workout, streak,
 }

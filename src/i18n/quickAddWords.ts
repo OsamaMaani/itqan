@@ -38,6 +38,8 @@ export interface QuickAddWords {
   hours: string[]
   /** "idea: …" in the command bar saves an idea instead of a task. */
   idea: string[]
+  /** "note: …" saves a note (ADR-035). Only with a colon: "note" is also a verb in task titles. */
+  note: string[]
 }
 
 export const QUICK_ADD_WORDS: Record<Lang, QuickAddWords> = {
@@ -57,6 +59,7 @@ export const QUICK_ADD_WORDS: Record<Lang, QuickAddWords> = {
     minutes: ['m', 'min', 'mins', 'minutes'],
     hours: ['h', 'hr', 'hrs', 'hour', 'hours'],
     idea: ['idea'],
+    note: ['note'],
   },
   ar: {
     today: ['اليوم'],
@@ -74,6 +77,7 @@ export const QUICK_ADD_WORDS: Record<Lang, QuickAddWords> = {
     minutes: ['د', 'دقيقة', 'دقائق'],
     hours: ['س', 'ساعة', 'ساعات'],
     idea: ['فكرة'],
+    note: ['ملاحظة'],
   },
   fr: {
     today: ['aujourd’hui', 'auj'],
@@ -91,6 +95,7 @@ export const QUICK_ADD_WORDS: Record<Lang, QuickAddWords> = {
     minutes: ['min', 'm', 'minutes'],
     hours: ['h', 'heure', 'heures'],
     idea: ['idée'],
+    note: ['note'],
   },
   zh: {
     today: ['今天', '今日'],
@@ -112,6 +117,7 @@ export const QUICK_ADD_WORDS: Record<Lang, QuickAddWords> = {
     minutes: ['分钟', '分'],
     hours: ['小时', '个小时'],
     idea: ['想法', '点子', '灵感'],
+    note: ['笔记', '记'],
   },
   es: {
     today: ['hoy'],
@@ -129,6 +135,7 @@ export const QUICK_ADD_WORDS: Record<Lang, QuickAddWords> = {
     minutes: ['min', 'm', 'minutos'],
     hours: ['h', 'hora', 'horas'],
     idea: ['idea'],
+    note: ['nota'],
   },
 }
 

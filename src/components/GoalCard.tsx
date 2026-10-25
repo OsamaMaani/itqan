@@ -15,6 +15,7 @@ import { openAchievement } from '../pages/Achievements'
 import { toast } from '../lib/toast'
 import type { Goal, Milestone } from '../lib/types'
 import { GoalEditor } from './GoalEditor'
+import { LinkedNotes } from './NoteEditor'
 import { AreaChip, Button, Card, cx, IconButton, Input, Label, Modal, ProgressRing } from './ui'
 
 const PACE: Record<Exclude<Pace, 'none'>, string> = {
@@ -336,6 +337,8 @@ function GoalDetails({ goal, open, onClose, onEdit, onLog }: { goal: Goal; open:
             )}
           </div>
         )}
+
+        <LinkedNotes goalId={goal.id} areaId={goal.areaId} title={<div className={section}>{m.nav.notes}</div>} />
       </div>
     </Modal>
   )

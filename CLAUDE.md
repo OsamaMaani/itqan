@@ -88,7 +88,8 @@ and Connections (ADR-018, ADR-019), project boards (ADR-020), Achievements (ADR-
 card — verse, hadith, word, wisdom, fact (ADR-023), and five interface languages — English,
 Arabic (RTL), French, Chinese, Spanish (ADR-024; rules in `memory/10-localization.md`), and Training —
 exercises, routines, a program, live workouts, records (ADR-027; schema v8; `memory/11-training.md`), and
-streak savers that keep the day streak alive, earned with XP and derived from history (ADR-034).
+streak savers that keep the day streak alive, earned with XP and derived from history (ADR-034), and
+Notes — Keep-style notes and checklists linked to areas, projects and goals (ADR-035; schema v13).
 `memory/status.json` and `dashboard/index.html` are the live answer — this
 paragraph is a snapshot and will lag them.
 

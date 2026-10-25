@@ -1,17 +1,18 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { Bell, Camera, Trophy, CornerDownLeft, Download, Dumbbell, Lightbulb, Moon, Plus, Search, Timer } from 'lucide-react'
+import { Bell, Camera, Trophy, CornerDownLeft, Download, Dumbbell, Lightbulb, Moon, Plus, Search, StickyNote, Timer } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { downloadBackup } from '../lib/backup'
 import { quickAddWords } from '../i18n/quickAddWords'
 import { rich, useI18n } from '../i18n/react'
 import { prettyDay } from '../lib/date'
 import { useToday } from '../lib/hooks'
-import { ideaText, parseQuickAdd, quickAddExamples } from '../lib/quickAdd'
+import { ideaText, noteText, parseQuickAdd, quickAddExamples } from '../lib/quickAdd'
 import { navigate } from '../lib/router'
 import { snapshot, useStore } from '../lib/store'
 import { toast } from '../lib/toast'
 import { activeWorkout, dueRoutine } from '../lib/training'
 import { beginWorkout } from './training/format'
+import { newNoteFromAnywhere } from './NoteEditor'
 import { NAV } from './Shell'
 import { openAchievement } from '../pages/Achievements'
 import { AreaChip, cx, Kbd } from './ui'
@@ -44,7 +45,14 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     const st = useStore.getState()
     const list: Item[] = []
     const idea = ideaText(q, words)
-    if (idea) {
+    const note = noteText(q, words)
+    if (note) {
+      list.push({
+        id: 'note', icon: <StickyNote size={16} />, keywords: '',
+        label: <span>{rich(m.palette.saveNote, { text: <b>{note}</b> })}</span>,
+        run: () => { st.addNote({ body: note }); toast({ emoji: '📝', message: m.palette.noteSaved }) },
+      })
+    } else if (idea) {
       list.push({
         id: 'idea', icon: <Lightbulb size={16} />, keywords: '',
         label: <span>{rich(m.palette.saveIdea, { text: <b>{idea}</b> })}</span>,
@@ -81,6 +89,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     })
     list.push({ id: 'new-reminder', icon: <Bell size={16} />, label: m.palette.newReminder, keywords: `${m.palette.newReminder} reminder remind date birthday new`, run: () => navigate('reminders') })
     list.push({ id: 'new-achievement', icon: <Trophy size={16} />, label: m.palette.recordAchievement, keywords: `${m.palette.recordAchievement} achievement win accomplishment record new`, run: () => { navigate('achievements'); openAchievement() } })
+    list.push({ id: 'new-note', icon: <StickyNote size={16} />, label: m.palette.newNote, keywords: `${m.palette.newNote} note notes write jot keep new`, run: () => newNoteFromAnywhere() })
     list.push({ id: 'new-memory', icon: <Camera size={16} />, label: m.palette.writeMemory, keywords: `${m.palette.writeMemory} memory memories journal write new`, run: () => navigate('memories') })
     list.push({
       id: 'theme', icon: <Moon size={16} />, label: m.palette.toggleDark, keywords: `${m.palette.toggleDark} theme dark light mode`,
@@ -91,7 +100,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
       run: () => { downloadBackup(snapshot(useStore.getState())); st.updateSettings({ lastBackupAt: new Date().toISOString() }) },
     })
     const terms = q.toLowerCase().split(/\s+/).filter(Boolean)
-    return list.filter((i) => i.id === 'add' || i.id === 'idea' || terms.length === 0 || terms.every((w) => i.keywords.toLowerCase().includes(w)))
+    return list.filter((i) => i.id === 'add' || i.id === 'idea' || i.id === 'note' || terms.length === 0 || terms.every((w) => i.keywords.toLowerCase().includes(w)))
   }, [parsed, q, areas, today, t, m, words])
 
   const ex = quickAddExamples(words)
@@ -142,6 +151,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
             <div className="border-t border-border px-4 py-2 text-[11px] text-muted">
               {rich(m.palette.hint, {
                 idea: <b>{t.f(m.palette.ideaToken, { word: ex.idea })}</b>,
+                note: <b>{t.f(m.palette.ideaToken, { word: ex.note })}</b>,
                 area: <b>#{m.quickAdd.areaToken}</b>,
                 project: <b>+{m.quickAdd.projectToken}</b>,
                 priority: <b dir="ltr">!1–!3</b>,

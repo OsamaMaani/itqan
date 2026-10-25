@@ -6,6 +6,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { AreaPicker } from '../components/AreaPicker'
 import { EmojiInput } from '../components/EmojiInput'
+import { LinkedNotes } from '../components/NoteEditor'
 import { QuickAdd } from '../components/QuickAdd'
 import { TaskEditor } from '../components/TaskEditor'
 import { TaskItem } from '../components/TaskItem'
@@ -294,6 +295,7 @@ function ProjectDetail({ id }: { id: string }) {
           <section>
             <SectionTitle>{t.m.common.notes}</SectionTitle>
             <NotesBox key={p.id} value={p.notes} onSave={(notes) => update(p.id, { notes })} />
+            <div className="mt-3"><LinkedNotes projectId={p.id} areaId={p.areaId} /></div>
           </section>
           <section>
             <SectionTitle>{L.links}</SectionTitle>

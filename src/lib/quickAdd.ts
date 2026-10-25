@@ -230,6 +230,13 @@ export function ideaText(input: string, words: QuickAddWords[] = ENGLISH): strin
   return m ? input.slice(at[m[0].length]).trim() : null
 }
 
+/** "note: …" → the note's text (ADR-035). Unlike an idea, the colon is required: "Note the time" is a task. */
+export function noteText(input: string, words: QuickAddWords[] = ENGLISH): string | null {
+  const { text, at } = foldWithMap(input)
+  const m = new RegExp(`^\\s*${alt(words.flatMap((w) => w.note))}\\s*[:：]\\s*`, 'u').exec(text)
+  return m ? input.slice(at[m[0].length]).trim() : null
+}
+
 /** Example words for hints, in the interface language (the last of `words`). */
 export function quickAddExamples(words: QuickAddWords[]) {
   const w = words[words.length - 1]
@@ -238,5 +245,6 @@ export function quickAddExamples(words: QuickAddWords[]) {
     time: `@${w.times.morning[0]}`,
     estimate: `~30${w.minutes[0]}`,
     idea: w.idea[0],
+    note: w.note[0],
   }
 }

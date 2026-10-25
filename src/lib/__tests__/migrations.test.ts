@@ -286,3 +286,39 @@ describe('v11 → v12 (reminders and check-ins pushed, ADR-033)', () => {
     expect(migrate({ settings: {} }, 10).pushTargets).toEqual([])
   })
 })
+
+describe('v12 → v13 (notes, ADR-035)', () => {
+  it('adds an empty notes collection and keeps every existing record exactly', () => {
+    const v12 = {
+      tasks: [{ id: 't', title: 'Read', notes: 'p. 40' }], ideas: [{ id: 'i', notes: 'why' }], projects: [{ id: 'p', notes: 'long text' }],
+      memories: [{ id: 'm' }], pushTargets: [{ id: 'x', kinds: { timer: true, reminders: false, checkIns: true } }], settings: { name: 'Sam', language: 'ar' },
+    }
+    const d = migrate(structuredClone(v12), 12)
+    expect(d.notes).toEqual([])
+    expect(d.tasks).toEqual(v12.tasks)
+    expect(d.ideas).toEqual(v12.ideas)
+    expect(d.projects).toEqual(v12.projects)
+    expect(d.memories).toEqual(v12.memories)
+    expect(d.pushTargets).toEqual(v12.pushTargets)
+    expect(d.settings).toMatchObject({ name: 'Sam', language: 'ar' })
+  })
+  it('never overwrites notes already there', () => {
+    const notes = [{ id: 'n', title: 'Gate code', body: '4512', items: [] }]
+    expect(migrate({ notes }, 12).notes).toEqual(notes)
+    expect(migrate({ notes }, SCHEMA_VERSION).notes).toEqual(notes)
+  })
+  it('a v12 backup restores with an empty notes list, and a v1 backup comes all the way up', () => {
+    const b = { app: 'itqan', schemaVersion: 12, exportedAt: '', data: { areas: [], tasks: [{ id: 't' }], habits: [], goals: [] } }
+    const d = parseBackup(JSON.stringify(b))
+    expect(d.notes).toEqual([])
+    expect(d.tasks).toEqual([{ id: 't' }])
+    expect(migrate({ tasks: [] }, 1).notes).toEqual([])
+  })
+  it('a backup with notes round-trips exactly', () => {
+    const data = { ...emptyData(), notes: [{
+      id: 'n', title: 'Shopping', body: '', items: [{ id: 'a', text: 'Milk', done: true, taskId: null }], color: 'amber' as const,
+      labels: ['home'], pinned: true, archived: false, areaId: null, projectId: null, goalId: null, taskIds: [], createdAt: 'c', updatedAt: 'u',
+    }] }
+    expect(parseBackup(JSON.stringify(toBackup(data)))).toEqual(data)
+  })
+})

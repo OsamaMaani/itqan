@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { quickAddWords } from '../../i18n/quickAddWords'
-import { ideaText, parseQuickAdd } from '../quickAdd'
+import { ideaText, noteText, parseQuickAdd } from '../quickAdd'
 import type { Area } from '../types'
 
 const areas: Area[] = [
@@ -155,6 +155,20 @@ describe('quick add in other languages (ADR-024)', () => {
     expect(ideaText('فكرة: غلاية', w('ar'))).toBe('غلاية')
     expect(ideaText('想法：烧水壶', w('zh'))).toBe('烧水壶')
     expect(ideaText('idea:', w('es'))).toBe('')
+  })
+
+  it('note: needs its colon, in each language — "Note the time" stays a task', () => {
+    expect(noteText('note: gate code 4512')).toBe('gate code 4512')
+    expect(noteText('Note : gate code')).toBe('gate code')
+    expect(noteText('Note the meeting time')).toBeNull()
+    expect(noteText('notes: x')).toBeNull()
+    expect(noteText('ملاحظة: رمز البوابة', w('ar'))).toBe('رمز البوابة')
+    expect(noteText('note\u00a0: code du portail', w('fr'))).toBe('code du portail')
+    expect(noteText('笔记：门禁密码', w('zh'))).toBe('门禁密码')
+    expect(noteText('记：买牛奶', w('zh'))).toBe('买牛奶')
+    expect(noteText('nota: código', w('es'))).toBe('código')
+    expect(noteText('note: in English while in Spanish', w('es'))).toBe('in English while in Spanish')
+    expect(ideaText('note: a kettle')).toBeNull()
   })
 })
 

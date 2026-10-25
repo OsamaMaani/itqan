@@ -16,7 +16,7 @@ achievements, celebrations.
 ## Stage 2 — Shaped by real use (in progress)
 Done so far: local no-server app (ADR-012); Memories, Ideas, Reminders with desktop
 notifications (ADR-013/014/015); Projects (ADR-019) and Connections (ADR-018); Training — exercise and gym tracking (ADR-027,
-`11-training.md`, S2-26 to S2-31, started 2026-10-20).
+`11-training.md`, S2-26 to S2-31, started 2026-10-20); Notes — Keep-style notes and checklists (ADR-035, S2-41).
 
 Driven by the owner's first one to two weeks of feedback. Candidates, in rough priority:
 - Publish to GitHub and turn on Pages (S2-01).

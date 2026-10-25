@@ -17,7 +17,7 @@ import type { Data, Settings } from '../types'
 export type Entities = Record<string, unknown>
 
 export const ARRAY_COLLECTIONS = [
-  'areas', 'tasks', 'habits', 'goals', 'goalLogs', 'focusSessions', 'memories', 'ideas', 'reminders',
+  'areas', 'tasks', 'habits', 'goals', 'goalLogs', 'focusSessions', 'memories', 'ideas', 'notes', 'reminders',
   'projects', 'projectUpdates', 'contacts', 'interactions', 'achievements',
   'exercises', 'routines', 'workouts', 'workoutSets', 'pushTargets',
 ] as const

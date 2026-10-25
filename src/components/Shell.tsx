@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { BarChart3, Bell, BookOpenCheck, CalendarDays, Camera, Dumbbell, FolderKanban, Lightbulb, Menu, Plus, Settings, Sun, Target, Timer, Trophy, Repeat, Users } from 'lucide-react'
+import { BarChart3, Bell, BookOpenCheck, CalendarDays, Camera, Dumbbell, FolderKanban, Lightbulb, Menu, Plus, Settings, StickyNote, Sun, Target, Timer, Trophy, Repeat, Users } from 'lucide-react'
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { useI18n } from '../i18n/react'
 import { useProgress } from '../lib/hooks'
@@ -20,6 +20,7 @@ export const NAV: { route: Route; icon: ReactNode }[] = [
   { route: 'focus', icon: <Timer size={18} /> },
   { route: 'training', icon: <Dumbbell size={18} /> },
   { route: 'ideas', icon: <Lightbulb size={18} /> },
+  { route: 'notes', icon: <StickyNote size={18} /> },
   { route: 'reminders', icon: <Bell size={18} /> },
   { route: 'connections', icon: <Users size={18} /> },
   { route: 'memories', icon: <Camera size={18} /> },
