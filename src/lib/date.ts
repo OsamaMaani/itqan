@@ -2,7 +2,8 @@ import {
   addDays, differenceInCalendarDays, format, parseISO, startOfWeek,
 } from 'date-fns'
 import { tx, type I18n } from '../i18n/core'
-import type { DateKey } from './types'
+import { fajrMs } from './fajr'
+import type { DateKey, FajrSpan } from './types'
 
 /** Local-time day key. Never derive one from toISOString(): that is UTC and shifts the day. */
 export function toKey(d: Date): DateKey {
@@ -13,8 +14,52 @@ export function fromKey(k: DateKey): Date {
   return parseISO(k)
 }
 
+// --- When a day starts (ADR-041) -------------------------------------------------------------
+// By default at midnight. While the owner has a day start at Fajr, a moment after midnight but
+// before Fajr belongs to the day before. The rule is the stored spans of time it was on, so the
+// day of any moment is a pure function of the data: switching never moves the past.
+
+let spans: { from: number; to: number; span: FajrSpan }[] = []
+
+/** Installs the owner's Fajr spans (the store does this whenever they change). */
+export function setDayRule(list: readonly FajrSpan[]): void {
+  spans = list
+    .map((span) => ({ from: Date.parse(span.from), to: span.to ? Date.parse(span.to) : Infinity, span }))
+    .filter((x) => Number.isFinite(x.from) && x.to > x.from)
+    .sort((a, b) => a.from - b.from)
+}
+
+/** The span in force at a moment (the latest to start, if two devices overlapped), else null. */
+export function fajrSpanAt(ms: number): FajrSpan | null {
+  for (let i = spans.length - 1; i >= 0; i--) {
+    const x = spans[i]
+    if (x.from <= ms && ms < x.to) return x.span
+  }
+  return null
+}
+
+/** Fajr of local day `k` under a span, as epoch ms; null where there is none (polar day/night). */
+export function fajrOn(k: DateKey, span: Pick<FajrSpan, 'lat' | 'lng' | 'angle'>): number | null {
+  return fajrMs(k, span.lat, span.lng, span.angle)
+}
+
+/**
+ * The day a moment belongs to: its local calendar day, or the day before when it falls after
+ * midnight but before Fajr while the day starts at Fajr. Every "which day did this happen" goes
+ * through here (or todayKey) — never toKey(new Date(iso)), which ignores the rule.
+ */
+export function dayOf(at: Date | string): DateKey {
+  const d = typeof at === 'string' ? new Date(at) : at
+  const k = toKey(d)
+  const span = fajrSpanAt(d.getTime())
+  if (!span) return k
+  const fajr = fajrOn(k, span)
+  return fajr !== null && d.getTime() < fajr ? toKey(addDays(fromKey(k), -1)) : k
+}
+
+/** The day it is now — the day a check-in, a finished task or a new entry counts for. */
 export function todayKey(now: Date = new Date()): DateKey {
-  return toKey(now)
+  return dayOf(now)
 }
 
 export function addDaysKey(k: DateKey, n: number): DateKey {

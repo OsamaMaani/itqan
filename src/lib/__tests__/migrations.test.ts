@@ -366,3 +366,28 @@ describe('v14 → v15 (habit rounds, ADR-038)', () => {
     expect(parseBackup(JSON.stringify(toBackup(data)))).toEqual(data)
   })
 })
+
+describe('v15 → v16 (a day may start at Fajr, ADR-041)', () => {
+  it('the rule starts off — no span — so every day stays as it was; Fajr choices get their defaults', () => {
+    const tasks = [{ id: 't', done: true, doneAt: '2026-10-27T23:30:00.000Z' }]
+    const d = migrate({ tasks: structuredClone(tasks), habitLogs: { h: { '2026-10-27': 1 } }, settings: { name: 'N', weekStartsOn: 6 } }, 15)
+    expect(d.fajrSpans).toEqual([])
+    expect(d.settings.fajr).toEqual({ place: null, angle: null, announce: true })
+    expect(d.tasks).toEqual(tasks)
+    expect(d.habitLogs).toEqual({ h: { '2026-10-27': 1 } })
+    expect(d.settings.name).toBe('N')
+  })
+  it('spans and choices already there are kept; a v1 backup comes all the way up', () => {
+    const fajrSpans = [{ id: 's', from: 'a', to: null, lat: 1, lng: 2, angle: 18, createdAt: 'a' }]
+    const d = migrate({ fajrSpans, settings: { fajr: { place: { lat: 1, lng: 2 } } } }, 15)
+    expect(d.fajrSpans).toEqual(fajrSpans)
+    expect(d.settings.fajr).toEqual({ place: { lat: 1, lng: 2 }, angle: null, announce: true })
+    expect(migrate({}, 1).fajrSpans).toEqual([])
+    const b = { app: 'itqan', schemaVersion: 15, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [] } }
+    expect(parseBackup(JSON.stringify(b)).fajrSpans).toEqual([])
+  })
+  it('a backup with spans round-trips exactly (current shape)', () => {
+    const data = { ...emptyData(), fajrSpans: [{ id: 's', from: '2026-10-28T10:00:00.000Z', to: null, lat: 30.0444, lng: 31.2357, angle: 19.5, createdAt: '2026-10-28T10:00:00.000Z' }] }
+    expect(parseBackup(JSON.stringify(toBackup(data)))).toEqual(data)
+  })
+})

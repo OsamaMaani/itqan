@@ -11,7 +11,7 @@ Zustand as `{ state: Data, version: SCHEMA_VERSION }`.
 | Field | Shape | Notes |
 |---|---|---|
 | `areas` | `Area[]` | Deleting an area nulls references; nothing else is deleted with it |
-| `tasks` | `Task[]` | `date: null` = Inbox. `doneAt` drives XP day and the review |
+| `tasks` | `Task[]` | `date: null` = Inbox. `doneAt` drives XP day and the review — read through `dayOf()`, never `toKey(new Date(…))` (ADR-041) |
 | `habits` | `Habit[]` | `schedule` + `target` + `unit`; optional `round` `{ size, from, done }` for a counted habit — 604 pages of the Quran — counted from `from` on top of `done`, then it starts again (v15, ADR-038) |
 | `habitLogs` | `{ [habitId]: { [DateKey]: amount } }` | A map, not an array: O(1) per day, compact. Amount 0 = key removed |
 | `goals` | `Goal[]` | `startValue` = progress before tracking began; milestones inline; `link` = follow Training instead of check-ins (v8) |
@@ -35,7 +35,8 @@ Zustand as `{ state: Data, version: SCHEMA_VERSION }`.
 | `workouts` | `Workout[]` | `date` = local day it started; `finishedAt` null = in progress; `items` = a copy of the routine's; `tickedHabitId` |
 | `workoutSets` | `WorkoutSet[]` | Own collection so sets from two devices both survive sync. kg, metres, seconds — always; `warmup`; `effort` |
 | `pushTargets` | `PushTarget[]` | Devices that get the laptop's alerts pushed: subscription endpoint + keys, the device's own VAPID key pair (private as JWK), `subject`, and `kinds` `{ timer, reminders, checkIns }` — which alerts that device wants, mirroring its own `notify` (v12, ADR-033). Created, updated and removed by that device; synced (v11, ADR-031) |
-| `settings` | `Settings` | Includes `onboarded`, `lastBackupAt`, `daily` — the daily card's switches, word language and level (ADR-023) — and `language`, the interface language `en`/`ar`/`fr`/`zh`/`es` (schema v7, ADR-024; synced), and `weightUnit` `kg`/`lb`, display only (v8, synced), and `notify` `{ on, timer, reminders, checkIns }` — what this device announces (v11, device-local, ADR-031). `normalize()` merges `daily` and `notify` with their defaults key by key and falls back to `en` for an unknown language |
+| `fajrSpans` | `FajrSpan[]` | When a day started at Fajr instead of midnight: `from`/`to` (ISO; `to` null while on) and the `lat`, `lng`, `angle` it was reckoned with. Appended and closed, never deleted or re-opened, so turning the rule on, off or moving it never re-dates the past. On = a span is open. Synced one entity per span, so a stale device cannot wipe one (v16, ADR-041) |
+| `settings` | `Settings` | Includes `onboarded`, `lastBackupAt`, `daily` — the daily card's switches, word language and level (ADR-023) — and `language`, the interface language `en`/`ar`/`fr`/`zh`/`es` (schema v7, ADR-024; synced), and `weightUnit` `kg`/`lb`, display only (v8, synced), and `notify` `{ on, timer, reminders, checkIns }` — what this device announces (v11, device-local, ADR-031), and `fajr` `{ place, angle, announce }` — where Fajr is reckoned (null = the device time zone's city), the angle (null = usual there), and the "counted for" notice (v16, synced, ADR-041). `normalize()` merges `daily`, `notify` and `fajr` with their defaults key by key and falls back to `en` for an unknown language |
 
 ## The sync document (ADR-016)
 

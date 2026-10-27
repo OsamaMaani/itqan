@@ -15,6 +15,7 @@ import { AreaChip, Button, Card, cx, EmptyState, IconButton, Input, Label, Modal
 import { useI18n } from '../i18n/react'
 import type { I18n } from '../i18n/core'
 import { celebrate } from '../lib/celebrate'
+import { announceCounted } from '../lib/dayStart'
 import { diffDays } from '../lib/date'
 import { areaHex, useAreaMap, useData, useToday } from '../lib/hooks'
 import { uid } from '../lib/id'
@@ -247,7 +248,7 @@ function ProjectDetail({ id }: { id: string }) {
             <div className="truncate font-semibold">{next.title}</div>
           </div>
           {next.stage !== 'doing' && <Button size="sm" onClick={() => useStore.getState().setTaskStage(next.id, 'doing')}>{L.startAction}</Button>}
-          <Button size="sm" variant="primary" onClick={() => { if (useStore.getState().setTaskStage(next.id, 'done')) celebrate.tick() }}><Check size={14} /> {t.m.common.done}</Button>
+          <Button size="sm" variant="primary" onClick={() => { if (useStore.getState().setTaskStage(next.id, 'done')) { celebrate.tick(); announceCounted() } }}><Check size={14} /> {t.m.common.done}</Button>
         </Card>
       )}
 
@@ -397,7 +398,7 @@ function Board({ p, tasks }: { p: Project; tasks: Task[] }) {
   const [over, setOver] = useState<string | null>(null)
 
   const move = (id: string, stage: TaskStage | 'done') => {
-    if (setStage(id, stage)) { celebrate.tick() }
+    if (setStage(id, stage)) { celebrate.tick(); announceCounted() }
   }
 
   return (

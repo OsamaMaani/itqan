@@ -1,4 +1,4 @@
-import { addDaysKey, diffDays, rangeKeys, toKey } from './date'
+import { addDaysKey, dayOf, diffDays, rangeKeys } from './date'
 import { isMetOn, streak } from './habits'
 import { bestWeekRun, plannedPerWeek, recordCounts } from './training'
 import type { Data, DateKey } from './types'
@@ -35,10 +35,6 @@ export interface XpEvent {
   date: DateKey
   xp: number
   kind: XpKind
-}
-
-function dayOf(iso: string): DateKey {
-  return toKey(new Date(iso))
 }
 
 export function xpEvents(d: Data): XpEvent[] {

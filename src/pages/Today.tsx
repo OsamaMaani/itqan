@@ -12,7 +12,7 @@ import { Button, Card, cx, EmptyState, ProgressBar, ProgressRing, SectionTitle }
 import { tx } from '../i18n/core'
 import { rich, useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
-import { fromKey, greetingKey, toKey } from '../lib/date'
+import { dayOf, fromKey, greetingKey } from '../lib/date'
 import { goalPace, goalProgress } from '../lib/goals'
 import { isDueToday, isMetOn } from '../lib/habits'
 import { enabledKinds } from '../lib/daily'
@@ -74,7 +74,7 @@ export function TodayPage() {
   }, [ratio, total])
 
   const note = d.dayNotes[today] ?? { intention: '', mood: 0, reflection: '' }
-  const focusToday = d.focusSessions.filter((f) => toKey(new Date(f.startedAt)) === today)
+  const focusToday = d.focusSessions.filter((f) => dayOf(f.startedAt) === today)
     .reduce((s, f) => s + f.minutes, 0)
   const activeGoals = useMemo(
     () => d.goals.filter((g) => g.status === 'active')

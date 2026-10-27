@@ -1,5 +1,5 @@
 import { tx, type I18n } from '../i18n/core'
-import { addDaysKey, dayOfWeek, diffDays, rangeKeys, toKey, weekStartKey } from './date'
+import { addDaysKey, dayOf, dayOfWeek, diffDays, rangeKeys, weekStartKey } from './date'
 import type { DateKey, Habit, HabitLogs, HabitRound } from './types'
 
 /**
@@ -35,7 +35,7 @@ export function metDaysInWeek(h: Habit, logs: HabitLogs, day: DateKey, weekStart
 
 /** The first day this habit's history should be read from: the local day it was created, or its earliest log. */
 export function historyStart(h: Pick<Habit, 'id' | 'createdAt'>, logs: HabitLogs): DateKey {
-  let start = toKey(new Date(h.createdAt))
+  let start = dayOf(h.createdAt)
   for (const k of Object.keys(logs[h.id] ?? {})) if (k < start) start = k
   return start
 }

@@ -6,6 +6,7 @@ import { Heatmap } from '../components/Heatmap'
 import { AreaChip, Button, Card, cx, EmptyState, IconButton, PageHeader } from '../components/ui'
 import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
+import { announceCounted } from '../lib/dayStart'
 import { addDaysKey } from '../lib/date'
 import { amountOn, completionRate, countsMinutes, isMetOn, isScheduled, roundProgress, scheduleLabel, streak } from '../lib/habits'
 import { areaHex, useAreaMap, useData, useToday } from '../lib/hooks'
@@ -67,7 +68,7 @@ function HabitRow({ habit }: { habit: Habit }) {
   const toggle = (day: string) => {
     const met = isMetOn(habit, logs, day)
     setAmount(habit.id, day, met ? 0 : target)
-    if (!met) celebrate.tick()
+    if (!met) { celebrate.tick(); announceCounted(day) }
   }
 
   return (

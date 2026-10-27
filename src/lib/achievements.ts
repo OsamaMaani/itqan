@@ -1,5 +1,5 @@
 import { tx, type I18n } from '../i18n/core'
-import { toKey } from './date'
+import { dayOf } from './date'
 import { streak } from './habits'
 import type { Achievement, Area, Data, DateKey } from './types'
 
@@ -103,14 +103,14 @@ export function suggestions(d: Data, today: DateKey, dismissed: string[] = [], t
   for (const g of d.goals) {
     if (g.status !== 'done' || !g.completedAt) continue
     out.push({
-      source: `goal:${g.id}`, title: g.title, story: g.why, date: toKey(new Date(g.completedAt)),
+      source: `goal:${g.id}`, title: g.title, story: g.why, date: dayOf(g.completedAt),
       category: categoryForArea(area(g.areaId)), emoji: '🏆', impact: 3, goalId: g.id, projectId: null,
     })
   }
   for (const p of d.projects) {
     if (p.status !== 'done') continue
     out.push({
-      source: `project:${p.id}`, title: t.f(t.m.achievements.finished, { title: p.title }), story: p.description, date: toKey(new Date(p.updatedAt)),
+      source: `project:${p.id}`, title: t.f(t.m.achievements.finished, { title: p.title }), story: p.description, date: dayOf(p.updatedAt),
       category: 'projects', emoji: p.emoji || '🚀', impact: 2, goalId: p.goalId, projectId: p.id,
     })
   }

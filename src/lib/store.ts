@@ -6,9 +6,10 @@ import { focusHabitAmount } from './habits'
 import { uid } from './id'
 import { migrate, SCHEMA_VERSION } from './migrations'
 import { emptyData, starterData } from './seed'
-import { todayKey } from './date'
+import { setDayRule, todayKey } from './date'
+import { deviceZone, resolveFajr, switchFajr } from './fajr'
 import type {
-  Achievement, ActiveTimer, Area, Contact, Data, DateKey, DayNote, Exercise, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory, Note,
+  Achievement, ActiveTimer, Area, Contact, Data, DateKey, DayNote, Exercise, FajrSettings, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory, Note,
   Project, ProjectUpdate, PushTarget, Reminder, Routine, RoutineItem, Settings, Task, TaskStage, TrainingProgram, WeeklyReview, Workout, WorkoutSet,
 } from './types'
 import { birthdayReminderDate } from './connections'
@@ -143,6 +144,12 @@ interface Actions {
   removePushTarget: (id: ID) => void
   // settings & data
   updateSettings: (patch: Partial<Settings>) => void
+  /**
+   * Turns "a day starts at Fajr" on or off and/or changes its place, angle or notice (ADR-041).
+   * Dated through FajrSpans, so nothing already done changes day. Returns whether it is on after:
+   * asking for on where no place is known leaves it off.
+   */
+  setDayStart: (on: boolean, patch?: Partial<FajrSettings>) => boolean
   completeOnboarding: (name: string, starter: boolean) => void
   replaceAll: (d: Data) => void
   resetAll: () => void
@@ -713,6 +720,13 @@ export const useStore = create<Store>()(
 
       // --- settings & data -------------------------------------------------------
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
+      setDayStart: (on, patch = {}) => {
+        const s = get()
+        const fajr = { ...s.settings.fajr, ...patch }
+        const want = on ? resolveFajr(fajr, deviceZone()) : null
+        set({ settings: { ...s.settings, fajr }, fajrSpans: switchFajr(s.fajrSpans, want, now(), uid()) })
+        return !!want
+      },
       completeOnboarding: (name, starter) =>
         set((s) => ({
           ...(starter ? starterData(todayKey()) : {}),
@@ -730,13 +744,18 @@ export const useStore = create<Store>()(
         goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
         reviews: s.reviews, memories: s.memories, ideas: s.ideas, notes: s.notes, reminders: s.reminders, projects: s.projects,
         projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
-        exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets,
+        exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets, fajrSpans: s.fajrSpans,
         settings: s.settings,
       }),
       migrate: (persisted, version) => migrate(persisted, version) as unknown as Store,
     },
   ),
 )
+
+// Every day in the app is read through the owner's Fajr spans (ADR-041): install them now and
+// whenever they change — by a switch here, a sync from another device, or a restored backup.
+setDayRule(useStore.getState().fajrSpans)
+useStore.subscribe((s, prev) => { if (s.fajrSpans !== prev.fajrSpans) setDayRule(s.fajrSpans) })
 
 function completeIfReached(goalId: ID): boolean {
   const s = useStore.getState()
@@ -756,7 +775,7 @@ export function snapshot(s: Store): Data {
     goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
     reviews: s.reviews, memories: s.memories, ideas: s.ideas, notes: s.notes, reminders: s.reminders, projects: s.projects,
     projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
-    exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets,
+    exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets, fajrSpans: s.fajrSpans,
     settings: s.settings,
   }
 }

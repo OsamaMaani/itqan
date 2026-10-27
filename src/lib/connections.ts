@@ -1,5 +1,5 @@
 import { tx, type I18n } from '../i18n/core'
-import { addDaysKey, diffDays, toKey } from './date'
+import { addDaysKey, dayOf, diffDays } from './date'
 import type { Contact, DateKey, Interaction, InteractionKind } from './types'
 
 /**
@@ -54,7 +54,7 @@ export interface CheckIn {
 export function checkIn(c: Contact, all: Interaction[], today: DateKey): CheckIn {
   const last = lastContact(c, all)
   if (!c.cadenceDays || c.archived) return { due: null, days: null, state: 'none', last }
-  const base = last ?? toKey(new Date(c.createdAt))
+  const base = last ?? dayOf(c.createdAt)
   let due = addDaysKey(base, c.cadenceDays)
   if (c.snoozedUntil && c.snoozedUntil > due) due = c.snoozedUntil
   const days = diffDays(due, today)

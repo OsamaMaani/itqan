@@ -21,6 +21,41 @@ export const settings = {
     showHijri: 'Show Hijri date',
   },
 
+  /** Settings → When a day starts (ADR-041). */
+  dayStart: {
+    title: 'When a day starts',
+    body: 'By default a day ends at midnight. Choose Fajr, and anything you finish after midnight but before Fajr still counts for the day before — you have not slept yet.',
+    midnight: 'At midnight',
+    fajr: 'At Fajr',
+    keeps: 'Switching never moves what you already did: it stays on the day it counted for.',
+    place: 'Fajr times for',
+    fromZone: 'My time zone',
+    coordinates: 'Coordinates',
+    /** {zone} is the time zone's own name, e.g. “Eastern European Time”. */
+    zoneIs: 'Reckoned for the main city of {zone}. For exact times, give your coordinates.',
+    unknownZone: 'Itqan does not know Fajr times for your time zone yet. Give your coordinates to start the day at Fajr.',
+    latitude: 'Latitude',
+    longitude: 'Longitude',
+    useLocation: 'Use my location',
+    locating: 'Finding you…',
+    locationFailed: 'Could not get your location. Type your coordinates instead.',
+    angle: 'Fajr angle',
+    /** {angle} is a number of degrees, e.g. 19.5. */
+    angleAuto: 'Usual here ({angle}°)',
+    angleAutoUnknown: 'Usual for the place',
+    /** {angle} is a number of degrees. */
+    angleValue: '{angle}°',
+    angleHint: 'How far below the horizon the sun is at Fajr. Egypt uses 19.5°, Umm al-Qura 18.5°, North America 15°.',
+    /** {time} is a clock time. */
+    fajrToday: 'Fajr today: {time}',
+    noFajrToday: 'No Fajr today at this latitude, so the day starts at midnight.',
+    announce: 'After I complete a task or habit, tell me which day it counted for',
+    /** A notice after completing something. {day} is a date like “Tuesday, October 27”. */
+    countedFor: 'Counted for {day}.',
+    /** The same between midnight and Fajr. {day} is the day before's date; {time} is when Fajr is. */
+    countedBeforeFajr: 'Counted for {day}: Fajr is at {time}, so that day is not over yet.',
+  },
+
   daily: {
     title: 'Daily card',
     body: 'One of each a day on Today, the same on all your devices. On a phone it stays folded to one line until you open it.',

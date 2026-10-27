@@ -1,4 +1,4 @@
-import { addDaysKey, dayOfWeek, rangeKeys, toKey } from './date'
+import { addDaysKey, dayOf, dayOfWeek, rangeKeys } from './date'
 import { amountBetween, amountTotal, completionRate, historyStart, isCounted, roundProgress, type RoundProgress } from './habits'
 import type { DateKey, FocusSession, Habit, HabitLogs, ID, Task } from './types'
 
@@ -6,9 +6,9 @@ import type { DateKey, FocusSession, Habit, HabitLogs, ID, Task } from './types'
 // the screen only lays them out. A session belongs to the local day it started on, like
 // everywhere else (the Focus screen, the habit it checks in).
 
-/** The local day a session started on. */
+/** The day a session started on (ADR-041: before Fajr may be the day before). */
 export function sessionDay(f: FocusSession): DateKey {
-  return toKey(new Date(f.startedAt))
+  return dayOf(f.startedAt)
 }
 
 /** The same number of days immediately before `from…to`: what a period is compared against. */
@@ -168,7 +168,7 @@ export function tasksDoneByDay(tasks: Task[], from: DateKey, to: DateKey): Recor
   for (const k of rangeKeys(from, to)) out[k] = 0
   for (const t of tasks) {
     if (!t.done || !t.doneAt) continue
-    const k = toKey(new Date(t.doneAt))
+    const k = dayOf(t.doneAt)
     if (k >= from && k <= to) out[k]++
   }
   return out

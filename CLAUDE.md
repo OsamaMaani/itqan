@@ -93,7 +93,8 @@ Arabic (RTL), French, Chinese, Spanish (ADR-024; rules in `memory/10-localizatio
 exercises, routines, a program, live workouts, records (ADR-027; schema v8; `memory/11-training.md`), and
 streak savers that keep the day streak alive, earned with XP and derived from history (ADR-034), and
 Notes — Keep-style notes and checklists linked to areas, projects and goals, pinnable to Today
-(ADR-035, ADR-036; schema v14).
+(ADR-035, ADR-036; schema v14), and an optional day that starts at Fajr instead of midnight, dated so
+history never moves (ADR-041; schema v16 — read days with `dayOf()`, never `toKey(new Date(…))`).
 `memory/status.json` and `dashboard/index.html` are the live answer — this
 paragraph is a snapshot and will lag them.
 

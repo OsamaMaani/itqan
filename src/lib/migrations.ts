@@ -6,7 +6,7 @@ import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 15
+export const SCHEMA_VERSION = 16
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -107,6 +107,16 @@ const steps: Record<number, Step> = {
     ...d,
     habits: ((d.habits as Record<string, unknown>[] | undefined) ?? []).map((h) => ({ round: null, ...h })),
   }),
+  // 15 → 16 (2026-10-28): a day may start at Fajr (ADR-041). It is off — no span — so every day
+  // stays exactly as it was; the Fajr choices start at "the time zone's city, its usual angle".
+  15: (d) => {
+    const settings = (d.settings as Record<string, unknown> | undefined) ?? {}
+    return {
+      ...d,
+      fajrSpans: d.fajrSpans ?? [],
+      settings: { ...settings, fajr: { ...DEFAULT_SETTINGS.fajr, ...((settings.fajr as object) ?? {}) } },
+    }
+  },
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {
@@ -148,6 +158,7 @@ export function normalize(d: Record<string, unknown>): Data {
     workouts: pick('workouts'),
     workoutSets: pick('workoutSets'),
     pushTargets: pick('pushTargets'),
+    fajrSpans: pick('fajrSpans'),
     settings: normalizeSettings(d.settings),
   }
 }
@@ -161,6 +172,7 @@ function normalizeSettings(raw: unknown): Settings {
     ...DEFAULT_SETTINGS, ...s,
     daily: { ...DEFAULT_SETTINGS.daily, ...(s.daily ?? {}) },
     notify: { ...DEFAULT_SETTINGS.notify, ...(s.notify ?? {}) },
+    fajr: { ...DEFAULT_SETTINGS.fajr, ...(s.fajr ?? {}) },
     language, weightUnit,
   }
 }

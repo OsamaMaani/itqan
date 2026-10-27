@@ -26,6 +26,33 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: 3,
+    date: '2026-10-28',
+    tasks: ['S2-49'],
+    items: [
+      {
+        emoji: '🌙',
+        text: {
+          en: 'Your day can now end at Fajr instead of midnight: up late, what you finish before Fajr still counts for that day. Turn it on in Settings → When a day starts. Nothing you already did moves.',
+          ar: 'يمكن الآن أن ينتهي يومك عند الفجر بدل منتصف الليل: إن سهرت، يُحسب ما تنجزه قبل الفجر لذلك اليوم. فعّله من الإعدادات ← متى يبدأ اليوم. لا يتحرك شيء مما أنجزته سابقًا.',
+          fr: 'Ta journée peut maintenant se terminer au Fajr plutôt qu’à minuit : si tu veilles, ce que tu termines avant le Fajr compte encore pour ce jour-là. À activer dans Réglages → Quand commence une journée. Rien de ce que tu as déjà fait ne bouge.',
+          zh: '现在你的一天可以在晨礼时结束，而不是午夜：熬夜时，晨礼前完成的事仍算作当天。在“设置 → 一天何时开始”中开启。已完成的事不会移动。',
+          es: 'Ahora tu día puede terminar en el Fajr en lugar de a medianoche: si trasnochas, lo que termines antes del Fajr sigue contando para ese día. Actívalo en Ajustes → Cuándo empieza el día. Nada de lo que ya hiciste se mueve.',
+        },
+      },
+      {
+        emoji: '📅',
+        text: {
+          en: 'With it on, completing a task or habit tells you which day it counted for.',
+          ar: 'عند تفعيله، يخبرك إتمام مهمة أو عادة لأي يوم حُسبت.',
+          fr: 'Une fois activé, chaque tâche ou habitude accomplie te dit pour quel jour elle a compté.',
+          zh: '开启后，完成任务或习惯时会告诉你它计入了哪一天。',
+          es: 'Con esto activado, al completar una tarea o un hábito se te indica para qué día contó.',
+        },
+      },
+    ],
+  },
+  {
     id: 2,
     date: '2026-10-28',
     tasks: ['S2-46', 'S2-47', 'S2-48'],

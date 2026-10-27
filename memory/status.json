@@ -473,6 +473,13 @@
           "module": "settings",
           "status": "done",
           "critical": false
+        },
+        {
+          "id": "S2-49",
+          "title": "A day may start at Fajr: optional, dated spans so history never moves, Fajr by time zone or coordinates, a 'counted for' notice (ADR-041, schema v16)",
+          "module": "core-data",
+          "status": "done",
+          "critical": true
         }
       ]
     },
@@ -706,6 +713,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-28",
+      "entry": "S2-49 (ADR-041), asked for by the owner: an optional rule that a day starts at Fajr instead of midnight, so work after midnight but before Fajr counts for the day before. Off by default. Dated as fajrSpans (schema v16, migration + tests): switching on, off or moving never re-dates anything already done — the owner's explicit worry for existing users — tested with XP, the day streak and day counts identical across a switch. dayOf()/todayKey() read the spans; every instant-to-day read goes through them, and a source guard fails CI on a new toKey(new Date(...)). Fajr maths in lib/fajr.ts (no dependency), within 2 min of the adhan library across seven cities; place from the device time zone's city or coordinates, angle by local authority. Spans sync one entity each so a stale device cannot wipe them. A toast after completing a task or habit says which day it counted for. Checked in the browser at 1:33 AM Cairo: Today showed Tuesday, a task and a habit landed on the 27th, switching back moved nothing; Arabic layout checked."
+    },
     {
       "date": "2026-10-28",
       "entry": "S2-46…48, asked for by the owner. S2-46: the On Today switch showed the dim sun when on (reads as off) and both suns look alike; note switches now show their state — filled icon on a green chip when on, outline when off. S2-47 (ADR-039): the goal editor gets a folding 'How to set a good goal' panel (do's and avoids), a live checklist — Specific, Measurable, Deadline, Why (goalChecks, 8 tests) — and the pace the deadline asks; advice only. S2-48 (ADR-040): What's new — release notes in src/content/releases.ts (five languages) shown once per device after an update, history in Settings; releases.test.ts fails CI when a done task is unannounced, so it is now part of shipping (CLAUDE.md rule 9). Checked in the browser, English and Arabic."

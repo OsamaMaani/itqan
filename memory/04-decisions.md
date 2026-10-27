@@ -960,3 +960,43 @@ the app, as professional apps do".
 storing "seen" in synced settings (each device should announce once — the phone too); a badge
 or banner instead of a dialog (easy to miss; the owner asked for an announcement).
 
+## ADR-041 | 2026-10-28 | accepted | A day may start at Fajr
+
+**Context:** The owner, 2026-10-28: when a task is completed at 1 AM, he has not slept yet — it
+should count for the day before. Optional, off by default, the line being Fajr in his time zone;
+after completing a task or habit, tell him which day it was assigned to. And: older users switching
+it on must not end up with conflicts in what they already recorded.
+**Decision:**
+- **The rule is dated history, not a flag.** `fajrSpans` (schema v16): each stretch of time the rule
+  was on, with the place and angle it used. A moment inside a span belongs to the day before if it
+  is before that calendar day's Fajr at the span's place; every other moment keeps its calendar day.
+  Switching on opens a span *now*; off closes it; a new place or angle closes and opens one. Spans
+  are never deleted or re-opened. So the day of any moment is a pure function of the data, and
+  **nothing already done ever changes day** — not when switching on after months of use, not when
+  switching off, not after moving city (tested: XP events, day streak and day counts identical).
+- **One function for "which day did this happen":** `dayOf()` / `todayKey()` in `date.ts` read the
+  spans, installed by the store on load, on change, on sync and on restore. Every instant→day read
+  (task `doneAt`, focus sessions, milestones, habit start, project start, achievements) goes through
+  it; a source guard fails CI on a new `toKey(new Date(…))` outside clock-time code. Things already
+  stored with a day — habit logs, goal check-ins, workouts — never move by construction.
+  Reminders and alert times stay on the calendar clock: they ring at a time on a date.
+- **Fajr maths in `lib/fajr.ts`,** no dependency: the standard method (praytimes/adhan) — sun
+  `angle` below the horizon before sunrise; angle-based rule where it never gets that low (high
+  latitudes in summer); no Fajr where the sun does not rise or set → midnight that day. Tested
+  against the adhan library across seven cities and seasons (within 2 minutes; it agrees within
+  1.4). Place: the main city of the device's time zone (a table of ~70 zones with each one's usual
+  authority angle — Egypt 19.5°, Umm al-Qura 18.5°, ISNA 15°…), or coordinates typed or taken from
+  "Use my location". Angle: the usual one, or chosen.
+- **Sync:** spans are their own collection, one entity each — not inside `settings:shared`, which is
+  one last-writer-wins blob: a device that never saw a span would otherwise erase it and re-date
+  history. Two devices opening spans at once is harmless (the later span decides; off closes all).
+- **The notice:** a toast after completing a task or habit for *today* while the rule is on —
+  "Counted for Tuesday, October 27: Fajr is at 5:38 AM, so that day is not over yet" before Fajr,
+  "Counted for Wednesday, October 28." after. A switch in Settings turns it off. A toast, not a
+  system notification: the owner is in the app when completing something.
+**Rejected:** a flag that re-reads all history through the current rule (switching would move
+months of late-night work and change streaks — the owner's explicit worry); storing a "counted on"
+day on each task (fixes tasks only; focus sessions, milestones and the rest would still move, and it
+needs a migration of every record); keeping the spans in synced settings (a stale device wipes them);
+a prayer-times library (a dependency for ~60 lines of well-known, tested maths); Maghrib as the line
+(the owner chose Fajr: the day ends when you sleep, not at sunset).

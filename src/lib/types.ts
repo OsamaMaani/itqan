@@ -511,6 +511,40 @@ export interface Settings {
   weightUnit: WeightUnit
   /** What this device announces (ADR-031). Device-local, never synced. Schema v11. */
   notify: NotifySettings
+  /** Where and how Fajr is reckoned when a day starts at Fajr (ADR-041). Synced. Schema v16. */
+  fajr: FajrSettings
+}
+
+/**
+ * The owner's choices for a day that starts at Fajr (ADR-041). Whether it is on is not here: that
+ * is an open FajrSpan, so turning it on or off is dated and history never moves.
+ */
+export interface FajrSettings {
+  /** null = the main city of this device's time zone; else coordinates the owner gave. */
+  place: { lat: number; lng: number } | null
+  /** Degrees the sun is below the horizon at Fajr; null = the usual angle for the place. */
+  angle: number | null
+  /** Say which day a completed task or habit counted for, while the day starts at Fajr. */
+  announce: boolean
+}
+
+/**
+ * A stretch of time during which a day started at Fajr (ADR-041): from turning it on (or changing
+ * the place) to turning it off. A moment inside a span belongs to the day before if it falls
+ * before that day's Fajr at the span's place; any other moment belongs to its calendar day, as
+ * always. Each span keeps the place and angle it was made with, so turning the rule on, off or
+ * moving it never re-dates anything already done. Spans are never deleted. Synced. Schema v16.
+ */
+export interface FajrSpan {
+  id: ID
+  /** ISO instant the rule took effect */
+  from: string
+  /** ISO instant it stopped; null while it is on */
+  to: string | null
+  lat: number
+  lng: number
+  angle: number
+  createdAt: string
 }
 
 /** Per-device notification choices (ADR-031). The browser's own permission is asked once, from Settings. */
@@ -607,5 +641,7 @@ export interface Data {
   workoutSets: WorkoutSet[]
   /** Devices that get the laptop's alerts pushed to them (ADR-031). */
   pushTargets: PushTarget[]
+  /** When a day started at Fajr instead of midnight (ADR-041). Schema v16. */
+  fajrSpans: FajrSpan[]
   settings: Settings
 }

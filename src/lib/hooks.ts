@@ -7,13 +7,16 @@ import { useStore } from './store'
 import type { Area, Data } from './types'
 import { AREA_HEX, NEUTRAL_HEX } from './colors'
 
-/** Today's DateKey, refreshed when the day rolls over while the app is open. */
+/** Today's DateKey, refreshed when the day rolls over (at midnight or Fajr) while the app is open. */
 export function useToday(): string {
   const [k, setK] = useState(todayKey())
+  // Turning "a day starts at Fajr" on or off can move today at once (ADR-041).
+  const spans = useStore((s) => s.fajrSpans)
   useEffect(() => {
+    setK(todayKey())
     const id = setInterval(() => setK((prev) => (prev === todayKey() ? prev : todayKey())), 30_000)
     return () => clearInterval(id)
-  }, [])
+  }, [spans])
   return k
 }
 
@@ -37,7 +40,7 @@ export function useData(): Data {
       goalLogs: s.goalLogs, focusSessions: s.focusSessions, timer: s.timer, dayNotes: s.dayNotes,
       reviews: s.reviews, memories: s.memories, ideas: s.ideas, notes: s.notes, reminders: s.reminders, projects: s.projects,
       projectUpdates: s.projectUpdates, achievements: s.achievements, contacts: s.contacts, interactions: s.interactions,
-      exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets, settings: s.settings,
+      exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets, fajrSpans: s.fajrSpans, settings: s.settings,
     })),
   )
 }
@@ -56,7 +59,7 @@ export function useProgress() {
     const day = dayStreak(events, today)
     return { events, total, level: levelInfo(total), todayXp: xpOn(events, today), streak: day.current, day }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [d.tasks, d.habits, d.habitLogs, d.focusSessions, d.goals, d.goalLogs, d.reviews, d.dayNotes, d.memories, d.ideas, d.interactions, d.contacts, d.achievements, d.projects, d.workouts, d.workoutSets, today])
+  }, [d.tasks, d.habits, d.habitLogs, d.focusSessions, d.goals, d.goalLogs, d.reviews, d.dayNotes, d.memories, d.ideas, d.interactions, d.contacts, d.achievements, d.projects, d.workouts, d.workoutSets, d.fajrSpans, today])
 }
 
 export function useAreaMap(): Map<string, Area> {

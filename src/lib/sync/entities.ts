@@ -19,11 +19,11 @@ export type Entities = Record<string, unknown>
 export const ARRAY_COLLECTIONS = [
   'areas', 'tasks', 'habits', 'goals', 'goalLogs', 'focusSessions', 'memories', 'ideas', 'notes', 'reminders',
   'projects', 'projectUpdates', 'contacts', 'interactions', 'achievements',
-  'exercises', 'routines', 'workouts', 'workoutSets', 'pushTargets',
+  'exercises', 'routines', 'workouts', 'workoutSets', 'pushTargets', 'fajrSpans',
 ] as const
 type ArrayCollection = (typeof ARRAY_COLLECTIONS)[number]
 
-export const SHARED_SETTINGS = ['name', 'weekStartsOn', 'focusMinutes', 'breakMinutes', 'showHijri', 'daily', 'language', 'weightUnit'] as const
+export const SHARED_SETTINGS = ['name', 'weekStartsOn', 'focusMinutes', 'breakMinutes', 'showHijri', 'daily', 'language', 'weightUnit', 'fajr'] as const
 
 export function toEntities(d: Data): Entities {
   const e: Entities = {}

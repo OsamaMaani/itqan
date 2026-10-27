@@ -3,6 +3,7 @@ import { ArrowRight, CalendarClock, Check, Flag, FolderKanban, ListChecks, Octag
 import { useState } from 'react'
 import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
+import { announceCounted } from '../lib/dayStart'
 import { addDaysKey, diffDays, prettyDay } from '../lib/date'
 import { useAreaMap, useToday } from '../lib/hooks'
 import { navigate } from '../lib/router'
@@ -56,7 +57,7 @@ export function TaskItem({ task, showDate, hideProject, onToggled }: { task: Tas
 
   const onToggle = () => {
     const done = toggle(task.id)
-    if (done) celebrate.tick()
+    if (done) { celebrate.tick(); announceCounted() }
     onToggled?.(done)
   }
 

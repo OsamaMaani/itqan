@@ -2,6 +2,7 @@ import { motion } from 'motion/react'
 import { Flame, Minus, Plus } from 'lucide-react'
 import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
+import { announceCounted } from '../lib/dayStart'
 import { amountOn, metDaysInWeek, streak } from '../lib/habits'
 import { areaHex, useAreaMap } from '../lib/hooks'
 import { useStore } from '../lib/store'
@@ -28,7 +29,7 @@ export function HabitTile({ habit, day, onChanged }: { habit: Habit; day: DateKe
   const change = (next: number) => {
     const wasMet = met
     setAmount(habit.id, day, Math.max(0, next))
-    if (!wasMet && next >= target) celebrate.tick()
+    if (!wasMet && next >= target) { celebrate.tick(); announceCounted(day) }
     onChanged?.()
   }
 

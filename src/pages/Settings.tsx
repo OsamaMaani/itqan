@@ -1,5 +1,6 @@
 import { Download, Pencil, Plus, Sparkles, Trash2, Upload } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { DayStartPanel } from '../components/DayStartPanel'
 import { EmojiInput } from '../components/EmojiInput'
 import { NotificationsPanel } from '../components/NotificationsPanel'
 import { SyncPanel } from '../components/SyncPanel'
@@ -85,6 +86,8 @@ export function SettingsPage() {
           <Toggle label={m.settings.profile.showHijri} checked={s.showHijri} onChange={(v) => update({ showHijri: v })} />
         </div>
       </Card>
+
+      <DayStartPanel />
 
       <NotificationsPanel />
 
