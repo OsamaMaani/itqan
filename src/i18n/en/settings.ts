@@ -2,6 +2,18 @@ export const settings = {
   title: 'Settings',
   subtitle: 'Make Itqan yours.',
 
+  /** The sections Settings is split into; each opens on its own, at #/settings/<id>. Hints are one short line. */
+  sections: {
+    general: { label: 'General', hint: 'Language, name, theme, timers' },
+    day: { label: 'Day start', hint: 'At midnight or at Fajr' },
+    notifications: { label: 'Notifications', hint: 'What reaches this device' },
+    daily: { label: 'Daily card', hint: 'Verse, hadith, word, wisdom, fact' },
+    areas: { label: 'Areas of life', hint: 'What your tasks and habits belong to' },
+    sync: { label: 'Sync', hint: 'Your laptop and phone, kept in step' },
+    data: { label: 'Backup and data', hint: 'Download, restore or delete' },
+    about: { label: 'What’s new and shortcuts', hint: 'Every update, and the keys to know' },
+  },
+
   profile: {
     title: 'Profile',
     language: 'Interface language',
@@ -98,7 +110,9 @@ export const settings = {
     /** A switch on a phone: the laptop pushes reminders, check-ins and its focus/break endings to this device. */
     fromLaptop: 'Alerts from my laptop',
     fromLaptopHint: 'Your reminders, check-ins with people, and the end of focus sessions started on the laptop arrive here too — whichever are switched on above. The laptop sends them, so it needs to be awake; if it was asleep, a reminder still arrives when it wakes.',
-    needsSync: 'This needs sync, so your laptop learns about this device — set it up below.',
+    /** {link} is needsSyncLink, which opens Settings → Sync. */
+    needsSync: 'This needs sync, so your laptop learns about this device — {link}.',
+    needsSyncLink: 'set up sync',
     enabled: 'This device will get your laptop’s alerts',
     denied: 'Notifications are blocked for Itqan on this device',
     failed: 'Couldn’t turn it on — check your connection and try again',

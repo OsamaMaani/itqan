@@ -143,7 +143,7 @@ function useBackupReminder() {
       const days = (Date.now() - Math.max(last, first)) / 86_400_000
       if (days >= 14) {
         const { m } = tx()
-        toast({ emoji: '💾', message: last ? m.app.backupDue : m.app.backupNever, action: { label: m.app.backUp, run: () => navigate('settings') } }, 10000)
+        toast({ emoji: '💾', message: last ? m.app.backupDue : m.app.backupNever, action: { label: m.app.backUp, run: () => navigate('settings', 'data') } }, 10000)
       }
     }, 3000)
     return () => clearTimeout(t)

@@ -75,7 +75,7 @@ export function Onboarding() {
           <Button variant="primary" type="submit" className="h-12 w-full text-base">{m.onboarding.begin}</Button>
           <button
             type="button"
-            onClick={() => void finish(false, () => { navigate('settings'); useSyncSetup.setState({ open: true }) })}
+            onClick={() => void finish(false, () => { navigate('settings', 'sync'); useSyncSetup.setState({ open: true }) })}
             className="inline-flex w-full items-center justify-center gap-1 text-center text-sm font-semibold text-muted hover:text-accent"
           >
             {m.onboarding.otherDevice} <ArrowRight size={14} className="rtl:-scale-x-100" />

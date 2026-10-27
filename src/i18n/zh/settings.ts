@@ -4,6 +4,17 @@ export const settings: Messages['settings'] = {
   title: '设置',
   subtitle: '打造属于你的 Itqan。',
 
+  sections: {
+    general: { label: '通用', hint: '语言、名字、主题、计时' },
+    day: { label: '一天的开始', hint: '午夜或晨礼' },
+    notifications: { label: '通知', hint: '本设备会收到什么' },
+    daily: { label: '每日卡片', hint: '经文、圣训、单词、智慧、小知识' },
+    areas: { label: '人生领域', hint: '任务和习惯的归属' },
+    sync: { label: '同步', hint: '让电脑和手机保持一致' },
+    data: { label: '备份与数据', hint: '下载、恢复或删除' },
+    about: { label: '新功能与快捷键', hint: '每次更新，以及常用按键' },
+  },
+
   profile: {
     title: '个人资料',
     language: '界面语言',
@@ -84,7 +95,8 @@ export const settings: Messages['settings'] = {
     checkIns: '联系朋友',
     fromLaptop: '来自我电脑的提醒',
     fromLaptopHint: '你的提醒、联系朋友，以及在电脑上开始的专注结束，也会发到这台设备——以上方开启的为准。由电脑发送，所以电脑需要处于唤醒状态；如果电脑在睡眠，提醒会在它唤醒后送达。',
-    needsSync: '这需要开启同步，你的电脑才能知道这台设备——请在下方设置。',
+    needsSync: '这需要开启同步，你的电脑才能知道这台设备——{link}。',
+    needsSyncLink: '去设置同步',
     enabled: '这台设备将收到你电脑的提醒',
     denied: '这台设备上 Itqan 的通知已被阻止',
     failed: '无法开启——请检查网络后重试',

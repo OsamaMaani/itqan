@@ -145,7 +145,7 @@ function NotifierStatus() {
   }
   return box('info', <BellRing size={18} />, n.openTitle,
     <>{n.openBody}{' '}
-      {perm === 'default' && <button className="font-semibold text-accent" onClick={() => navigate('settings')}>{n.allowBrowser}</button>}</>)
+      {perm === 'default' && <button className="font-semibold text-accent" onClick={() => navigate('settings', 'notifications')}>{n.allowBrowser}</button>}</>)
 }
 
 function Section({ title, items, onEdit, danger }: { title: string; items: UpcomingItem[]; onEdit: (r: Reminder) => void; danger?: boolean }) {

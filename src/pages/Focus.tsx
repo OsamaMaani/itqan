@@ -147,7 +147,7 @@ export function FocusPage() {
               {/* Permission is asked once, in Settings (ADR-031) — here only a pointer while it hasn't been. */}
               {!HAS_HELPER && d.settings.notify.on && d.settings.notify.timer && ('Notification' in window ? Notification.permission === 'default' : pushSupport() === 'home-screen') && (
                 <p className="text-center text-xs text-muted">
-                  {rich(m.focus.notifyHint, { link: <button className="font-semibold text-accent" onClick={() => navigate('settings')}>{m.focus.notifyHintLink}</button> })}
+                  {rich(m.focus.notifyHint, { link: <button className="font-semibold text-accent" onClick={() => navigate('settings', 'notifications')}>{m.focus.notifyHintLink}</button> })}
                 </p>
               )}
             </div>

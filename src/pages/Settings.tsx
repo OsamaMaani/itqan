@@ -1,5 +1,5 @@
-import { Download, Pencil, Plus, Sparkles, Trash2, Upload } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { Bell, BookOpen, ChevronLeft, ChevronRight, Download, HardDrive, Pencil, Plus, RefreshCw, Shapes, SlidersHorizontal, Sparkles, Sunrise, Trash2, Upload } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { DayStartPanel } from '../components/DayStartPanel'
 import { EmojiInput } from '../components/EmojiInput'
 import { NotificationsPanel } from '../components/NotificationsPanel'
@@ -12,57 +12,109 @@ import { downloadBackup, parseBackup } from '../lib/backup'
 import { AREA_HEX } from '../lib/colors'
 import { useData } from '../lib/hooks'
 import { useWhatsNew } from '../lib/releases'
-import { useRouteParam } from '../lib/router'
+import { navigate, useRouteParam } from '../lib/router'
 import { snapshot, useStore } from '../lib/store'
 import { toast } from '../lib/toast'
 import { HSK } from '../lib/daily'
 import { AREA_COLORS, CEFR_LEVELS, UI_LANGUAGES, WORD_LANGUAGES, type Area, type AreaColor, type CefrLevel, type DailySettings, type Settings, type UiLanguage, type WordLanguage } from '../lib/types'
 
+/** Settings is split into sections that open one at a time, so nothing is a long scroll away. */
+const SECTIONS = ['general', 'day', 'notifications', 'daily', 'areas', 'sync', 'data', 'about'] as const
+type Section = (typeof SECTIONS)[number]
+
+const ICONS: Record<Section, ReactNode> = {
+  general: <SlidersHorizontal size={17} />,
+  day: <Sunrise size={17} />,
+  notifications: <Bell size={17} />,
+  daily: <BookOpen size={17} />,
+  areas: <Shapes size={17} />,
+  sync: <RefreshCw size={17} />,
+  data: <HardDrive size={17} />,
+  about: <Sparkles size={17} />,
+}
+
+/**
+ * #/settings/<section>. On a laptop a menu stays beside the open section (General when none is
+ * named). On a phone #/settings is the list of sections and a section opens on its own, with a way back.
+ */
 export function SettingsPage() {
   usePageAction(null)
-  const t = useI18n()
-  const { m } = t
-  const d = useData()
-  const s = d.settings
-  const update = useStore((x) => x.updateSettings)
-  const replaceAll = useStore((x) => x.replaceAll)
-  const resetAll = useStore((x) => x.resetAll)
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [editingArea, setEditingArea] = useState<Area | 'new' | null>(null)
+  const { m } = useI18n()
+  const param = useRouteParam()
+  const picked = SECTIONS.includes(param as Section) ? (param as Section) : null
+  const section = picked ?? 'general'
 
-  const exportNow = () => {
-    downloadBackup(snapshot(useStore.getState()))
-    update({ lastBackupAt: new Date().toISOString() })
-    toast({ emoji: '💾', message: m.settings.data.backupDownloaded })
-  }
-
-  const importFile = async (f: File) => {
-    try {
-      const data = parseBackup(await f.text())
-      if (!confirm(t.f(m.settings.data.restoreConfirm, {
-        tasks: t.p(m.settings.counts.tasks, data.tasks.length),
-        habits: t.p(m.settings.counts.habits, data.habits.length),
-        goals: t.p(m.settings.counts.goals, data.goals.length),
-      }))) return
-      replaceAll(data)
-      toast({ emoji: '✅', message: m.settings.data.backupRestored })
-    } catch (e) {
-      toast({ emoji: '⚠️', message: (e as Error).message }, 6000)
-    }
-  }
+  // A section opened from the phone list starts at its top, not where the list was scrolled to.
+  useEffect(() => { if (picked) window.scrollTo({ top: 0 }) }, [picked])
 
   return (
     <div className="space-y-6">
-      <PageHeader title={m.settings.title} subtitle={m.settings.subtitle} />
+      <div className={cx(picked && 'max-lg:hidden')}><PageHeader title={m.settings.title} subtitle={m.settings.subtitle} /></div>
+
+      <div className="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start lg:gap-6">
+        <nav aria-label={m.settings.title} className={cx('lg:sticky lg:top-6', picked && 'max-lg:hidden')}>
+          <Card className="p-1.5">
+            {SECTIONS.map((id) => {
+              const current = id === section
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  aria-current={current ? 'page' : undefined}
+                  onClick={() => navigate('settings', id)}
+                  className={cx(
+                    'flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-start transition hover:bg-surface-2 lg:py-2',
+                    current && 'lg:bg-surface-2',
+                  )}
+                >
+                  <span className={cx('grid size-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted lg:size-8', current && 'lg:bg-accent/15 lg:text-accent')}>{ICONS[id]}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className={cx('block text-sm font-semibold', current ? 'lg:text-text' : 'lg:text-muted')}>{m.settings.sections[id].label}</span>
+                    <span className="block truncate text-xs text-muted lg:hidden">{m.settings.sections[id].hint}</span>
+                  </span>
+                  <ChevronRight size={16} className="shrink-0 text-muted rtl:-scale-x-100 lg:hidden" />
+                </button>
+              )
+            })}
+          </Card>
+        </nav>
+
+        <div className={cx('space-y-6', !picked && 'max-lg:hidden')}>
+          <button type="button" onClick={() => navigate('settings')} className="-ms-1 flex items-center gap-1 text-sm font-semibold text-muted hover:text-text lg:hidden">
+            <ChevronLeft size={18} className="rtl:-scale-x-100" /> {m.settings.title}
+          </button>
+          <div key={section} className="page-enter space-y-6">
+            {section === 'general' && <GeneralSettings />}
+            {section === 'day' && <DayStartPanel />}
+            {section === 'notifications' && <NotificationsPanel />}
+            {section === 'daily' && <DailyCardSettings />}
+            {section === 'areas' && <AreasSettings />}
+            {section === 'sync' && <SyncPanel />}
+            {section === 'data' && <DataSettings />}
+            {section === 'about' && <AboutSettings />}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function GeneralSettings() {
+  const t = useI18n()
+  const { m } = t
+  const s = useData().settings
+  const update = useStore((x) => x.updateSettings)
+  return (
+    <>
+      <Card className="p-5">
+        <SectionTitle>{m.settings.profile.language}</SectionTitle>
+        <Segmented<UiLanguage> value={s.language} onChange={(v) => update({ language: v })} options={UI_LANGUAGES.map((l) => ({ value: l, label: LANG_INFO[l].name }))} />
+        <p className="mt-1.5 text-xs text-muted">{m.settings.profile.languageHint}</p>
+      </Card>
 
       <Card className="space-y-5 p-5">
         <SectionTitle className="mb-0">{m.settings.profile.title}</SectionTitle>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <Label>{m.settings.profile.language}</Label>
-            <Segmented<UiLanguage> value={s.language} onChange={(v) => update({ language: v })} options={UI_LANGUAGES.map((l) => ({ value: l, label: LANG_INFO[l].name }))} />
-            <p className="mt-1.5 text-xs text-muted">{m.settings.profile.languageHint}</p>
-          </div>
           <div><Label>{m.settings.profile.name}</Label><Input value={s.name} onChange={(e) => update({ name: e.target.value })} placeholder={m.settings.profile.namePlaceholder} /></div>
           <div>
             <Label>{m.settings.profile.theme}</Label>
@@ -86,57 +138,99 @@ export function SettingsPage() {
           <Toggle label={m.settings.profile.showHijri} checked={s.showHijri} onChange={(v) => update({ showHijri: v })} />
         </div>
       </Card>
+    </>
+  )
+}
 
-      <DayStartPanel />
-
-      <NotificationsPanel />
-
-      <DailyCardSettings value={s.daily} onChange={(patch) => update({ daily: { ...s.daily, ...patch } })} />
-
-      <Card className="p-5">
-        <SectionTitle right={<Button size="sm" onClick={() => setEditingArea('new')}><Plus size={14} /> {m.settings.areas.add}</Button>}>{m.settings.areas.title}</SectionTitle>
-        <p className="mb-4 text-sm text-muted">{m.settings.areas.body}</p>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {d.areas.map((a) => (
-            <div key={a.id} className={cx('flex items-center gap-3 rounded-xl border border-border p-3', a.archived && 'opacity-50')}>
-              <div className="grid size-10 place-items-center rounded-xl text-xl" style={{ background: `${AREA_HEX[a.color]}22` }}>{a.emoji}</div>
-              <div className="flex-1">
-                <div className="font-semibold">{a.name}</div>
-                <div className="text-xs text-muted">{[
-                  t.p(m.settings.counts.tasks, d.tasks.filter((x) => x.areaId === a.id).length),
-                  t.p(m.settings.counts.habits, d.habits.filter((h) => h.areaId === a.id).length),
-                  t.p(m.settings.counts.goals, d.goals.filter((g) => g.areaId === a.id).length),
-                ].join(' · ')}</div>
-              </div>
-              <IconButton label={m.settings.areas.edit} onClick={() => setEditingArea(a)}><Pencil size={14} /></IconButton>
+function AreasSettings() {
+  const t = useI18n()
+  const { m } = t
+  const d = useData()
+  const [editingArea, setEditingArea] = useState<Area | 'new' | null>(null)
+  return (
+    <Card className="p-5">
+      <SectionTitle right={<Button size="sm" onClick={() => setEditingArea('new')}><Plus size={14} /> {m.settings.areas.add}</Button>}>{m.settings.areas.title}</SectionTitle>
+      <p className="mb-4 text-sm text-muted">{m.settings.areas.body}</p>
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        {d.areas.map((a) => (
+          <div key={a.id} className={cx('flex items-center gap-3 rounded-xl border border-border p-3', a.archived && 'opacity-50')}>
+            <div className="grid size-10 place-items-center rounded-xl text-xl" style={{ background: `${AREA_HEX[a.color]}22` }}>{a.emoji}</div>
+            <div className="flex-1">
+              <div className="font-semibold">{a.name}</div>
+              <div className="text-xs text-muted">{[
+                t.p(m.settings.counts.tasks, d.tasks.filter((x) => x.areaId === a.id).length),
+                t.p(m.settings.counts.habits, d.habits.filter((h) => h.areaId === a.id).length),
+                t.p(m.settings.counts.goals, d.goals.filter((g) => g.areaId === a.id).length),
+              ].join(' · ')}</div>
             </div>
-          ))}
-        </div>
-      </Card>
+            <IconButton label={m.settings.areas.edit} onClick={() => setEditingArea(a)}><Pencil size={14} /></IconButton>
+          </div>
+        ))}
+      </div>
+      <AreaEditor area={editingArea} onClose={() => setEditingArea(null)} />
+    </Card>
+  )
+}
 
-      <SyncPanel />
+function DataSettings() {
+  const t = useI18n()
+  const { m } = t
+  const s = useData().settings
+  const update = useStore((x) => x.updateSettings)
+  const replaceAll = useStore((x) => x.replaceAll)
+  const resetAll = useStore((x) => x.resetAll)
+  const fileRef = useRef<HTMLInputElement>(null)
 
-      <Card className="space-y-4 p-5">
-        <SectionTitle className="mb-0">{m.settings.data.title}</SectionTitle>
-        <p className="text-sm text-muted">
-          {rich(m.settings.data.intro, { warning: <b className="text-text">{m.settings.data.warning}</b> })}
-          {' '}
-          {s.lastBackupAt ? t.f(m.settings.data.lastBackup, { date: t.d(new Date(s.lastBackupAt), 'medium') }) : m.settings.data.noBackup}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="primary" onClick={exportNow}><Download size={16} /> {m.settings.data.download}</Button>
-          <Button onClick={() => fileRef.current?.click()}><Upload size={16} /> {m.settings.data.restore}</Button>
-          <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f); e.target.value = '' }} />
-          <Button
-            variant="danger"
-            className="ms-auto"
-            onClick={() => { if (prompt(t.f(m.settings.data.deleteAllPrompt, { word: m.settings.data.deleteWord })) === m.settings.data.deleteWord) { resetAll(); toast({ message: m.settings.data.deleted }) } }}
-          >
-            <Trash2 size={16} /> {m.settings.data.deleteAll}
-          </Button>
-        </div>
-      </Card>
+  const exportNow = () => {
+    downloadBackup(snapshot(useStore.getState()))
+    update({ lastBackupAt: new Date().toISOString() })
+    toast({ emoji: '💾', message: m.settings.data.backupDownloaded })
+  }
 
+  const importFile = async (f: File) => {
+    try {
+      const data = parseBackup(await f.text())
+      if (!confirm(t.f(m.settings.data.restoreConfirm, {
+        tasks: t.p(m.settings.counts.tasks, data.tasks.length),
+        habits: t.p(m.settings.counts.habits, data.habits.length),
+        goals: t.p(m.settings.counts.goals, data.goals.length),
+      }))) return
+      replaceAll(data)
+      toast({ emoji: '✅', message: m.settings.data.backupRestored })
+    } catch (e) {
+      toast({ emoji: '⚠️', message: (e as Error).message }, 6000)
+    }
+  }
+
+  return (
+    <Card className="space-y-4 p-5">
+      <SectionTitle className="mb-0">{m.settings.data.title}</SectionTitle>
+      <p className="text-sm text-muted">
+        {rich(m.settings.data.intro, { warning: <b className="text-text">{m.settings.data.warning}</b> })}
+        {' '}
+        {s.lastBackupAt ? t.f(m.settings.data.lastBackup, { date: t.d(new Date(s.lastBackupAt), 'medium') }) : m.settings.data.noBackup}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="primary" onClick={exportNow}><Download size={16} /> {m.settings.data.download}</Button>
+        <Button onClick={() => fileRef.current?.click()}><Upload size={16} /> {m.settings.data.restore}</Button>
+        <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f); e.target.value = '' }} />
+        <Button
+          variant="danger"
+          className="ms-auto"
+          onClick={() => { if (prompt(t.f(m.settings.data.deleteAllPrompt, { word: m.settings.data.deleteWord })) === m.settings.data.deleteWord) { resetAll(); toast({ message: m.settings.data.deleted }) } }}
+        >
+          <Trash2 size={16} /> {m.settings.data.deleteAll}
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
+function AboutSettings() {
+  const t = useI18n()
+  const { m } = t
+  return (
+    <>
       <Card className="flex flex-wrap items-center gap-3 p-5">
         <div className="min-w-0 flex-1">
           <SectionTitle className="mb-1">{m.app.whatsNew.settingsTitle}</SectionTitle>
@@ -157,31 +251,21 @@ export function SettingsPage() {
           {rich(m.settings.shortcuts.install, { addToHome: <i>{m.settings.shortcuts.addToHome}</i> })}
         </p>
       </Card>
-
-      <AreaEditor area={editingArea} onClose={() => setEditingArea(null)} />
-    </div>
+    </>
   )
 }
 
-function DailyCardSettings({ value: v, onChange }: { value: DailySettings; onChange: (patch: Partial<DailySettings>) => void }) {
+function DailyCardSettings() {
   const t = useI18n()
   const { m } = t
   const s = m.settings.daily
-  // #/settings/daily — the gear on the daily card — lands here, briefly marked.
-  const ref = useRef<HTMLDivElement>(null)
-  const linked = useRouteParam() === 'daily'
-  const [flash, setFlash] = useState(false)
-  useEffect(() => {
-    if (!linked) return
-    ref.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-    setFlash(true)
-    const id = setTimeout(() => setFlash(false), 1600)
-    return () => clearTimeout(id)
-  }, [linked])
+  const v = useData().settings.daily
+  const update = useStore((x) => x.updateSettings)
+  const onChange = (patch: Partial<DailySettings>) => update({ daily: { ...v, ...patch } })
   // The word languages are languages being learned, so they are named in the interface language.
   const names = new Intl.DisplayNames([t.locale], { type: 'language' })
   return (
-    <Card ref={ref} className={cx('scroll-mt-4 space-y-5 p-5 transition-shadow duration-500', flash && 'ring-2 ring-accent/50')}>
+    <Card className="space-y-5 p-5">
       <div>
         <SectionTitle className="mb-1">{s.title}</SectionTitle>
         <p className="text-sm text-muted">{s.body}</p>

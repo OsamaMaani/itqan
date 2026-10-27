@@ -26,6 +26,23 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: 4,
+    date: '2026-10-28',
+    tasks: ['S2-50'],
+    items: [
+      {
+        emoji: '🗂️',
+        text: {
+          en: 'Settings is now in sections — General, Notifications, Daily card, Sync and more. On a laptop pick one from the menu beside it; on a phone tap one in the list. No more scrolling through everything.',
+          ar: 'صارت الإعدادات أقسامًا — عام، الإشعارات، بطاقة اليوم، المزامنة وغيرها. على الحاسوب اختر قسمًا من القائمة بجانبها، وعلى الهاتف اضغط قسمًا من القائمة. لا حاجة بعد الآن للتمرير عبر كل شيء.',
+          fr: 'Les Réglages sont maintenant en sections — Général, Notifications, Carte du jour, Synchronisation et d’autres. Sur ordinateur, choisis-en une dans le menu à côté ; sur téléphone, touche-la dans la liste. Plus besoin de tout faire défiler.',
+          zh: '设置现在分成了几个部分——通用、通知、每日卡片、同步等。在电脑上从旁边的菜单中选择，在手机上点列表中的一项。不用再从头滚到尾了。',
+          es: 'Los Ajustes ahora están en secciones: General, Notificaciones, Tarjeta del día, Sincronización y más. En el portátil, elige una en el menú de al lado; en el móvil, toca una en la lista. Ya no hace falta recorrerlo todo.',
+        },
+      },
+    ],
+  },
+  {
     id: 3,
     date: '2026-10-28',
     tasks: ['S2-49'],

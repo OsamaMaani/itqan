@@ -1000,3 +1000,19 @@ day on each task (fixes tasks only; focus sessions, milestones and the rest woul
 needs a migration of every record); keeping the spans in synced settings (a stale device wipes them);
 a prayer-times library (a dependency for ~60 lines of well-known, tested maths); Maghrib as the line
 (the owner chose Fajr: the day ends when you sleep, not at sunset).
+
+## ADR-042 | 2026-10-28 | accepted | Settings opens one section at a time
+
+**Context:** The owner, 2026-10-28: Settings had grown to eight stacked cards — language, day start,
+notifications, the daily card and more — and he had to scroll the whole page and got lost in it.
+**Decision:** Settings is split into sections — General, Day start, Notifications, Daily card,
+Areas of life, Sync, Backup and data, What's new and shortcuts — each at `#/settings/<section>`
+(`SECTIONS` in `pages/Settings.tsx`). On a laptop a sticky side menu stays beside the open section;
+`#/settings` alone shows General. On a phone `#/settings` is the list of sections with a one-line
+hint each, and a section opens on its own with a back link — the usual phone settings shape.
+Anything that links into Settings names its section (`navigate('settings', 'notifications')`), so
+the old scroll-and-highlight for the daily card is gone. A new setting goes into an existing
+section; a new section is one entry in `SECTIONS`, an icon and a label and hint in five languages.
+**Rejected:** a tab strip (`Segmented`, as in Training) — eight long labels wrap into several rows on
+a phone and in French; collapsible accordions on one page — still one long page once a few are open,
+and links cannot land on a section without scrolling; a search box — eight sections do not need one.

@@ -4,6 +4,17 @@ export const settings: Messages['settings'] = {
   title: 'Ajustes',
   subtitle: 'Haz que Itqan sea tuyo.',
 
+  sections: {
+    general: { label: 'General', hint: 'Idioma, nombre, tema, temporizadores' },
+    day: { label: 'Inicio del día', hint: 'A medianoche o en el Fajr' },
+    notifications: { label: 'Notificaciones', hint: 'Lo que llega a este dispositivo' },
+    daily: { label: 'Tarjeta del día', hint: 'Versículo, hadiz, palabra, sabiduría, dato' },
+    areas: { label: 'Áreas de la vida', hint: 'A qué pertenecen tus tareas y hábitos' },
+    sync: { label: 'Sincronización', hint: 'Tu portátil y tu móvil, siempre al día' },
+    data: { label: 'Copia y datos', hint: 'Descargar, restaurar o borrar' },
+    about: { label: 'Novedades y atajos', hint: 'Cada actualización y las teclas útiles' },
+  },
+
   profile: {
     title: 'Perfil',
     language: 'Idioma de la interfaz',
@@ -84,7 +95,8 @@ export const settings: Messages['settings'] = {
     checkIns: 'Contactar con personas',
     fromLaptop: 'Avisos de mi portátil',
     fromLaptopHint: 'Tus recordatorios, los contactos con personas y el fin de las sesiones de enfoque empezadas en el portátil también llegan aquí — los que estén activados arriba. Los envía el portátil, así que tiene que estar encendido; si estaba en reposo, el recordatorio llega igualmente cuando se despierta.',
-    needsSync: 'Necesita la sincronización para que tu portátil conozca este dispositivo; configúrala más abajo.',
+    needsSync: 'Necesita la sincronización para que tu portátil conozca este dispositivo; {link}.',
+    needsSyncLink: 'configúrala',
     enabled: 'Este dispositivo recibirá los avisos de tu portátil',
     denied: 'Las notificaciones de Itqan están bloqueadas en este dispositivo',
     failed: 'No se pudo activar; revisa la conexión e inténtalo de nuevo',

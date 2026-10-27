@@ -96,6 +96,8 @@ Shadows are near-invisible; the primary button gets a coloured glow.
   most one everyday action; the rest — notes, full lists, history, the action row — lives in a
   details `Modal` the whole card opens (a stretched title button, `after:absolute after:inset-0`;
   inner buttons are `relative` so they sit above it). Use the same shape for other dense cards.
+- **Settings opens one section at a time** (ADR-042): side menu on a laptop, a list then the section
+  on a phone, each at `#/settings/<section>`. Link to the section, never to plain `#/settings`.
 - **Daily content never pushes tasks down** (ADR-023): on a laptop the daily card heads the side
   column; on a phone it is one folded line until tapped. Add new "of the day" content there, as a
   tab, not as another card.

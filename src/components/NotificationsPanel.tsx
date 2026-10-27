@@ -4,6 +4,7 @@ import { rich, useI18n } from '../i18n/react'
 import { HAS_HELPER, sendTestNotification, sendTestPush, useNotifier } from '../lib/notifier'
 import { disablePush, enablePush, pushSupport, setNotify, thisDeviceId } from '../lib/pushDevice'
 import { HAS_RELAY, relayTestPush } from '../lib/relay'
+import { navigate } from '../lib/router'
 import { useStore } from '../lib/store'
 import { useSync } from '../lib/sync/engine'
 import { toast } from '../lib/toast'
@@ -94,7 +95,7 @@ export function NotificationsPanel() {
         <div className="space-y-1.5 border-t border-border pt-4">
           <Toggle label={n.fromLaptop} checked={receiving} disabled={busy || support !== 'ok'} onChange={(v) => void toggleFromLaptop(v)} />
           <p className="ps-14 text-xs text-muted">{n.fromLaptopHint}</p>
-          {receiving && !syncOn && <p className="ps-14 text-xs font-semibold text-amber-500">{n.needsSync}</p>}
+          {receiving && !syncOn && <p className="ps-14 text-xs font-semibold text-amber-500">{rich(n.needsSync, { link: <button className="underline" onClick={() => navigate('settings', 'sync')}>{n.needsSyncLink}</button> })}</p>}
         </div>
       )}
 

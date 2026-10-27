@@ -4,6 +4,17 @@ export const settings: Messages['settings'] = {
   title: 'Réglages',
   subtitle: 'Adapte Itqan à ta façon de faire.',
 
+  sections: {
+    general: { label: 'Général', hint: 'Langue, nom, thème, minuteurs' },
+    day: { label: 'Début de journée', hint: 'À minuit ou au Fajr' },
+    notifications: { label: 'Notifications', hint: 'Ce qui arrive sur cet appareil' },
+    daily: { label: 'Carte du jour', hint: 'Verset, hadith, mot, sagesse, fait' },
+    areas: { label: 'Domaines de vie', hint: 'Ce à quoi appartiennent tes tâches et habitudes' },
+    sync: { label: 'Synchronisation', hint: 'Ton ordinateur et ton téléphone, toujours d’accord' },
+    data: { label: 'Sauvegarde et données', hint: 'Télécharger, restaurer ou supprimer' },
+    about: { label: 'Nouveautés et raccourcis', hint: 'Chaque mise à jour, et les touches utiles' },
+  },
+
   profile: {
     title: 'Profil',
     language: 'Langue de l’interface',
@@ -84,7 +95,8 @@ export const settings: Messages['settings'] = {
     checkIns: 'Prendre des nouvelles',
     fromLaptop: 'Alertes de mon ordinateur',
     fromLaptopHint: 'Tes rappels, les nouvelles à prendre et la fin des sessions de concentration lancées sur l’ordinateur arrivent aussi ici — ceux qui sont activés ci-dessus. C’est l’ordinateur qui les envoie : il doit être allumé ; s’il était en veille, un rappel arrive quand même à son réveil.',
-    needsSync: 'Il faut la synchronisation pour que votre ordinateur connaisse cet appareil — configurez-la plus bas.',
+    needsSync: 'Il faut la synchronisation pour que ton ordinateur connaisse cet appareil — {link}.',
+    needsSyncLink: 'configure-la',
     enabled: 'Cet appareil recevra les alertes de votre ordinateur',
     denied: 'Les notifications sont bloquées pour Itqan sur cet appareil',
     failed: 'Activation impossible — vérifiez la connexion et réessayez',
