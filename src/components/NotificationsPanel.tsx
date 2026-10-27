@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { rich, useI18n } from '../i18n/react'
 import { HAS_HELPER, sendTestNotification, sendTestPush, useNotifier } from '../lib/notifier'
 import { disablePush, enablePush, pushSupport, setNotify, thisDeviceId } from '../lib/pushDevice'
+import { HAS_RELAY, relayTestPush } from '../lib/relay'
 import { useStore } from '../lib/store'
 import { useSync } from '../lib/sync/engine'
 import { toast } from '../lib/toast'
@@ -26,6 +27,8 @@ export function NotificationsPanel() {
   const support = pushSupport()
   const mine = thisDeviceId()
   const receiving = !!mine && targets.some((x) => x.id === mine)
+  // Who can send a push from here: the helper on the Linux laptop app, or the relay in a browser install (ADR-037).
+  const canSend = (HAS_HELPER && helper.push) || HAS_RELAY
 
   // Permission can change in the browser's own settings while Itqan is open.
   useEffect(() => {
@@ -110,8 +113,8 @@ export function NotificationsPanel() {
                     <span className="font-semibold">{x.label}</span>
                     <span className="text-muted"> · {x.id === mine ? n.thisDevice : t.f(n.added, { date: t.d(new Date(x.createdAt), 'medium') })}</span>
                   </div>
-                  {HAS_HELPER && helper.push && (
-                    <IconButton label={n.test} onClick={async () => toast({ emoji: '📲', message: (await sendTestPush(x)) ? n.testSent : n.testFailed })}><Send size={14} /></IconButton>
+                  {canSend && (
+                    <IconButton label={n.test} onClick={async () => toast({ emoji: '📲', message: (await (HAS_RELAY ? relayTestPush(x) : sendTestPush(x))) ? n.testSent : HAS_RELAY ? n.testFailedRelay : n.testFailed })}><Send size={14} /></IconButton>
                   )}
                   <IconButton
                     label={n.remove}
@@ -125,6 +128,7 @@ export function NotificationsPanel() {
               ))}
             </div>
           )}
+          {!HAS_HELPER && targets.length > 0 && <p className="text-xs text-muted">{HAS_RELAY ? n.relayOnly : n.noSender}</p>}
         </div>
       )}
     </Card>

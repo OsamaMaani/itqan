@@ -856,3 +856,39 @@ typed note to a stray tap is worse than an edit you meant to discard, which Dele
 - **Setting it:** a sun button in the note editor; cards on Notes show an "On Today" mark.
 **Rejected:** reusing `pinned` (every note pinned on Notes would crowd Today); a per-card sun button
 on the Notes grid (a third corner button crowds phone cards; the editor is one tap away).
+
+## ADR-037 | 2026-10-27 | accepted | A push relay for browser installs
+
+**Context:** The owner, 2026-10-27: a friend uses Itqan on Windows — the hosted app, installed from
+Edge — with sync to an iPhone. Focus sessions ending on the laptop never reached the phone, and the
+test button next to the phone in Settings was missing. Cause: phone pushes are POSTed by the desktop
+helper (ADR-031), which only the Linux laptop app has; a browser install had no way to send them
+and hid the button. A page can't send them itself: checked 2026-10-27, Apple's and Google's push
+services answer no CORS headers (only Mozilla's does), so the browser blocks the request.
+**Decision:**
+- **A relay, not a server.** `relay/` is a Cloudflare Worker (free plan) that takes up to ten pushes
+  the app has already signed and encrypted (`lib/push.ts`, unchanged) and POSTs them to the push
+  service. Same guards as the helper, in `relay/guard.ts` (tested): push-service hosts only, https on
+  443, no userinfo, Web Push headers only, no CR/LF, base64 body ≤ 8000; all or nothing; never
+  follows a redirect. It answers only exact origins in `ALLOWED_ORIGINS` (the Pages origin, set by
+  `relay/deploy.sh` from the git remote). No storage, no state; it sees the push address and
+  ciphertext, never the message.
+- **What a browser install sends:** the end of a focus session or break started there, the moment
+  the page finishes it (`relayTimerEnd`, from `TimerWatcher`), to every *other* registered device
+  that wants timer endings; dropped if more than 10 minutes late (the laptop slept). And the test
+  button. Reminders and check-ins stay with the helper, which fires them with Itqan closed — a page
+  can only act while open, so sending them from one would be unreliable.
+- **Wiring:** `VITE_PUSH_RELAY` at build time (repo variable `PUSH_RELAY_URL` in `deploy.yml`);
+  `HAS_RELAY` is true only without the helper and with an https address. Without either, Settings
+  now says plainly that this device can't send to the others, instead of hiding the button silently.
+**Verified:** the Worker under `wrangler dev` refused another origin and a non-push host; headless
+Chrome subscribed on the built app, `push.ts` built the request, the relay forwarded it and Google's
+push service answered 201 (2026-10-27).
+**Accepted costs:** the owner deploys and owns the Worker (one command); a timer ending while the
+browser window is closed or the laptop asleep is not announced; a background tab may announce it up
+to a minute late (browser timer throttling).
+**Rejected:** porting the helper to Windows (Python plus a service on a friend's machine is too much
+to ask of a user); scheduling pushes on the relay (Durable Object alarms — state and cancellation
+for a minute of precision); sending from the page with `mode: 'no-cors'` (forbids the
+Authorization and Content-Encoding headers a push needs).
+

@@ -69,6 +69,9 @@ export const settings: Messages['settings'] = {
     testSent: 'Envoyé — il devrait arriver dans quelques secondes',
     testFailed: 'Envoi impossible — l’assistant de bureau tourne-t-il ?',
     helperOld: 'Relancez {script} pour que l’assistant puisse envoyer à vos autres appareils.',
+    testFailedRelay: 'Envoi impossible — vérifiez votre connexion et réessayez',
+    relayOnly: 'Depuis cet appareil, seule la fin des sessions de concentration et des pauses lancées ici parvient à vos autres appareils, et seulement tant qu’Itqan est ouvert. Les rappels et les prises de nouvelles sont envoyés par l’application du portable Linux.',
+    noSender: 'Cet appareil ne peut pas envoyer d’alertes à vos autres appareils. Elles viennent de l’application du portable Linux, qui fait tourner l’assistant de bureau d’Itqan.',
   },
 
   areas: {

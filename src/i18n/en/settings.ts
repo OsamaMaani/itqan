@@ -79,6 +79,12 @@ export const settings = {
     testFailed: 'Couldn’t send — is the desktop helper running?',
     /** {script} is a file path to a script. */
     helperOld: 'Run {script} once more so the helper can send to your other devices.',
+    /** Test push sent through Itqan's push relay (installs without the desktop helper) failed. */
+    testFailedRelay: 'Couldn’t send — check your connection and try again',
+    /** Under the devices list in a browser install that sends through the relay. */
+    relayOnly: 'From this device, only the end of focus sessions and breaks started here reaches your other devices, and only while Itqan is open. Reminders and check-ins are sent by the Linux laptop app.',
+    /** Under the devices list in a browser install that cannot send at all. */
+    noSender: 'This device can’t send alerts to your other devices. They come from the Linux laptop app, which runs Itqan’s desktop helper.',
   },
 
   areas: {

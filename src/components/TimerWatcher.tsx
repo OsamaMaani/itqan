@@ -3,6 +3,7 @@ import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
 import { useTick } from '../lib/hooks'
 import { helperAnnouncesTimer, showSystemNotification, wants } from '../lib/notifier'
+import { relayTimerEnd } from '../lib/relay'
 import { useStore } from '../lib/store'
 import { toast } from '../lib/toast'
 
@@ -38,6 +39,8 @@ export function TimerWatcher() {
       celebrate.timerDone()
       // The desktop helper has this timer's end on its schedule (ADR-013); the page notifies only without it.
       if (!helperAnnouncesTimer() && wants('timer')) void showSystemNotification(m.focus.appName, wasFocus ? t.f(m.focus.focusDoneNotify, { n: minutes }) : m.focus.breakOverNotify, { tag: 'itqan-timer' })
+      // Without the helper, the other devices hear of it through the push relay, if this build has one (ADR-037).
+      if (!helperAnnouncesTimer()) void relayTimerEnd(timer)
       if (wasFocus) {
         toast({
           emoji: '🎯', message: t.p(m.focus.focusLogged, minutes),

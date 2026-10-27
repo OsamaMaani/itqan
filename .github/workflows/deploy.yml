@@ -32,6 +32,8 @@ jobs:
         run: npx tsc -b && npx vite build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+          # The push relay's address (ADR-037), a repository variable; empty until it is deployed.
+          VITE_PUSH_RELAY: ${{ vars.PUSH_RELAY_URL }}
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

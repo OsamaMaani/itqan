@@ -69,6 +69,9 @@ export const settings: Messages['settings'] = {
     testSent: 'Enviado: debería llegar en unos segundos',
     testFailed: 'No se pudo enviar. ¿Está funcionando el asistente de escritorio?',
     helperOld: 'Ejecuta {script} una vez más para que el asistente pueda enviar a tus otros dispositivos.',
+    testFailedRelay: 'No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.',
+    relayOnly: 'Desde este dispositivo solo llega a tus otros dispositivos el final de las sesiones de concentración y los descansos iniciados aquí, y solo mientras Itqan está abierto. Los recordatorios y los contactos pendientes los envía la app del portátil con Linux.',
+    noSender: 'Este dispositivo no puede enviar alertas a tus otros dispositivos. Llegan desde la app del portátil con Linux, que ejecuta el asistente de escritorio de Itqan.',
   },
 
   areas: {

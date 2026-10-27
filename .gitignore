@@ -22,3 +22,6 @@ app/
 
 # personal context for local sessions — never published
 memory/private/
+
+# Wrangler (relay/) local dev state
+.wrangler/

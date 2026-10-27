@@ -69,6 +69,9 @@ export const settings: Messages['settings'] = {
     testSent: '已发送——几秒内应会到达',
     testFailed: '无法发送——桌面助手在运行吗？',
     helperOld: '请再运行一次 {script}，让助手可以发送到你的其他设备。',
+    testFailedRelay: '无法发送——请检查网络后重试',
+    relayOnly: '从这台设备只会把在这里开始的专注和休息的结束提醒发到你的其他设备，而且只在 Itqan 打开时。提醒和联系提醒由 Linux 笔记本上的应用发送。',
+    noSender: '这台设备无法向你的其他设备发送提醒。提醒来自 Linux 笔记本上的应用，它运行着 Itqan 的桌面助手。',
   },
 
   areas: {

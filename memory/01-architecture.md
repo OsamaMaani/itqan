@@ -101,6 +101,11 @@ connect/disconnect). UI: `components/SyncPanel.tsx`. Sync state is its own local
 helper; `lib/pushDevice.ts` is the receiving device's side; `public/push-sw.js` shows a push;
 `components/NotificationsPanel.tsx` (Settings) is the only place the browser's permission is asked.
 
+A browser install (the hosted app with no helper — Edge on Windows, say) sends timer endings
+through **the push relay** instead (ADR-037): `lib/relay.ts` builds the same encrypted request and
+POSTs it to a Cloudflare Worker (`relay/`), which applies the helper's guards and forwards it. The
+relay's address is the build variable `VITE_PUSH_RELAY` (repo variable `PUSH_RELAY_URL`).
+
 ## The path to "others can use it" (not built)
 
 When/if Itqan becomes multi-user (Stage 4), add **sync, not a rewrite**: keep the local store as

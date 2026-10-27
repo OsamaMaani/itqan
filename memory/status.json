@@ -435,6 +435,13 @@
           "module": "today",
           "status": "done",
           "critical": false
+        },
+        {
+          "id": "S2-44",
+          "title": "Push relay: browser installs (Edge on Windows) send focus endings to the phone; the test button works there (ADR-037)",
+          "module": "settings",
+          "status": "in-progress",
+          "critical": true
         }
       ]
     },
@@ -668,6 +675,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-27",
+      "entry": "S2-44, reported by the owner for a friend on Windows/Edge: focus endings never reached the iPhone and the device test button was missing. Cause: only the Linux app's desktop helper sends pushes, and Apple/Google push services refuse requests from web pages (no CORS — checked). Fix (ADR-037): a Cloudflare Worker push relay (relay/) with the helper's guards (relay/guard.ts, 8 tests); browser installs send timer endings and test pushes through it; Settings says plainly when a device can't send. Verified: real Chrome subscription → push.ts → relay → Google push service 201. Waiting on the owner to deploy the Worker (relay/deploy.sh) and set PUSH_RELAY_URL. Also: a regression test for tick → untick → tick (habitRetick.test.ts) — the reported 2-day streak could not be reproduced; asked the owner for details."
+    },
     {
       "date": "2026-10-27",
       "entry": "S2-43, asked for by the owner: a gear at the daily card's bottom start corner (bottom-left; bottom-right in Arabic) opens Settings at #/settings/daily, which scrolls to the daily card section and marks it briefly. Card now takes a ref; label in five languages. Checked in the browser."
