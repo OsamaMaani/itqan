@@ -422,6 +422,8 @@ that distracts).
 
 ---
 
+*(2026-10-27, S2-43: a gear at the card's bottom start corner opens `#/settings/daily`, which scrolls Settings to the card's own section — its settings one tap from the card.)*
+
 ## ADR-024 | 2026-10-17 | accepted | Five interface languages: English, Arabic, French, Chinese, Spanish
 
 **Asked for:** the whole app in Arabic, French, Chinese and Spanish, with every text checked

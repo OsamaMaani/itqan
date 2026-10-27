@@ -2,6 +2,8 @@
 export const daily = {
   /** The tab list's accessible name. */
   card: 'Daily card',
+  /** The gear at the card's bottom corner: opens the daily card's own settings. */
+  settings: 'Daily card settings',
   kinds: {
     verse: { label: 'Verse', title: 'Verse of the day' },
     hadith: { label: 'Hadith', title: 'Hadith of the day' },

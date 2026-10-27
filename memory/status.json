@@ -1,7 +1,7 @@
 {
   "project": "Itqan",
   "subtitle": "إتقان — daily tasks, habits and long-term goals in one calm place",
-  "updated": "2026-10-26",
+  "updated": "2026-10-27",
   "current_stage": 4,
   "next_actions": [
     "New: Notes (in the menu after Ideas, key 9). Type a line and press Enter to save a note, or start a checklist. Pin, colour and label notes, search them, archive the ones you're done with. Any note or checklist line can become a task. Projects and goals show their notes too, and in Ctrl+K, 'note: …' saves one. To keep a note on Today, open it and tap the sun; tap the sun on its card on Today to take it off. Open Itqan on the iPhone once so it updates (data format v14); sync resumes after that.",
@@ -428,6 +428,13 @@
           "module": "notes",
           "status": "done",
           "critical": false
+        },
+        {
+          "id": "S2-43",
+          "title": "Daily card: a gear in its corner opens its own section in Settings",
+          "module": "today",
+          "status": "done",
+          "critical": false
         }
       ]
     },
@@ -661,6 +668,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-27",
+      "entry": "S2-43, asked for by the owner: a gear at the daily card's bottom start corner (bottom-left; bottom-right in Arabic) opens Settings at #/settings/daily, which scrolls to the daily card section and marks it briefly. Card now takes a ref; label in five languages. Checked in the browser."
+    },
     {
       "date": "2026-10-26",
       "entry": "S2-42, asked for by the owner: pin a note to the home screen (ADR-036). A separate switch, Note.onToday (schema v14, migration 13 → 14 puts no existing note on Today, tested), so pinning to the top of Notes doesn't crowd Today. Set with the sun button in the note editor; Notes cards show an 'On Today' mark. Today shows them first in the side column, under the daily card (on a phone, straight after the tasks — never above them, ADR-023), as full cards: lines tick in place, the card opens the editor, and 'Remove from Today' has Undo. Order is creation (todayNotes() in lib/notes.ts, tested) so ticking never reorders. 5 new tests; five languages; checked in the browser at desktop and 375 px."

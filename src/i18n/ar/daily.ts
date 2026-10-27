@@ -2,6 +2,7 @@ import type { Messages } from '../core'
 
 export const daily: Messages['daily'] = {
   card: 'بطاقة اليوم',
+  settings: 'إعدادات بطاقة اليوم',
   kinds: {
     verse: { label: 'آية', title: 'آية اليوم' },
     hadith: { label: 'حديث', title: 'حديث اليوم' },

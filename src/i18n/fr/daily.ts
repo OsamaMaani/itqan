@@ -2,6 +2,7 @@ import type { Messages } from '../core'
 
 export const daily: Messages['daily'] = {
   card: 'Carte du jour',
+  settings: 'Réglages de la carte du jour',
   kinds: {
     verse: { label: 'Verset', title: 'Verset du jour' },
     hadith: { label: 'Hadith', title: 'Hadith du jour' },

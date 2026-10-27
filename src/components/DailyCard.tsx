@@ -1,4 +1,4 @@
-import { BookOpen, ChevronDown, FlaskConical, Languages, Lightbulb, ScrollText, Volume2, type LucideIcon } from 'lucide-react'
+import { BookOpen, ChevronDown, FlaskConical, Languages, Lightbulb, ScrollText, Settings2, Volume2, type LucideIcon } from 'lucide-react'
 import { Fragment, useEffect, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { FACTS } from '../content/facts'
 import { HADITH } from '../content/hadith'
@@ -12,6 +12,7 @@ import {
   type DailyContent, type DailyKind, type Hadith, type QuranMeanings, type Saying, type Verse, type Word, type WordPack,
 } from '../lib/daily'
 import { useToday } from '../lib/hooks'
+import { navigate } from '../lib/router'
 import { useStore } from '../lib/store'
 import type { DailySettings, WordLanguage } from '../lib/types'
 import { Card, cx, IconButton } from './ui'
@@ -142,12 +143,18 @@ export default function DailyCard() {
           {qualifier[kind] && <span className="truncate text-xs text-muted lg:hidden">{qualifier[kind]}</span>}
         </div>
 
-        <div className="flex-1 px-4 pb-4 pt-3 lg:px-5 lg:pb-5" role="tabpanel" aria-label={m.daily.kinds[kind].title}>
+        <div className="flex-1 px-4 pb-1 pt-3 lg:px-5" role="tabpanel" aria-label={m.daily.kinds[kind].title}>
           {kind === 'verse' && <VerseView v={verse} meaning={meaning} c={c} />}
           {kind === 'hadith' && <HadithView h={hadith} meaning={meaning} c={c} />}
           {kind === 'word' && <WordView w={word} settings={daily} c={c} />}
           {kind === 'wisdom' && <SayingView s={saying} c={c} />}
           {kind === 'fact' && <Body text={factText(fact, lang, c)} foot={fact.source && t.f(m.daily.factSource, { source: fact.source })} />}
+        </div>
+        {/* Bottom start corner: straight to this card's own section in Settings. */}
+        <div className="flex px-2.5 pb-2 lg:px-3.5 lg:pb-3">
+          <IconButton label={m.daily.settings} onClick={() => navigate('settings', 'daily')} className="size-7">
+            <Settings2 size={14} />
+          </IconButton>
         </div>
       </div>
     </Card>

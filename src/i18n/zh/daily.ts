@@ -2,6 +2,7 @@ import type { Messages } from '../core'
 
 export const daily: Messages['daily'] = {
   card: '每日卡片',
+  settings: '每日卡片设置',
   kinds: {
     verse: { label: '经文', title: '每日经文' },
     hadith: { label: '圣训', title: '每日圣训' },

@@ -1,5 +1,5 @@
 import { Download, Pencil, Plus, Trash2, Upload } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { EmojiInput } from '../components/EmojiInput'
 import { NotificationsPanel } from '../components/NotificationsPanel'
 import { SyncPanel } from '../components/SyncPanel'
@@ -10,6 +10,7 @@ import { rich, useI18n } from '../i18n/react'
 import { downloadBackup, parseBackup } from '../lib/backup'
 import { AREA_HEX } from '../lib/colors'
 import { useData } from '../lib/hooks'
+import { useRouteParam } from '../lib/router'
 import { snapshot, useStore } from '../lib/store'
 import { toast } from '../lib/toast'
 import { HSK } from '../lib/daily'
@@ -154,10 +155,21 @@ function DailyCardSettings({ value: v, onChange }: { value: DailySettings; onCha
   const t = useI18n()
   const { m } = t
   const s = m.settings.daily
+  // #/settings/daily — the gear on the daily card — lands here, briefly marked.
+  const ref = useRef<HTMLDivElement>(null)
+  const linked = useRouteParam() === 'daily'
+  const [flash, setFlash] = useState(false)
+  useEffect(() => {
+    if (!linked) return
+    ref.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    setFlash(true)
+    const id = setTimeout(() => setFlash(false), 1600)
+    return () => clearTimeout(id)
+  }, [linked])
   // The word languages are languages being learned, so they are named in the interface language.
   const names = new Intl.DisplayNames([t.locale], { type: 'language' })
   return (
-    <Card className="space-y-5 p-5">
+    <Card ref={ref} className={cx('scroll-mt-4 space-y-5 p-5 transition-shadow duration-500', flash && 'ring-2 ring-accent/50')}>
       <div>
         <SectionTitle className="mb-1">{s.title}</SectionTitle>
         <p className="text-sm text-muted">{s.body}</p>

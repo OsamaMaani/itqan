@@ -10,7 +10,7 @@ export function cx(...c: (string | false | null | undefined)[]) {
   return c.filter(Boolean).join(' ')
 }
 
-export function Card({ className, children, ...rest }: { className?: string; children: ReactNode } & React.HTMLAttributes<HTMLDivElement>) {
+export function Card({ className, children, ...rest }: { className?: string; children: ReactNode; ref?: React.Ref<HTMLDivElement> } & React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div className={cx('rounded-2xl border border-border bg-surface/80 shadow-[0_1px_2px_rgb(0_0_0/0.04)] backdrop-blur-sm', className)} {...rest}>
       {children}
