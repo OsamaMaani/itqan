@@ -40,6 +40,13 @@ export const insights = {
   habitDays: { one: '{n} habit day', other: '{n} habit days' },
   consistency: 'Habit consistency',
   noHabits: 'No habits yet.',
+  /** Totals of habits counted in pages, minutes… (ADR-038). */
+  amounts: 'Amounts',
+  amountsEmpty: 'Habits counted in pages, minutes or reps show their totals here.',
+  /** Mean a day over the period: {n} is formatted, {unit} is the owner's unit. */
+  amountPerDay: '{n} {unit}/day',
+  /** Everything ever logged: {n} {unit}. */
+  amountAll: '{n} {unit} in all',
   activity: 'Activity · last 6 months',
   /** The activity calendar shows either measure. */
   activityShow: { xp: 'XP', focus: 'Focus' },

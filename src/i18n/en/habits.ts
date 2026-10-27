@@ -20,6 +20,10 @@ export const habits = {
   dayTipAmount: '{date} — {amount} {unit}',
   /** Tooltip on a heatmap square: {amount} is a number, {unit} is the owner's unit. */
   heatTip: '{date}: {amount} {unit}',
+  /** A counted habit's round (ADR-038): round {n}, {into} of {size}; {unit} is the owner's unit. */
+  roundLine: 'Round {n} · {into}/{size} {unit}',
+  /** After roundLine: when the round should end at the recent pace; {date} is like "Nov 30". */
+  roundFinish: 'ends around {date}',
   tile: {
     done: 'Done',
     tapToComplete: 'Tap to complete',
@@ -47,5 +51,11 @@ export const habits = {
     dailyTarget: 'Daily target',
     targetHint: 'leave 1 for a simple check-off',
     unitPlaceholder: 'unit (pages, min, juz…)',
+    /** Optional size of a whole round of a counted habit (ADR-038). */
+    round: 'Full round',
+    roundHint: 'optional — the whole of it, e.g. 604 pages of the Quran',
+    roundSizePlaceholder: 'size',
+    /** Where the owner is now in the round, e.g. page 120. */
+    roundAt: 'Where you are in it now',
   },
 }

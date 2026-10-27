@@ -17,6 +17,8 @@ export const habits: Messages['habits'] = {
   dayTip: '{date}',
   dayTipAmount: '{date} — {amount} {unit}',
   heatTip: '{date}\u00a0: {amount} {unit}',
+  roundLine: 'Tour {n} · {into}/{size} {unit}',
+  roundFinish: 'fin vers le {date}',
   tile: {
     done: 'Fait',
     tapToComplete: 'Touche pour valider',
@@ -38,5 +40,9 @@ export const habits: Messages['habits'] = {
     dailyTarget: 'Quantité par jour',
     targetHint: 'laisse 1 pour une simple case à cocher',
     unitPlaceholder: 'unité (pages, min, juz…)',
+    round: 'Tour complet',
+    roundHint: 'facultatif — le tout, p. ex. 604 pages du Coran',
+    roundSizePlaceholder: 'taille',
+    roundAt: 'Où vous en êtes maintenant',
   },
 }

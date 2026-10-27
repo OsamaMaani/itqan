@@ -1,6 +1,6 @@
 import { tx, type I18n } from '../i18n/core'
 import { addDaysKey, dayOfWeek, diffDays, rangeKeys, toKey, weekStartKey } from './date'
-import type { DateKey, Habit, HabitLogs } from './types'
+import type { DateKey, Habit, HabitLogs, HabitRound } from './types'
 
 /**
  * Habit maths. Pure functions of (habit, logs, today) — no store access — so they are
@@ -34,7 +34,7 @@ export function metDaysInWeek(h: Habit, logs: HabitLogs, day: DateKey, weekStart
 }
 
 /** The first day this habit's history should be read from: the local day it was created, or its earliest log. */
-export function historyStart(h: Habit, logs: HabitLogs): DateKey {
+export function historyStart(h: Pick<Habit, 'id' | 'createdAt'>, logs: HabitLogs): DateKey {
   let start = toKey(new Date(h.createdAt))
   for (const k of Object.keys(logs[h.id] ?? {})) if (k < start) start = k
   return start
@@ -159,4 +159,86 @@ export function countsMinutes(h: Pick<Habit, 'unit'>): boolean {
  */
 export function focusHabitAmount(h: Pick<Habit, 'unit'>, minutes: number): number {
   return countsMinutes(h) ? minutes : 1
+}
+
+// --- amounts and rounds (ADR-038) -------------------------------------------------------
+
+/** Is this habit counted in amounts — pages, minutes, reps — rather than simply done or not? */
+export function isCounted(h: Pick<Habit, 'target' | 'unit'>): boolean {
+  return h.target > 1 || h.unit.trim() !== ''
+}
+
+/** Everything logged for the habit from `from` to `to`, inclusive. */
+export function amountBetween(logs: HabitLogs, habitId: string, from: DateKey, to: DateKey): number {
+  let n = 0
+  for (const [k, v] of Object.entries(logs[habitId] ?? {})) if (k >= from && k <= to) n += v
+  return n
+}
+
+/** Everything ever logged for the habit up to `today`. */
+export function amountTotal(logs: HabitLogs, habitId: string, today: DateKey): number {
+  let n = 0
+  for (const [k, v] of Object.entries(logs[habitId] ?? {})) if (k <= today) n += v
+  return n
+}
+
+/** The days the pace is read over: the last four weeks, never before the habit began. */
+export const PACE_DAYS = 28
+
+export interface RoundProgress {
+  size: number
+  /** The round under way, from 1. A round finished exactly today shows as the next one, at 0. */
+  number: number
+  /** Done in the round under way, 0 … size − 1. */
+  into: number
+  /** Still to do in it. */
+  left: number
+  /** Rounds finished so far. */
+  completed: number
+  /** Mean amount a day lately — over the last PACE_DAYS days, never before the habit began; 0 with none. */
+  perDay: number
+  /** When the round under way should end at that pace; null without a pace. */
+  finishOn: DateKey | null
+}
+
+/**
+ * Where a counted habit is in its round (ADR-038): what was done before the round was set, plus
+ * everything logged since, wrapped into rounds — a finished round simply starts the next.
+ * The pace is how much you have been doing lately, whatever round it went to, so a round set
+ * today already has a finish date. Today is pending, as for streaks: until something is logged
+ * today, the pace reads up to yesterday and the finish counts from today.
+ */
+export function roundProgress(h: Pick<Habit, 'id' | 'round' | 'createdAt'>, logs: HabitLogs, today: DateKey): RoundProgress | null {
+  const r = h.round
+  if (!r || r.size <= 0) return null
+  const size = r.size
+  const total = Math.max(0, r.done) + (r.from <= today ? amountBetween(logs, h.id, r.from, today) : 0)
+  const completed = Math.floor(total / size)
+  const into = total - completed * size
+  const left = size - into
+
+  const end = amountOn(logs, h.id, today) > 0 ? today : addDaysKey(today, -1)
+  const start = [historyStart(h, logs), addDaysKey(end, -(PACE_DAYS - 1))].sort()[1]
+  const days = end >= start ? diffDays(end, start) + 1 : 0
+  const perDay = days ? amountBetween(logs, h.id, start, end) / days : 0
+  const finishOn = perDay > 0 ? addDaysKey(end, Math.ceil(left / perDay)) : null
+  return { size, number: completed + 1, into, left, completed, perDay, finishOn }
+}
+
+/**
+ * The round to save from the editor (ADR-038), which asks two things: how big a round is, and
+ * where you are in it now — "page 120", today's reading included. Unchanged answers keep the
+ * stored round as it is, so saving a habit never moves its start; changed ones restart the count
+ * from today, with today's logged amount taken out of `done` so it isn't counted twice.
+ * A size of 0 (or empty) removes the round.
+ */
+export function roundFromEditor(
+  h: Pick<Habit, 'id' | 'round' | 'createdAt'> | null, size: number, at: number, logs: HabitLogs, today: DateKey,
+): HabitRound | null {
+  size = Math.floor(size)
+  if (!(size > 0)) return null
+  at = Math.max(0, Math.floor(at) || 0)
+  const prev = h?.round ?? null
+  if (h && prev && prev.size === size && roundProgress(h, logs, today)?.into === at) return prev
+  return { size, from: today, done: Math.max(0, at - (h ? amountOn(logs, h.id, today) : 0)) }
 }

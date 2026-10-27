@@ -177,7 +177,7 @@ describe('v7 → v8 (training)', () => {
     expect(d.goals).toEqual([{ ...before.goals[0], link: null }])
     expect(d.goalLogs).toEqual(before.goalLogs)
     expect(d.tasks).toEqual(before.tasks)
-    expect(d.habits).toEqual(before.habits)
+    expect(d.habits).toEqual(before.habits.map((h) => ({ ...h, round: null }))) // v15 adds the round (ADR-038)
     expect(d.habitLogs).toEqual(before.habitLogs)
   })
   it('never overwrites training data or choices already there', () => {
@@ -337,5 +337,32 @@ describe('v13 → v14 (notes on Today, ADR-036)', () => {
   it('a v13 backup restores with its notes off Today', () => {
     const b = { app: 'itqan', schemaVersion: 13, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [], notes: [{ id: 'n', title: 'T', pinned: true }] } }
     expect(parseBackup(JSON.stringify(b)).notes).toEqual([{ id: 'n', title: 'T', pinned: true, onToday: false }])
+  })
+})
+
+describe('v14 → v15 (habit rounds, ADR-038)', () => {
+  it('existing habits have no round; their logs and every other field come through untouched', () => {
+    const h = { id: 'h', name: 'Quran', emoji: '📖', areaId: 'a', schedule: { type: 'daily' }, target: 4, unit: 'pages', archived: false, createdAt: 'c', order: 2 }
+    const habitLogs = { h: { '2026-10-26': 4, '2026-10-27': 6 } }
+    const d = migrate({ habits: [structuredClone(h)], habitLogs: structuredClone(habitLogs) }, 14)
+    expect(d.habits).toEqual([{ ...h, round: null }])
+    expect(d.habitLogs).toEqual(habitLogs)
+  })
+  it('a habit that already has a round keeps it; no habits stays no habits', () => {
+    const round = { size: 604, from: '2026-10-27', done: 120 }
+    expect(migrate({ habits: [{ id: 'h', round }] }, 14).habits).toEqual([{ id: 'h', round }])
+    expect(migrate({}, 14).habits).toEqual([])
+  })
+  it('a v14 backup restores with no rounds, and a v1 backup comes all the way up', () => {
+    const b = { app: 'itqan', schemaVersion: 14, exportedAt: '', data: { areas: [], tasks: [], habits: [{ id: 'h', target: 1 }], goals: [] } }
+    expect(parseBackup(JSON.stringify(b)).habits).toEqual([{ id: 'h', target: 1, round: null }])
+    expect(migrate({ habits: [{ id: 'h' }] }, 1).habits).toEqual([{ id: 'h', round: null }])
+  })
+  it('a backup with a round round-trips exactly (current shape)', () => {
+    const data = { ...emptyData(), habits: [{
+      id: 'h', name: 'Quran', emoji: '📖', areaId: null, schedule: { type: 'daily' as const }, target: 4, unit: 'pages',
+      round: { size: 604, from: '2026-10-27', done: 120 }, archived: false, createdAt: 'c', order: 0,
+    }], habitLogs: { h: { '2026-10-27': 4 } } }
+    expect(parseBackup(JSON.stringify(toBackup(data)))).toEqual(data)
   })
 })

@@ -1,5 +1,5 @@
 import { addDaysKey, dayOfWeek, rangeKeys, toKey } from './date'
-import { completionRate, historyStart } from './habits'
+import { amountBetween, amountTotal, completionRate, historyStart, isCounted, roundProgress, type RoundProgress } from './habits'
 import type { DateKey, FocusSession, Habit, HabitLogs, ID, Task } from './types'
 
 // Insights maths (ADR-032). Every number the Insights screen shows comes from here, tested —
@@ -186,3 +186,40 @@ export function habitConsistency(
   if (!live.length) return null
   return live.reduce((s, h) => s + completionRate(h, logs, from, to, today, weekStartsOn), 0) / live.length
 }
+
+export interface HabitAmount {
+  habit: Habit
+  /** Logged in the period, and in the same number of days before it. */
+  amount: number
+  prev: number
+  /** Mean a day over the period's days since the habit began (0 when it began after the period). */
+  perDay: number
+  /** Everything ever logged, up to today. */
+  all: number
+  round: RoundProgress | null
+}
+
+/**
+ * The totals of every counted habit (pages, minutes, reps — ADR-038) over `from…to`, compared with
+ * the period before, in the habits' own order. Archived habits are left out.
+ */
+export function habitAmounts(habits: Habit[], logs: HabitLogs, from: DateKey, to: DateKey, today: DateKey): HabitAmount[] {
+  const prev = previousRange(from, to)
+  return habits
+    .filter((h) => !h.archived && isCounted(h))
+    .sort((a, b) => a.order - b.order)
+    .map((h) => {
+      const amount = amountBetween(logs, h.id, from, to)
+      const start = [from, historyStart(h, logs)].sort()[1]
+      const days = start <= to ? rangeKeys(start, to).length : 0
+      return {
+        habit: h,
+        amount,
+        prev: amountBetween(logs, h.id, prev.from, prev.to),
+        perDay: days ? amount / days : 0,
+        all: amountTotal(logs, h.id, today),
+        round: roundProgress(h, logs, today),
+      }
+    })
+}
+

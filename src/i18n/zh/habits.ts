@@ -17,6 +17,8 @@ export const habits: Messages['habits'] = {
   dayTip: '{date}',
   dayTipAmount: '{date}——{amount} {unit}',
   heatTip: '{date}：{amount} {unit}',
+  roundLine: '第 {n} 轮 · {into}/{size} {unit}',
+  roundFinish: '约 {date} 完成',
   tile: {
     done: '已完成',
     tapToComplete: '轻点完成',
@@ -38,5 +40,9 @@ export const habits: Messages['habits'] = {
     dailyTarget: '每日目标',
     targetHint: '保持 1 即为简单打卡',
     unitPlaceholder: '单位（页、分钟、卷…）',
+    round: '完整一轮',
+    roundHint: '可选——整体的量，例如古兰经 604 页',
+    roundSizePlaceholder: '总量',
+    roundAt: '你现在进行到',
   },
 }

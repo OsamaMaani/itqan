@@ -33,7 +33,7 @@ describe('xp is derived from history', () => {
   it('a habit only earns XP on days its target was met', () => {
     const d: Data = {
       ...emptyData(),
-      habits: [{ id: 'h', name: 'h', emoji: '', areaId: null, schedule: { type: 'daily' }, target: 10, unit: 'p', archived: false, createdAt: '2026-10-01', order: 0 }],
+      habits: [{ id: 'h', name: 'h', emoji: '', areaId: null, schedule: { type: 'daily' }, target: 10, unit: 'p', round: null, archived: false, createdAt: '2026-10-01', order: 0 }],
       habitLogs: { h: { '2026-10-15': 10, '2026-10-16': 4 } },
     }
     expect(totalXp(xpEvents(d))).toBe(XP.habitDay)

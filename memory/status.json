@@ -4,6 +4,8 @@
   "updated": "2026-10-27",
   "current_stage": 4,
   "next_actions": [
+    "New: counted habits (pages, minutes…) show their totals in Insights → Amounts, against the previous period. Edit a counted habit to give it a full round — e.g. 604 pages and the page you're on — and it shows Round 1 · 250/604 and roughly when you'll finish; a finished round starts the next. Open Itqan on the iPhone once so it updates (data format v15); sync resumes after that.",
+    "To do (owner): deploy the push relay once so browser installs (your friend's Edge on Windows) can send focus endings to a phone — run relay/deploy.sh, then set the repo variable PUSH_RELAY_URL (steps in relay/README.md).",
     "New: Notes (in the menu after Ideas, key 9). Type a line and press Enter to save a note, or start a checklist. Pin, colour and label notes, search them, archive the ones you're done with. Any note or checklist line can become a task. Projects and goals show their notes too, and in Ctrl+K, 'note: …' saves one. To keep a note on Today, open it and tap the sun; tap the sun on its card on Today to take it off. Open Itqan on the iPhone once so it updates (data format v14); sync resumes after that.",
     "New: streak savers. Every 500 XP earns one (you can hold 2); a missed day uses one by itself and your streak on Today survives. Tap the flame on Today to see your savers, the last four weeks and how it works. Your existing history counts, so you may already hold some.",
     "Reminders and check-ins with people now reach the iPhone as notifications, even with Itqan closed there (the laptop sends them, so it needs to be awake). Open Itqan on the iPhone from the Home Screen once so it updates (data format v12); sync resumes after that.",
@@ -442,6 +444,13 @@
           "module": "settings",
           "status": "in-progress",
           "critical": true
+        },
+        {
+          "id": "S2-45",
+          "title": "Counted habits: Amounts in Insights, and an optional round (604 pages) with progress and a finish date (ADR-038, schema v15)",
+          "module": "insights",
+          "status": "done",
+          "critical": true
         }
       ]
     },
@@ -675,6 +684,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-27",
+      "entry": "S2-45, asked for by the owner: Insights counts the pages, minutes, reps… of every counted habit — the period's amount vs the period before, the mean a day and the all-time total (habitAmounts). And an optional round per counted habit (Habit.round, schema v15, migration 14 → 15 gives none, tested): the editor asks the size and where you are now; rounds wrap (a habit goes on); the finish date comes from the last 28 days' pace. Shown on the Habits row and in Insights → Amounts. 20 new tests; five languages; checked in the browser."
+    },
     {
       "date": "2026-10-27",
       "entry": "S2-44, reported by the owner for a friend on Windows/Edge: focus endings never reached the iPhone and the device test button was missing. Cause: only the Linux app's desktop helper sends pushes, and Apple/Google push services refuse requests from web pages (no CORS — checked). Fix (ADR-037): a Cloudflare Worker push relay (relay/) with the helper's guards (relay/guard.ts, 8 tests); browser installs send timer endings and test pushes through it; Settings says plainly when a device can't send. Verified: real Chrome subscription → push.ts → relay → Google push service 201. Waiting on the owner to deploy the Worker (relay/deploy.sh) and set PUSH_RELAY_URL. Also: a regression test for tick → untick → tick (habitRetick.test.ts) — the reported 2-day streak could not be reproduced; asked the owner for details."

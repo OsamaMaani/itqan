@@ -892,3 +892,30 @@ to ask of a user); scheduling pushes on the relay (Durable Object alarms — sta
 for a minute of precision); sending from the page with `mode: 'no-cors'` (forbids the
 Authorization and Content-Encoding headers a push needs).
 
+## ADR-038 | 2026-10-27 | accepted | Amounts and rounds for counted habits
+
+**Context:** The owner, 2026-10-27: Insights should count how many pages, parts, minutes… were done
+for habits that have units — and a habit should optionally carry a total to measure against: "I
+read 4 pages of the Quran a day out of 300 or 400, depending on my copy". All optional. Asked what
+happens at the end: "as long as it is a habit, it should continue unless archived".
+**Decision:**
+- **Counted habit** = a unit or a target above 1 (`isCounted`). Insights → Habits and areas gains an
+  **Amounts** card: per counted habit, the amount in the chosen period with its change against the
+  period before (like every number there, ADR-032), the mean a day, and everything ever logged
+  (`habitAmounts` in `lib/insights.ts`, tested). Archived habits are left out.
+- **`Habit.round: { size, from, done } | null`** (schema v15; the 14 → 15 migration gives every
+  habit `null`, tested). The editor asks two things: the size of a full round, and *where you are
+  in it now* — "page 250". Saving stores `from` = today and `done` = that answer minus today's
+  logged amount, so today's reading isn't counted twice; saving the same answers again keeps the
+  stored round untouched (`roundFromEditor`, tested). A different copy of the Quran is just a new
+  size and page.
+- **Rounds wrap:** progress = `done` + everything logged since `from`, divided into rounds; a finished
+  round starts the next (`roundProgress`, tested). Shown on the Habits page row and in Amounts:
+  "Round 2 · 140/604 pages · ends around Jan 21", with a bar.
+- **The finish date** is the round's remainder at the recent pace: the mean a day over the last 28
+  days, never before the habit began, whatever round it went to — so a round set today already has
+  a date. Today is pending as for streaks: without a log today the pace ends yesterday.
+**Rejected:** counting rounds from the habit's first log (setting a total later would claim rounds
+that weren't read, and a new copy would rewrite the past); a round that stops at its total (the
+owner: a habit goes on); a pause state (not asked for; archiving already exists).
+

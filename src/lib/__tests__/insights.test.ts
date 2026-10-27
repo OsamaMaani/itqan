@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { change, focusStats, focusStreak, habitConsistency, previousRange, tasksDoneByDay } from '../insights'
+import { change, focusStats, focusStreak, habitAmounts, habitConsistency, previousRange, tasksDoneByDay } from '../insights'
 import type { FocusSession, Habit, Task } from '../types'
 
 /** A session starting at local `day` `hh:mm` — local, so the tests hold in any time zone. */
@@ -130,7 +130,7 @@ describe('tasksDoneByDay', () => {
 
 describe('habitConsistency', () => {
   const habit = (id: string, createdAt: Date, archived = false): Habit => ({
-    id, name: id, emoji: '', areaId: null, schedule: { type: 'daily' }, target: 1, unit: '', archived, createdAt: createdAt.toISOString(), order: 0,
+    id, name: id, emoji: '', areaId: null, schedule: { type: 'daily' }, target: 1, unit: '', round: null, archived, createdAt: createdAt.toISOString(), order: 0,
   })
   const old = habit('old', new Date(2026, 8, 1))
   const fresh = habit('fresh', new Date(2026, 9, 20))
@@ -145,5 +145,36 @@ describe('habitConsistency', () => {
   it('null when there was nothing to measure', () => {
     expect(habitConsistency([fresh], logs, '2026-10-11', '2026-10-14', '2026-10-24', 1)).toBeNull()
     expect(habitConsistency([habit('x', new Date(2026, 8, 1), true)], {}, '2026-10-11', '2026-10-14', '2026-10-24', 1)).toBeNull()
+  })
+})
+
+describe('habitAmounts (ADR-038)', () => {
+  const h = (id: string, o: Partial<Habit> = {}): Habit => ({
+    id, name: id, emoji: '', areaId: null, schedule: { type: 'daily' }, target: 4, unit: 'pages', round: null,
+    archived: false, createdAt: new Date(2026, 9, 1, 9).toISOString(), order: 0, ...o,
+  })
+  const logs = {
+    q: { '2026-10-08': 10, '2026-10-12': 4, '2026-10-13': 6, '2026-10-14': 2 },
+    walk: { '2026-10-13': 1 },
+  }
+
+  it('sums the period, the period before, and everything; only counted, unarchived habits, in order', () => {
+    const habits = [h('q', { order: 1 }), h('walk', { target: 1, unit: '' }), h('old', { archived: true }), h('min', { unit: 'min', order: 0 })]
+    const out = habitAmounts(habits, logs, '2026-10-11', '2026-10-14', '2026-10-14')
+    expect(out.map((x) => x.habit.id)).toEqual(['min', 'q'])
+    const q = out[1]
+    expect(q).toMatchObject({ amount: 12, prev: 10, all: 22, round: null })
+    expect(q.perDay).toBe(3)
+  })
+
+  it('the mean a day counts only the days since the habit began', () => {
+    const late = h('q', { createdAt: new Date(2026, 9, 13, 9).toISOString() })
+    const out = habitAmounts([late], { q: { '2026-10-13': 6, '2026-10-14': 2 } }, '2026-10-01', '2026-10-14', '2026-10-14')
+    expect(out[0].perDay).toBe(4)
+  })
+
+  it('carries the round', () => {
+    const out = habitAmounts([h('q', { round: { size: 15, from: '2026-10-12', done: 5 } })], logs, '2026-10-11', '2026-10-14', '2026-10-14')
+    expect(out[0].round).toMatchObject({ number: 2, into: 2, completed: 1 })
   })
 })

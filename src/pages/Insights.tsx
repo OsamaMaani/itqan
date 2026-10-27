@@ -10,7 +10,7 @@ import { addDaysKey, rangeKeys, todayKey } from '../lib/date'
 import { badges as computeBadges, xpByDay } from '../lib/gamification'
 import { completionRate, isMetOn, streak } from '../lib/habits'
 import { useData, useProgress, useToday } from '../lib/hooks'
-import { change, focusStats, focusStreak, habitConsistency, previousRange, tasksDoneByDay } from '../lib/insights'
+import { change, focusStats, focusStreak, habitAmounts, habitConsistency, previousRange, tasksDoneByDay } from '../lib/insights'
 import { navigate } from '../lib/router'
 import type { DateKey } from '../lib/types'
 
@@ -56,6 +56,7 @@ export function InsightsPage() {
   }, [d, from, today, prev.from, prev.to, days, byDay, wso])
 
   const bestStreak = Math.max(0, ...d.habits.map((h) => streak(h, d.habitLogs, today, wso).best))
+  const amounts = useMemo(() => habitAmounts(d.habits, d.habitLogs, from, today, today), [d.habits, d.habitLogs, from, today])
   const badges = useMemo(() => computeBadges(d, today), [d, today])
   const unlocked = badges.filter((b) => b.unlocked).length
 
@@ -192,6 +193,41 @@ export function InsightsPage() {
             )}
           </Card>
         </div>
+
+        <Card className="p-5">
+          <SectionTitle>{mi.amounts}</SectionTitle>
+          {amounts.length === 0 ? <p className="text-sm text-muted">{mi.amountsEmpty}</p> : (
+            <div className="grid gap-x-8 gap-y-5 md:grid-cols-2">
+              {amounts.map(({ habit: h, amount, prev, perDay, all, round }) => {
+                const a = d.areas.find((x) => x.id === h.areaId)
+                const unit = h.unit
+                return (
+                  <div key={h.id} className="min-w-0">
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="truncate font-semibold">{h.emoji} {h.name}</span>
+                      <span className="flex shrink-0 items-center gap-2">
+                        <span className="font-bold tabular">{t.n(amount)} {unit}</span>
+                        <Delta value={change(amount, prev)} />
+                      </span>
+                    </div>
+                    <div className="mt-0.5 text-xs text-muted tabular">
+                      {t.f(mi.amountPerDay, { n: t.n(perDay, { maximumFractionDigits: 1 }), unit })} · {t.f(mi.amountAll, { n: t.n(all), unit })}
+                    </div>
+                    {round && (
+                      <div className="mt-2">
+                        <ProgressBar value={round.into / round.size} color={a ? AREA_HEX[a.color] : undefined} height={8} />
+                        <div className="mt-1 text-xs text-muted tabular">
+                          {t.f(m.habits.roundLine, { n: round.number, into: round.into, size: round.size, unit })}
+                          {round.finishOn && ` · ${t.f(m.habits.roundFinish, { date: t.d(round.finishOn, round.finishOn.slice(0, 4) === today.slice(0, 4) ? 'short' : 'medium') })}`}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </Card>
       </Section>
 
       {/* ---- Progress ---- */}

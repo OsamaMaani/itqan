@@ -71,9 +71,22 @@ export interface Habit {
   /** completions per scheduled day needed to count the day as met (e.g. 1, or 20 pages) */
   target: number
   unit: string
+  /** Optional: the whole the daily amount works through, e.g. 604 pages of the Quran (ADR-038). */
+  round: HabitRound | null
   archived: boolean
   createdAt: string
   order: number
+}
+
+/**
+ * A counted habit's round (ADR-038): `size` units make one round — a full reading of the Quran,
+ * whatever page count your copy has. Amounts logged from `from` (a local day) count toward it, on
+ * top of `done` already done before that day. A finished round starts the next one: a habit goes on.
+ */
+export interface HabitRound {
+  size: number
+  from: DateKey
+  done: number
 }
 
 /** habitId -> dateKey -> amount logged that day */

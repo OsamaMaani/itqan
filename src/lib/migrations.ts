@@ -6,7 +6,7 @@ import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 14
+export const SCHEMA_VERSION = 15
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -100,6 +100,12 @@ const steps: Record<number, Step> = {
   13: (d) => ({
     ...d,
     notes: ((d.notes as Record<string, unknown>[] | undefined) ?? []).map((n) => ({ onToday: false, ...n })),
+  }),
+  // 14 → 15 (2026-10-27): a counted habit may have a round — 604 pages of the Quran (ADR-038).
+  // Existing habits have none; their logs and streaks are untouched.
+  14: (d) => ({
+    ...d,
+    habits: ((d.habits as Record<string, unknown>[] | undefined) ?? []).map((h) => ({ round: null, ...h })),
   }),
 }
 

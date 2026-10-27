@@ -13,6 +13,8 @@ The vocabulary is fixed. Use these words in code, UI and memory alike.
 | **Schedule** | `daily`, specific `days` of the week, or `weekly` N times. | `HabitSchedule` |
 | **Target** | Amount per day that counts as done (1 = simple check-off; 20 min; 10 pages). | `Habit.target` |
 | **Met / missed / pending** | State of a scheduled period. Pending = today or this week, not met yet. | `PeriodState` |
+| **Counted habit** | A habit with a unit or a target above 1 — pages, minutes, reps. Insights shows its totals. | `isCounted()`, `habitAmounts()` |
+| **Round** | Optional whole a counted habit works through (a full reading of the Quran); a finished round starts the next (ADR-038). | `HabitRound`, `roundProgress()` |
 | **Streak** | Consecutive met periods, ignoring pending (ADR-006). | `streak()` |
 | **Day streak** | Consecutive days with *any* activity, kept alive by streak savers. The flame on Today. | `dayStreak()` |
 | **Streak saver** | Earned every 500 XP (hold 2); covers a missed day of the day streak automatically (ADR-034). | `SAVERS`, `DayStreak.held` |

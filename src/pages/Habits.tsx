@@ -7,7 +7,7 @@ import { AreaChip, Button, Card, cx, EmptyState, IconButton, PageHeader } from '
 import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
 import { addDaysKey } from '../lib/date'
-import { amountOn, completionRate, countsMinutes, isMetOn, isScheduled, scheduleLabel, streak } from '../lib/habits'
+import { amountOn, completionRate, countsMinutes, isMetOn, isScheduled, roundProgress, scheduleLabel, streak } from '../lib/habits'
 import { areaHex, useAreaMap, useData, useToday } from '../lib/hooks'
 import { navigate } from '../lib/router'
 import { useStore } from '../lib/store'
@@ -53,6 +53,7 @@ function HabitRow({ habit }: { habit: Habit }) {
   const rate30 = completionRate(habit, logs, addDaysKey(today, -29), today, today, weekStartsOn)
   const last7 = Array.from({ length: 7 }, (_, i) => addDaysKey(today, i - 6))
   const target = Math.max(1, habit.target)
+  const round = roundProgress(habit, logs, today)
 
   // A habit counted in minutes gets a session for what is left of today's target.
   const onFocus = () => {
@@ -83,6 +84,12 @@ function HabitRow({ habit }: { habit: Habit }) {
             <AreaChip area={area} />
             <span>{scheduleLabel(habit, t)}</span>
             {(target > 1 || habit.unit) && <span>· {t.f(m.habits.targetPerDay, { target, unit: habit.unit })}</span>}
+            {round && (
+              <span>
+                · {t.f(m.habits.roundLine, { n: round.number, into: round.into, size: round.size, unit: habit.unit })}
+                {round.finishOn && ` · ${t.f(m.habits.roundFinish, { date: t.d(round.finishOn, round.finishOn.slice(0, 4) === today.slice(0, 4) ? 'short' : 'medium') })}`}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex w-full justify-around gap-5 border-t border-border pt-3 text-center sm:w-auto sm:justify-start sm:border-0 sm:pt-0">

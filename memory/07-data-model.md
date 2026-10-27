@@ -12,7 +12,7 @@ Zustand as `{ state: Data, version: SCHEMA_VERSION }`.
 |---|---|---|
 | `areas` | `Area[]` | Deleting an area nulls references; nothing else is deleted with it |
 | `tasks` | `Task[]` | `date: null` = Inbox. `doneAt` drives XP day and the review |
-| `habits` | `Habit[]` | `schedule` + `target` + `unit` |
+| `habits` | `Habit[]` | `schedule` + `target` + `unit`; optional `round` `{ size, from, done }` for a counted habit — 604 pages of the Quran — counted from `from` on top of `done`, then it starts again (v15, ADR-038) |
 | `habitLogs` | `{ [habitId]: { [DateKey]: amount } }` | A map, not an array: O(1) per day, compact. Amount 0 = key removed |
 | `goals` | `Goal[]` | `startValue` = progress before tracking began; milestones inline; `link` = follow Training instead of check-ins (v8) |
 | `goalLogs` | `GoalLog[]` | Check-ins; current value = startValue + Σ amounts |
@@ -64,8 +64,8 @@ XP, levels, achievements, streaks, streak savers, completion rates and goal prog
 4. `normalize()` must still produce a complete `Data` from partial input.
 5. Backups from the old version must import (they pass through the same `migrate`).
 
-Current version: **14**. History: 1 = initial; 2 = `memories`, `ideas`, `reminders`; 3 = `projects`,
+Current version: **15**. History: 1 = initial; 2 = `memories`, `ideas`, `reminders`; 3 = `projects`,
 `contacts`, `interactions`, `Task.projectId`, `Reminder.contactId`, `Reminder.countYears`; 4 = `Task.stage`,
 `Task.blocked`, `Project.progressMode/manualProgress/view/pinned`, `projectUpdates`; 5 = `achievements`
 (all 2026-10-16); 6 = `Settings.daily` (2026-10-17); 7 = `Settings.language` (2026-10-17); 8 = Training — `exercises`,
-`routines`, `program`, `workouts`, `workoutSets`, `Goal.link`, `Settings.weightUnit` (2026-10-20, ADR-027); 9 = program mode `flexible`, no data change (2026-10-21, ADR-028); 10 = `FocusSession.habitId/habitAmount`, `ActiveTimer.habitId` (2026-10-21, ADR-029); 11 = `pushTargets`, `Settings.notify` (2026-10-23, ADR-031); 12 = `PushTarget.kinds` (2026-10-24, ADR-033); 13 = `notes` (2026-10-26, ADR-035); 14 = `Note.onToday` (2026-10-26, ADR-036).
+`routines`, `program`, `workouts`, `workoutSets`, `Goal.link`, `Settings.weightUnit` (2026-10-20, ADR-027); 9 = program mode `flexible`, no data change (2026-10-21, ADR-028); 10 = `FocusSession.habitId/habitAmount`, `ActiveTimer.habitId` (2026-10-21, ADR-029); 11 = `pushTargets`, `Settings.notify` (2026-10-23, ADR-031); 12 = `PushTarget.kinds` (2026-10-24, ADR-033); 13 = `notes` (2026-10-26, ADR-035); 14 = `Note.onToday` (2026-10-26, ADR-036); 15 = `Habit.round` (2026-10-27, ADR-038).

@@ -17,6 +17,8 @@ export const habits: Messages['habits'] = {
   dayTip: '{date}',
   dayTipAmount: '{date} — {amount} {unit}',
   heatTip: '{date}: {amount} {unit}',
+  roundLine: 'الختمة {n} · {into}/{size} {unit}',
+  roundFinish: 'تنتهي نحو {date}',
   tile: {
     done: 'تم',
     tapToComplete: 'انقر للإتمام',
@@ -38,5 +40,9 @@ export const habits: Messages['habits'] = {
     dailyTarget: 'المقدار اليومي',
     targetHint: 'اتركه 1 لتسجيلها بنقرة واحدة',
     unitPlaceholder: 'الوحدة (صفحة، دقيقة، جزء…)',
+    round: 'الختمة كاملة',
+    roundHint: 'اختياري — المقدار كله، مثل 604 صفحات للمصحف',
+    roundSizePlaceholder: 'المقدار',
+    roundAt: 'أين وصلت فيها الآن',
   },
 }

@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useI18n } from '../i18n/react'
+import { isCounted, roundFromEditor, roundProgress } from '../lib/habits'
+import { useToday } from '../lib/hooks'
 import { useStore } from '../lib/store'
 import type { Habit, HabitSchedule } from '../lib/types'
 import { AreaPicker } from './AreaPicker'
 import { EmojiInput } from './EmojiInput'
 import { Button, cx, Input, Label, Modal, Segmented } from './ui'
 
-type Draft = Pick<Habit, 'name' | 'emoji' | 'areaId' | 'schedule' | 'target' | 'unit'>
-const blank: Draft = { name: '', emoji: '✨', areaId: null, schedule: { type: 'daily' }, target: 1, unit: '' }
+type Draft = Pick<Habit, 'name' | 'emoji' | 'areaId' | 'schedule' | 'target' | 'unit'> & {
+  /** The round's size and where you are in it, as typed (ADR-038); empty size = no round. */
+  roundSize: string
+  roundAt: string
+}
+const blank: Draft = { name: '', emoji: '✨', areaId: null, schedule: { type: 'daily' }, target: 1, unit: '', roundSize: '', roundAt: '' }
 
 export function HabitEditor({ open, onClose, habit }: { open: boolean; onClose: () => void; habit?: Habit }) {
   const t = useI18n()
@@ -15,14 +21,23 @@ export function HabitEditor({ open, onClose, habit }: { open: boolean; onClose: 
   const add = useStore((s) => s.addHabit)
   const update = useStore((s) => s.updateHabit)
   const remove = useStore((s) => s.deleteHabit)
+  const today = useToday()
   const [d, setD] = useState<Draft>(blank)
 
-  useEffect(() => { if (open) setD(habit ? { ...habit } : blank) }, [open, habit])
+  useEffect(() => {
+    if (!open) return
+    if (!habit) return setD(blank)
+    const p = roundProgress(habit, useStore.getState().habitLogs, today)
+    setD({ ...habit, roundSize: p ? String(p.size) : '', roundAt: p ? String(p.into) : '' })
+  }, [open, habit, today])
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((x) => ({ ...x, [k]: v }))
 
   const save = () => {
     if (!d.name.trim()) return
-    const clean = { ...d, name: d.name.trim(), target: Math.max(1, d.target || 1) }
+    const { roundSize, roundAt, ...rest } = d
+    const target = Math.max(1, d.target || 1)
+    const round = isCounted({ target, unit: d.unit }) ? roundFromEditor(habit ?? null, Number(roundSize), Number(roundAt), useStore.getState().habitLogs, today) : null
+    const clean = { ...rest, name: d.name.trim(), target, round }
     if (habit) update(habit.id, clean)
     else add(clean)
     onClose()
@@ -96,6 +111,24 @@ export function HabitEditor({ open, onClose, habit }: { open: boolean; onClose: 
             <Input placeholder={m.habits.editor.unitPlaceholder} value={d.unit} onChange={(e) => set('unit', e.target.value)} />
           </div>
         </div>
+        {isCounted({ target: d.target || 1, unit: d.unit }) && (
+          <div>
+            <Label hint={m.habits.editor.roundHint}>{m.habits.editor.round}</Label>
+            <div className="flex items-center gap-2">
+              <Input type="number" min={0} placeholder={m.habits.editor.roundSizePlaceholder} value={d.roundSize} onChange={(e) => set('roundSize', e.target.value)} className="w-28" />
+              <span className="truncate text-sm text-muted">{d.unit}</span>
+            </div>
+            {Number(d.roundSize) > 0 && (
+              <div className="mt-3">
+                <Label>{m.habits.editor.roundAt}</Label>
+                <div className="flex items-center gap-2">
+                  <Input type="number" min={0} placeholder="0" value={d.roundAt} onChange={(e) => set('roundAt', e.target.value)} className="w-28" />
+                  <span className="truncate text-sm text-muted">/ {t.n(Number(d.roundSize))} {d.unit}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </Modal>
   )
