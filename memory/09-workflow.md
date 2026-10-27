@@ -49,6 +49,9 @@ look at the UI in the browser — a report is a claim, not evidence.
 - [ ] The change was seen working in the running app (`npm run dev`)
 - [ ] `memory/` updated in the same turn — and an ADR if a choice was made
 - [ ] `status.json`: task status, `updated` date, a `log` entry (newest first)
+- [ ] **What's new** (ADR-040): the task in a `src/content/releases.ts` entry — a new entry (next
+      id, today's date) per shipped update, items written for the owner in all five languages; a
+      task with nothing visible is listed with no items. `releases.test.ts` fails without it.
 - [ ] `python3 scripts/build_dashboard.py`, committed **with** the `status.json` change
 - [ ] Committed, message referencing the task ID and the reasoning
 - [ ] **Shipped, without asking** (the owner's standing instruction, 2026-10-21): `git push origin main`

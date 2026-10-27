@@ -857,6 +857,8 @@ typed note to a stray tap is worse than an edit you meant to discard, which Dele
 **Rejected:** reusing `pinned` (every note pinned on Notes would crowd Today); a per-card sun button
 on the Notes grid (a third corner button crowds phone cards; the editor is one tap away).
 
+*(2026-10-27, S2-46: the owner found the Today switch confusing — on showed the dim sun, which reads as off, and the two suns look alike. Note switches — pin, On Today, archive — now show their state, not the action: filled icon on a green chip when on, plain outline when off, `aria-pressed`; the label says what a tap does.)*
+
 ## ADR-037 | 2026-10-27 | accepted | A push relay for browser installs
 
 **Context:** The owner, 2026-10-27: a friend uses Itqan on Windows — the hosted app, installed from
@@ -918,4 +920,43 @@ happens at the end: "as long as it is a habit, it should continue unless archive
 **Rejected:** counting rounds from the habit's first log (setting a total later would claim rounds
 that weren't read, and a new copy would rewrite the past); a round that stops at its total (the
 owner: a habit goes on); a pause state (not asked for; archiving already exists).
+
+## ADR-039 | 2026-10-27 | accepted | A helper for writing a goal
+
+**Context:** The owner, 2026-10-27: when creating a goal, show help on doing it well — clear, within
+a time period, specific, realistic — "still you don't force anything on the user".
+**Decision:**
+- **A folding panel** at the top of the goal editor: "How to set a good goal", with Do (specific,
+  measurable, a deadline, realistic, a why, fed daily by a habit or tasks) and Avoid (vague words,
+  too many goals at once, goals that hang on other people's choices). Open for a new goal until
+  folded once (remembered per device); folded when editing.
+- **A live checklist** under the title — Specific, Measurable, Deadline, Why — ticking as the
+  draft meets each (`goalChecks()` in `lib/goals.ts`, tested). Specific = three words or more,
+  counted with `Intl.Segmenter` so Chinese works.
+- **Realistic is shown, not judged:** under the dates, the pace the deadline asks — "about 1.1 books
+  a week. Does that fit your weeks?" — or days per milestone left, or a note that a deadline over a
+  year away is easier as a nearer goal. Nothing blocks saving.
+**Rejected:** scoring the goal or blocking Save until it passes (the owner: never force); detecting
+vague words per language (brittle across five languages; the tip names them instead); judging
+"realistic" with a threshold (only the owner knows their weeks).
+
+## ADR-040 | 2026-10-27 | accepted | What's new: every update is announced in the app
+
+**Context:** The owner, 2026-10-27: "whenever we make a new update, make an announcement about it on
+the app, as professional apps do".
+**Decision:**
+- **Release notes as content:** `src/content/releases.ts`, newest first — id, date, the task IDs it
+  ships and items (emoji + text in all five languages), written for the person using Itqan.
+- **Shown once per device**, 1.5 s after Itqan opens, never over onboarding: every update newer than
+  the last one this device saw (`itqan-seen-release` in localStorage — device-local, like the theme;
+  losing it only shows the news again). A device that never saw any gets the past week's; a new
+  user is marked as having seen everything when onboarding ends. At most three at once
+  (`toAnnounce()`, tested). Settings → What's new shows the whole history.
+- **Enforced, not trusted:** `releases.test.ts` fails CI when a task marked done in status.json
+  (from S2-43, and every task of a stage begun later) is in no release — so announcing is part of
+  shipping (CLAUDE.md rule 9, `09-workflow.md`). Internal-only tasks are listed with no items and
+  never shown. It also checks ids, dates and that every item has all five languages.
+**Rejected:** a changelog generated from commit messages (written for developers, English only);
+storing "seen" in synced settings (each device should announce once — the phone too); a badge
+or banner instead of a dialog (easy to miss; the owner asked for an announcement).
 

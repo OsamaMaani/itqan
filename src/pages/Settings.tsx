@@ -1,4 +1,4 @@
-import { Download, Pencil, Plus, Trash2, Upload } from 'lucide-react'
+import { Download, Pencil, Plus, Sparkles, Trash2, Upload } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { EmojiInput } from '../components/EmojiInput'
 import { NotificationsPanel } from '../components/NotificationsPanel'
@@ -10,6 +10,7 @@ import { rich, useI18n } from '../i18n/react'
 import { downloadBackup, parseBackup } from '../lib/backup'
 import { AREA_HEX } from '../lib/colors'
 import { useData } from '../lib/hooks'
+import { useWhatsNew } from '../lib/releases'
 import { useRouteParam } from '../lib/router'
 import { snapshot, useStore } from '../lib/store'
 import { toast } from '../lib/toast'
@@ -131,6 +132,14 @@ export function SettingsPage() {
             <Trash2 size={16} /> {m.settings.data.deleteAll}
           </Button>
         </div>
+      </Card>
+
+      <Card className="flex flex-wrap items-center gap-3 p-5">
+        <div className="min-w-0 flex-1">
+          <SectionTitle className="mb-1">{m.app.whatsNew.settingsTitle}</SectionTitle>
+          <p className="text-sm text-muted">{m.app.whatsNew.settingsBody}</p>
+        </div>
+        <Button onClick={() => useWhatsNew.setState({ history: true })}><Sparkles size={15} /> {m.app.whatsNew.seeAll}</Button>
       </Card>
 
       <Card className="p-5">

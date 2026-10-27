@@ -1,4 +1,4 @@
-import { AlignLeft, Archive, ArchiveRestore, CheckSquare, FolderKanban, ListChecks, Pin, PinOff, Plus, Sun, SunDim, Target, Trash2, X } from 'lucide-react'
+import { AlignLeft, Archive, CheckSquare, FolderKanban, ListChecks, Pin, Plus, Sun, Target, Trash2, X, type LucideIcon } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { create } from 'zustand'
 import { useI18n } from '../i18n/react'
@@ -108,21 +108,13 @@ export function NoteCard({ note, compact, onToday }: { note: Note; compact?: boo
       <button onClick={() => openNote(note)} aria-label={note.title || L.untitled} className="absolute inset-0 rounded-2xl" />
       {onToday && (
         <div className="absolute end-1.5 top-1.5 z-10 flex">
-          <IconButton label={L.unpinToday} onClick={toggleToday} className="size-8 bg-surface/70 sm:opacity-0 sm:group-hover:opacity-100"><SunDim size={15} /></IconButton>
+          <StateIcon on icon={Sun} label={L.unpinToday} onClick={toggleToday} className="size-8" />
         </div>
       )}
       {!compact && !onToday && (
         <div className="absolute end-1.5 top-1.5 z-10 flex">
-          <IconButton label={note.archived ? t.m.common.unarchive : t.m.common.archive} onClick={archive} className="size-8 bg-surface/70 sm:opacity-0 sm:group-hover:opacity-100">
-            {note.archived ? <ArchiveRestore size={15} /> : <Archive size={15} />}
-          </IconButton>
-          <IconButton
-            label={note.pinned ? L.unpin : L.pin}
-            onClick={() => update(note.id, { pinned: !note.pinned })}
-            className={cx('size-8', note.pinned ? 'text-accent' : 'sm:opacity-0 sm:group-hover:opacity-100')}
-          >
-            {note.pinned ? <PinOff size={15} /> : <Pin size={15} />}
-          </IconButton>
+          <StateIcon on={note.archived} icon={Archive} solid={false} label={note.archived ? t.m.common.unarchive : t.m.common.archive} onClick={archive} className={cx('size-8', !note.archived && 'bg-surface/70 sm:opacity-0 sm:group-hover:opacity-100')} />
+          <StateIcon on={note.pinned} icon={Pin} label={note.pinned ? L.unpin : L.pin} onClick={() => update(note.id, { pinned: !note.pinned })} className={cx('size-8', !note.pinned && 'sm:opacity-0 sm:group-hover:opacity-100')} />
         </div>
       )}
       <div className={cx('pointer-events-none relative', compact ? 'p-3' : onToday ? 'p-4 pe-10 sm:pe-4' : 'p-4 pe-[4.5rem] sm:pe-10')}>
@@ -318,9 +310,9 @@ function NoteEditor({ value, onClose }: { value: Note | NoteDefaults | null; onC
         footer={
           <>
             {existing && <Button variant="danger" className="me-auto" onClick={remove}><Trash2 size={15} /> {m.common.delete}</Button>}
-            <IconButton label={d.pinned ? L.unpin : L.pin} onClick={() => set('pinned', !d.pinned)} className={d.pinned ? 'text-accent' : ''}>{d.pinned ? <PinOff size={16} /> : <Pin size={16} />}</IconButton>
-            <IconButton label={d.onToday ? L.unpinToday : L.pinToday} onClick={() => set('onToday', !d.onToday)} className={d.onToday ? 'text-accent' : ''}>{d.onToday ? <SunDim size={16} /> : <Sun size={16} />}</IconButton>
-            <IconButton label={d.archived ? m.common.unarchive : m.common.archive} onClick={() => set('archived', !d.archived)} className={d.archived ? 'text-accent' : ''}>{d.archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}</IconButton>
+            <StateIcon on={d.pinned} icon={Pin} label={d.pinned ? L.unpin : L.pin} onClick={() => set('pinned', !d.pinned)} size={16} />
+            <StateIcon on={d.onToday} icon={Sun} label={d.onToday ? L.unpinToday : L.pinToday} onClick={() => set('onToday', !d.onToday)} size={16} />
+            <StateIcon on={d.archived} icon={Archive} solid={false} label={d.archived ? m.common.unarchive : m.common.archive} onClick={() => set('archived', !d.archived)} size={16} />
             <Button variant="ghost" onClick={() => makeTask()} disabled={!d.title.trim() && !d.body.trim()}><CheckSquare size={15} /> {L.editor.makeTask}</Button>
             <Button variant="primary" onClick={close}>{m.common.done}</Button>
           </>
@@ -494,3 +486,24 @@ export function newNoteFromAnywhere(defaults: NoteDefaults = {}) {
   navigate('notes')
   openNote(defaults)
 }
+
+/**
+ * A note's on/off switch — pinned, on Today, archived. The icon shows the state, never the action:
+ * on is the filled icon on a tinted chip, off the plain outline, so the two can't be mistaken.
+ * The label says what a tap does.
+ */
+function StateIcon({ on, icon: Icon, label, onClick, size = 15, solid = true, className }: {
+  on: boolean; icon: LucideIcon; label: string; onClick: () => void; size?: number; solid?: boolean; className?: string
+}) {
+  return (
+    <IconButton
+      label={label}
+      aria-pressed={on}
+      onClick={onClick}
+      className={cx(on && 'bg-accent-soft! text-accent! hover:text-accent!', className)}
+    >
+      <Icon size={size} fill={on && solid ? 'currentColor' : 'none'} strokeWidth={on ? 2.25 : 2} />
+    </IconButton>
+  )
+}
+

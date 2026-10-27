@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { LANG_INFO } from '../i18n/core'
 import { loadLanguage, rich, useI18n } from '../i18n/react'
 import { navigate } from '../lib/router'
+import { markSeen } from '../lib/releases'
 import { useStore } from '../lib/store'
 import { UI_LANGUAGES, type UiLanguage } from '../lib/types'
 import { useSyncSetup } from './SyncPanel'
@@ -40,6 +41,7 @@ export function Onboarding() {
   const finish = async (withStarter: boolean, after?: () => void) => {
     await loadLanguage(language)
     complete(name, withStarter)
+    markSeen() // a new user starts with everything already here, not a list of past updates
     after?.()
   }
 

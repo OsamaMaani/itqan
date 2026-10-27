@@ -6,6 +6,7 @@ import { MobileHeader, MobileNav, Sidebar } from './components/Shell'
 import { TaskEditor } from './components/TaskEditor'
 import { TimerWatcher } from './components/TimerWatcher'
 import { Toaster } from './components/Toaster'
+import { WhatsNew } from './components/WhatsNew'
 import { tx } from './i18n/core'
 import { useDocumentLanguage } from './i18n/react'
 import { celebrate } from './lib/celebrate'
@@ -86,6 +87,7 @@ export default function App() {
       <GlobalNoteEditor />
       <Toaster />
       <Onboarding />
+      <WhatsNew />
     </div>
   )
 }

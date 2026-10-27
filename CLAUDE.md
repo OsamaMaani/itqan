@@ -31,6 +31,9 @@ anything.
 8. **Technical decisions are yours; product decisions are the owner's.** Decide and record anything
    about how the app is built. Ask him only how he wants to *use* it — what a screen shows, what
    it asks, what their routine actually is (`memory/06-open-questions.md`).
+9. **Announce every update in the app** (ADR-040). Every task you mark done gets an entry in
+   `src/content/releases.ts` — what the owner can now do, in all five languages — in the same
+   commit. CI enforces it (`releases.test.ts`); a purely internal task is listed with no items.
 
 ## Who is building this
 

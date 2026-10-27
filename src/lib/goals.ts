@@ -56,3 +56,57 @@ export function goalPace(g: Goal, src: GoalSources, today: DateKey): PaceInfo {
   else pace = 'behind'
   return { pace, expected, daysLeft, perDay }
 }
+
+// --- the goal helper (ADR-039) ----------------------------------------------------------
+
+/** Words in a title, in any script: Chinese has no spaces, so it is segmented, not split. */
+export function wordCount(text: string, locale = 'en'): number {
+  const s = text.trim()
+  if (!s) return 0
+  try {
+    let n = 0
+    for (const seg of new Intl.Segmenter(locale, { granularity: 'word' }).segment(s)) if (seg.isWordLike) n++
+    return n
+  } catch {
+    return s.split(/\s+/).length
+  }
+}
+
+export interface GoalChecks {
+  /** Says what exactly — three words or more ("Read 12 books", not "Reading"). */
+  specific: boolean
+  /** Has something to count: a target above what's done, or two milestones or more. */
+  measurable: boolean
+  /** Has a deadline, on or after its start and not already past. */
+  timeBound: boolean
+  /** Says why it matters. */
+  why: boolean
+  /** A numeric goal with a deadline: what it takes a week, from today (or its start) to the deadline. */
+  perWeek: number | null
+  /** A milestone goal with a deadline: days available for each milestone left. */
+  daysPerMilestone: number | null
+  /** The deadline is more than a year away: worth splitting into a nearer goal. */
+  far: boolean
+}
+
+type GoalDraft = Pick<Goal, 'title' | 'why' | 'kind' | 'startValue' | 'target' | 'startDate' | 'deadline' | 'milestones'>
+
+/**
+ * The goal editor's gentle checklist (ADR-039): what makes a goal easy to keep — specific,
+ * measurable, with a deadline and a reason — and the pace the deadline asks for, so the owner can
+ * judge whether it is realistic. Advice only: nothing here ever blocks saving.
+ */
+export function goalChecks(d: GoalDraft, today: DateKey, locale = 'en'): GoalChecks {
+  const from = d.startDate > today ? d.startDate : today
+  const days = d.deadline ? diffDays(d.deadline, from) + 1 : 0
+  const left = d.milestones.filter((m) => !m.done).length
+  return {
+    specific: wordCount(d.title, locale) >= 3,
+    measurable: d.kind === 'milestones' ? d.milestones.length >= 2 : d.target > d.startValue,
+    timeBound: !!d.deadline && d.deadline >= d.startDate && d.deadline >= today,
+    why: d.why.trim().length > 0,
+    perWeek: d.kind === 'numeric' && days > 0 && d.target > d.startValue ? ((d.target - d.startValue) / days) * 7 : null,
+    daysPerMilestone: d.kind === 'milestones' && days > 0 && left > 0 ? days / left : null,
+    far: !!d.deadline && diffDays(d.deadline, from) > 366,
+  }
+}

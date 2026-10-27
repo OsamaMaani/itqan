@@ -50,6 +50,33 @@ export const goals = {
     deleteConfirm: 'Delete “{title}” and its progress history?',
   },
   editor: {
+    /** The goal helper (ADR-039): advice, never a rule. */
+    helper: {
+      toggle: 'How to set a good goal',
+      intro: 'A few things make a goal much easier to keep. All of it is optional — it’s your goal.',
+      do: 'Do',
+      avoid: 'Avoid',
+      dos: [
+        'Be specific: “Read 12 books”, not “read more”.',
+        'Make it measurable: a number to reach, or milestones to tick off.',
+        'Give it a deadline: a date turns a wish into a plan.',
+        'Keep it realistic: a stretch, not a strain — something you can still do in a busy week.',
+        'Write down why: it carries you when motivation dips.',
+        'Feed it every day: a habit or tasks that move it forward.',
+      ],
+      donts: [
+        'Vague words — “more”, “better”, “try”.',
+        'Too many goals at once: two or three you keep beat ten you drop.',
+        'Goals that depend on other people’s choices — aim at what you control.',
+      ],
+      /** The live checklist under the title. */
+      checks: { specific: 'Specific', measurable: 'Measurable', timeBound: 'Deadline', why: 'Why' },
+      /** Shown under the deadline: {amount} is a number, {unit} the goal's unit (may be empty). */
+      perWeek: 'That’s about {amount} {unit} a week. Does that fit your weeks?',
+      /** {days} is a number of days. */
+      perMilestone: 'That’s about {days} days for each milestone left.',
+      far: 'That’s more than a year away — a nearer goal on the way there is easier to keep.',
+    },
     editTitle: 'Edit goal',
     newTitle: 'New goal',
     create: 'Create goal',

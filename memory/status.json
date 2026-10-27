@@ -1,9 +1,10 @@
 {
   "project": "Itqan",
   "subtitle": "إتقان — daily tasks, habits and long-term goals in one calm place",
-  "updated": "2026-10-27",
+  "updated": "2026-10-28",
   "current_stage": 4,
   "next_actions": [
+    "New: Itqan now announces each update in a 'What's new' window when you open it (once per device); Settings → What's new lists them all. Also: a guide and checklist when you create a goal, and clearer on/off switches on notes.",
     "New: counted habits (pages, minutes…) show their totals in Insights → Amounts, against the previous period. Edit a counted habit to give it a full round — e.g. 604 pages and the page you're on — and it shows Round 1 · 250/604 and roughly when you'll finish; a finished round starts the next. Open Itqan on the iPhone once so it updates (data format v15); sync resumes after that.",
     "To do (owner): deploy the push relay once so browser installs (your friend's Edge on Windows) can send focus endings to a phone — run relay/deploy.sh, then set the repo variable PUSH_RELAY_URL (steps in relay/README.md).",
     "New: Notes (in the menu after Ideas, key 9). Type a line and press Enter to save a note, or start a checklist. Pin, colour and label notes, search them, archive the ones you're done with. Any note or checklist line can become a task. Projects and goals show their notes too, and in Ctrl+K, 'note: …' saves one. To keep a note on Today, open it and tap the sun; tap the sun on its card on Today to take it off. Open Itqan on the iPhone once so it updates (data format v14); sync resumes after that.",
@@ -451,6 +452,27 @@
           "module": "insights",
           "status": "done",
           "critical": true
+        },
+        {
+          "id": "S2-46",
+          "title": "Note switches (pin, On Today, archive) show their state clearly: filled and green when on",
+          "module": "notes",
+          "status": "done",
+          "critical": false
+        },
+        {
+          "id": "S2-47",
+          "title": "Goal helper: do's and don'ts, a live checklist (specific, measurable, deadline, why) and the pace the deadline asks (ADR-039)",
+          "module": "goals",
+          "status": "done",
+          "critical": false
+        },
+        {
+          "id": "S2-48",
+          "title": "What's new: every update announced once per device, history in Settings; CI fails on an unannounced task (ADR-040)",
+          "module": "settings",
+          "status": "done",
+          "critical": false
         }
       ]
     },
@@ -684,6 +706,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-28",
+      "entry": "S2-46…48, asked for by the owner. S2-46: the On Today switch showed the dim sun when on (reads as off) and both suns look alike; note switches now show their state — filled icon on a green chip when on, outline when off. S2-47 (ADR-039): the goal editor gets a folding 'How to set a good goal' panel (do's and avoids), a live checklist — Specific, Measurable, Deadline, Why (goalChecks, 8 tests) — and the pace the deadline asks; advice only. S2-48 (ADR-040): What's new — release notes in src/content/releases.ts (five languages) shown once per device after an update, history in Settings; releases.test.ts fails CI when a done task is unannounced, so it is now part of shipping (CLAUDE.md rule 9). Checked in the browser, English and Arabic."
+    },
     {
       "date": "2026-10-27",
       "entry": "S2-45, asked for by the owner: Insights counts the pages, minutes, reps… of every counted habit — the period's amount vs the period before, the mean a day and the all-time total (habitAmounts). And an optional round per counted habit (Habit.round, schema v15, migration 14 → 15 gives none, tested): the editor asks the size and where you are now; rounds wrap (a habit goes on); the finish date comes from the last 28 days' pace. Shown on the Habits row and in Insights → Amounts. 20 new tests; five languages; checked in the browser."
