@@ -25,11 +25,13 @@ helper (`guard.ts`, tested in `src/lib/__tests__/relay.test.ts`).
    ```
    The first run opens a browser to sign in to Cloudflare and asks you to pick a `workers.dev`
    subdomain. It then prints the relay's address: `https://itqan-push-relay.<subdomain>.workers.dev`.
-3. Give the hosted app that address, as a repository variable:
-   ```bash
-   gh variable set PUSH_RELAY_URL --body "https://itqan-push-relay.<subdomain>.workers.dev"
-   ```
-4. Re-run the deploy workflow (or push anything). The published app then sends through the relay.
+3. Give the hosted app that address, as a repository **variable** (not a secret — it is public in
+   the built app anyway): on GitHub, the repository → Settings → Secrets and variables → Actions →
+   Variables → New repository variable, name `PUSH_RELAY_URL`, value the address. (With the GitHub
+   CLI: `gh variable set PUSH_RELAY_URL --body "<address>"`.)
+4. Re-run the deploy workflow (Actions → deploy → Run workflow), or push anything. The published
+   app then sends through the relay: in Settings → Notifications, the send arrow appears next to
+   each device.
 
 Re-running `relay/deploy.sh` updates the Worker in place. To test it from `npm run dev`, deploy
 with `ITQAN_RELAY_EXTRA_ORIGINS=http://localhost:5181 relay/deploy.sh` and start the dev server
