@@ -1,9 +1,10 @@
 {
   "project": "Itqan",
   "subtitle": "إتقان — daily tasks, habits and long-term goals in one calm place",
-  "updated": "2026-10-30",
+  "updated": "2026-10-31",
   "current_stage": 4,
   "next_actions": [
+    "New: setting a habit's time is simpler — one-tap quick picks (Friday: Thursday Maghrib to Friday Maghrib), From/Until with the days named, a 'Counts on' choice of the normal day with the Islamic day marked, and a picture of the window over day and night.",
     "Fixed: the 'Your data lives only in this browser' reminder no longer shows while sync is working — a sync counts as a backup.",
     "New: a habit can be tied to prayers or clock times — e.g. Friday between Asr and Maghrib, or Thursday's Asr to Friday's Maghrib, counted on the day you choose — with a countdown on Today. Settings → Day and prayers shows today's prayer times and how timed habits appear.",
     "New: Settings opens one section at a time — a side menu on the laptop, a list on the phone — so nothing is a long scroll away.",
@@ -504,6 +505,13 @@
           "module": "sync",
           "status": "done",
           "critical": false
+        },
+        {
+          "id": "S2-53",
+          "title": "Timed-habit editor redone: From/Until around the day it counts for, 'Counts on' Thursday | Friday with the Islamic day tagged, one-tap quick picks, and a live day/night picture (ADR-045)",
+          "module": "habits",
+          "status": "done",
+          "critical": false
         }
       ]
     },
@@ -737,6 +745,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-31",
+      "entry": "S2-53 (ADR-045), from the owner trying to set up Surah al-Kahf (Thursday Maghrib to Friday Maghrib): the timed-habit editor was hard to follow — the day chips meant the day the window opens, then a separate 'which day does it count for?' question. Now the chips are the days it counts for (as stored, no conversion), and From/Until each pick a day relative to it (That day / The day before / The next day, named 'Thursday'/'Friday' when one day is picked) plus a prayer or clock time; the count day follows. The owner then added: the Islamic day starts at Maghrib, but a tick must land on one normal day of their choosing — so a window across two days shows 'Counts on: Thursday | Friday' under the picture (recount() keeps the window and moves the weekdays), the Islamic-day option tagged (opensInEvening()). Quick picks: Friday (Thu Maghrib → Fri Maghrib, sets Fri), Morning (Fajr → Sunrise), Evening (Asr → Maghrib), Night (Isha → Fajr next day). WindowPicture draws the window over the real day and night where the owner is (typical times without a location), dims outside it, marks opens/closes and the day it counts for, and redraws on every change. No data change. windowDays()/withDays() and the named list label ('Thu Maghrib – Fri Maghrib') tested. Checked in the browser at 1280 px and 375 px, English and Arabic (RTL)."
+    },
     {
       "date": "2026-10-30",
       "entry": "S2-52 (ADR-044), reported by the owner: 'Your data lives only in this browser' showed on every open although he syncs. The backup nudge predated sync and only counted downloaded backups; it started once his first task was 14 days old. backupNudge() in lib/backup.ts now takes the newer of the last download and the last successful sync; 'lives only here' only when there has been neither; sync broken for 14 days brings back 'It has been 2 weeks since your last backup'. 6 tests. Reproduced and checked in the browser with and without a recorded sync."

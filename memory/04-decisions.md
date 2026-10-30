@@ -1077,3 +1077,35 @@ only when there has never been either. So sync that quietly stops working still 
 **Rejected:** hiding the nudge whenever sync is configured (a sync broken for weeks would go
 unnoticed); a separate "sync is stale" message (the Sync badge already reports errors; the backup
 nudge covering it is enough).
+
+## ADR-045 | 2026-10-31 | accepted | The timed-habit editor sets the window around the day it counts for, with a picture
+
+**Context:** The owner, 2026-10-31, setting up Surah al-Kahf (Thursday Maghrib to Friday Maghrib):
+the ADR-043 editor was not understood. Its day chips meant the days the window *opens* (stored
+shifted to count days), the close day was "the same day / the next day", and a further question
+asked which day it counts for. Three abstractions for one idea, and nothing showed the result.
+**Decision:** Editor only — the data is unchanged (`HabitWindow` keeps `nights` + `countOn`).
+- The days under "How often" are the days the habit counts for, exactly as stored.
+- **From** = a day relative to it (that day, the day before, n days before) + a prayer ± minutes or
+  a clock time; **Until** = that day, the next day, n days later + the same. Choosing a day on one
+  side resets the other to "that day" (`withDays`, as the model has one span of `nights`). With one
+  day picked, the choices are named weekdays: "From Thursday · Maghrib — Until Friday · Maghrib".
+- **Counts on** (the owner, same day: "the Islamic day is different to the normal day … I want it to
+  reflect on just one normal day, and choose which"): a window across two days shows "Counts on:
+  Thursday | Friday" under the picture. Switching keeps the window where it is and moves the weekdays
+  with it (`recount`). The option matching the Islamic day — the day after, when the window opens at
+  Maghrib or Isha or a clock time after Maghrib (`opensInEvening`) — carries an "Islamic day" tag.
+  Whatever From/Until produce is the default (Friday quick pick → Friday), so it is rarely touched.
+- **Quick picks**: Friday (Thu Maghrib → Fri Maghrib; also makes it a Friday habit), Morning (Fajr →
+  Sunrise), Evening (Asr → Maghrib), Night (Isha → Fajr the next day). Highlighted when they match.
+- **`WindowPicture`**: the days the window spans as a sky — night, twilight, day from that day's real
+  prayer times (typical ones, labelled, without a location) — the window framed and everything else
+  dimmed, "Opens Thu 5:05 PM" / "Closes Fri 5:04 PM" pins, ✓ on the day it counts for, a now line;
+  backwards windows in red. Redrawn on every change; mirrored in RTL.
+- Prayer options no longer carry today's time (it truncated at 3 columns; the picture shows it).
+- The Habits list names the days when one is picked: "Fri · Thu Maghrib – Fri Maghrib"; otherwise
+  "Maghrib the day before – Maghrib" / "Isha – Fajr the next day".
+**Rejected:** an "Islamic day" mode where days start at Maghrib (every other screen, streak and
+history is midnight-based, ADR-041 already lets the day start at Fajr; one normal day per tick is what
+the owner asked for); a schema with independent before/after days (no real habit needs both);
+an SVG clock-face picture (two days on a dial is harder to read than a strip).

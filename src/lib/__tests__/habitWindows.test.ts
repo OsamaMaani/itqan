@@ -3,7 +3,7 @@ import { i18nFor } from '../../i18n/core'
 import { setDayRule } from '../date'
 import { prayerTimes } from '../fajr'
 import {
-  countWeekdays, edgeMs, nextWindow, openingWeekdays, spanText, todayOccurrence, windowCheck, windowLabel, windowSpan,
+  edgeMs, nextWindow, spanText, todayOccurrence, windowCheck, windowDays, windowLabel, windowSpan, withDays, recount, opensInEvening,
   type WindowContext,
 } from '../habitWindows'
 import { streak } from '../habits'
@@ -90,17 +90,49 @@ describe('where a window falls', () => {
   })
 })
 
-describe('the weekdays a window opens on and counts for', () => {
-  it('shift back by its nights when it counts for the day it closes, wrapping the week', () => {
-    const w = win(prayer('asr'), prayer('maghrib'), 1, 'end')
-    expect(openingWeekdays([5], w)).toEqual([4]) // counts Friday → opens Thursday
-    expect(openingWeekdays([0], w)).toEqual([6]) // counts Sunday → opens Saturday
-    expect(countWeekdays(openingWeekdays([0, 3, 5], w), w)).toEqual([0, 3, 5])
-    expect(openingWeekdays([0, 3, 6], { ...w, nights: 6 })).toEqual([1, 4, 0])
+describe('a window as days around the day it counts for', () => {
+  it('opens days before it, or closes days after it — never both', () => {
+    expect(windowDays(win(prayer('maghrib'), prayer('maghrib'), 1, 'end'))).toEqual({ before: 1, after: 0 })
+    expect(windowDays(win(prayer('isha'), prayer('fajr'), 1, 'start'))).toEqual({ before: 0, after: 1 })
+    expect(windowDays(win(prayer('asr'), prayer('maghrib')))).toEqual({ before: 0, after: 0 })
   })
-  it('do not shift when it counts for the day it opens, or has no window', () => {
-    expect(openingWeekdays([5], win(prayer('asr'), prayer('maghrib'), 1, 'start'))).toEqual([5])
-    expect(countWeekdays([5], null)).toEqual([5])
+  it('choosing one side replaces the other', () => {
+    const night = win(prayer('isha'), prayer('fajr'), 1, 'start')
+    expect(withDays(night, { before: 1 })).toMatchObject({ nights: 1, countOn: 'end' }) // Thursday Maghrib to Friday Maghrib
+    expect(withDays(night, { before: 0 })).toBe(night) // the start day was already "that day": the end stays
+    expect(withDays(night, { after: 0 })).toMatchObject({ nights: 0, countOn: 'start' })
+    const friday = win(prayer('maghrib'), prayer('maghrib'), 1, 'end')
+    expect(withDays(friday, { after: 2 })).toMatchObject({ nights: 2, countOn: 'start' })
+    expect(withDays(friday, { after: 0 })).toBe(friday)
+    expect(withDays(friday, { before: 0 })).toMatchObject({ nights: 0, countOn: 'start' })
+  })
+})
+
+describe('which normal day a window across days is saved on', () => {
+  const friday = win(prayer('maghrib'), prayer('maghrib'), 1, 'end')
+  it('moves the weekdays with the count day, so the window itself stays put', () => {
+    const r = recount({ type: 'days', days: [5] }, friday, 'start')
+    expect(r).toEqual({ schedule: { type: 'days', days: [4] }, window: { ...friday, countOn: 'start' } })
+    expect(recount(r.schedule, r.window, 'end')).toEqual({ schedule: { type: 'days', days: [5] }, window: friday })
+    expect(recount({ type: 'days', days: [0, 6] }, { ...friday, countOn: 'start' }, 'end').schedule).toEqual({ type: 'days', days: [0, 1] })
+    expect(recount({ type: 'days', days: [0] }, friday, 'start').schedule).toEqual({ type: 'days', days: [6] })
+  })
+  it('the same window either way: Thursday Maghrib to Friday Maghrib', () => {
+    const r = recount({ type: 'days', days: [5] }, friday, 'start')
+    expect(windowSpan(r.window, THU, ctx)).toEqual(windowSpan(friday, FRI, ctx))
+  })
+  it('leaves daily habits, one-day windows and no-change alone', () => {
+    expect(recount({ type: 'daily' }, friday, 'start').schedule).toEqual({ type: 'daily' })
+    const same = win(prayer('asr'), prayer('maghrib'))
+    expect(recount({ type: 'days', days: [5] }, same, 'end')).toEqual({ schedule: { type: 'days', days: [5] }, window: same })
+    expect(recount({ type: 'days', days: [5] }, friday, 'end').window).toBe(friday)
+  })
+  it('knows an evening start, when the Islamic day has already turned', () => {
+    expect(opensInEvening(friday, ctx, FRI)).toBe(true)
+    expect(opensInEvening(win(prayer('isha'), prayer('fajr'), 1), ctx, FRI)).toBe(true)
+    expect(opensInEvening(win(prayer('asr'), prayer('maghrib')), ctx, FRI)).toBe(false)
+    expect(opensInEvening(win({ kind: 'time', time: '21:00' }, { kind: 'time', time: '23:00' }), ctx, FRI)).toBe(true)
+    expect(opensInEvening(win({ kind: 'time', time: '13:00' }, { kind: 'time', time: '15:00' }), nowhere, FRI)).toBe(false)
   })
 })
 
@@ -230,6 +262,14 @@ describe('words', () => {
     expect(windowLabel(win(prayer('asr'), prayer('maghrib')), t)).toBe('Asr – Maghrib')
     expect(windowLabel(win(prayer('isha', 30), prayer('fajr', -15), 1), t)).toBe('30 min after Isha – 15 min before Fajr the next day')
     expect(windowLabel(win(prayer('asr'), prayer('maghrib'), 2), t)).toBe('Asr – Maghrib, 2 days later')
+    expect(windowLabel(win(prayer('maghrib'), prayer('maghrib'), 1, 'end'), t)).toBe('Maghrib the day before – Maghrib')
+    expect(windowLabel(win(prayer('maghrib'), prayer('maghrib'), 2, 'end'), t)).toBe('Maghrib, 2 days before – Maghrib')
+  })
+  it('names the days when it counts for one weekday', () => {
+    expect(windowLabel(win(prayer('maghrib'), prayer('maghrib'), 1, 'end'), t, 5)).toBe('Thu Maghrib – Fri Maghrib')
+    expect(windowLabel(win(prayer('isha'), prayer('fajr'), 1, 'start'), t, 6)).toBe('Sat Isha – Sun Fajr')
+    expect(windowLabel(win(prayer('maghrib'), prayer('maghrib'), 1, 'end'), t, 0)).toBe('Sat Maghrib – Sun Maghrib')
+    expect(windowLabel(win(prayer('asr'), prayer('maghrib')), t, 5)).toBe('Asr – Maghrib')
   })
   it('says how long, rounded up', () => {
     expect(spanText(30_000, t)).toBe('1m')

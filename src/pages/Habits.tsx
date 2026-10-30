@@ -87,8 +87,7 @@ function HabitRow({ habit }: { habit: Habit }) {
             <span>{scheduleLabel(habit, t)}</span>
             {habit.window && (
               <span className="inline-flex items-center gap-1">
-                · <Clock size={11} /> {windowLabel(habit.window, t)}
-                {habit.window.nights > 0 && ` · ${habit.window.countOn === 'end' ? m.habits.window.countsClose : m.habits.window.countsOpen}`}
+                · <Clock size={11} /> {windowLabel(habit.window, t, habit.schedule.type === 'days' && habit.schedule.days.length === 1 ? habit.schedule.days[0] : null)}
               </span>
             )}
             {(target > 1 || habit.unit) && <span>· {t.f(m.habits.targetPerDay, { target, unit: habit.unit })}</span>}

@@ -26,6 +26,23 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: 7,
+    date: '2026-10-31',
+    tasks: ['S2-53'],
+    items: [
+      {
+        emoji: '🕌',
+        text: {
+          en: 'Setting a habit’s time is simpler. Pick the days it counts for, then From and Until — “From Thursday at Maghrib until Friday at Maghrib” — or tap a quick pick like Friday. When it spans two days, choose which normal day it counts on; the Islamic day is marked. A picture of day and night shows it all and changes as you edit.',
+          ar: 'صار تحديد وقت العادة أسهل. اختر الأيام التي تُحسب لها، ثم «من» و«إلى» — «من مغرب الخميس إلى مغرب الجمعة» — أو اضغط اختيارًا سريعًا مثل «الجمعة». وإن امتدت على يومين، فاختر اليوم العادي الذي تُحسب فيه، مع تمييز اليوم الشرعي. ويُظهر رسمٌ لليل والنهار ذلك كله، ويتغير مع كل تعديل.',
+          fr: 'Choisir le moment d’une habitude est plus simple. Choisis les jours pour lesquels elle compte, puis De et Jusqu’à — « du jeudi au Maghreb jusqu’au vendredi au Maghreb » — ou touche un choix rapide comme Vendredi. Sur deux jours, choisis le jour ordinaire pour lequel elle compte ; le jour islamique est indiqué. Un dessin du jour et de la nuit montre tout cela et change à chaque modification.',
+          zh: '设置习惯的时间更简单了。先选它计入的日子，再选“从”和“到”——“从周四昏礼到周五昏礼”——或点一下“主麻日”这样的快速选择。跨两天时，选择它计入哪个普通日，伊斯兰日会被标出。一幅白天与黑夜的图会显示这一切，并随每次修改而变化。',
+          es: 'Fijar el momento de un hábito es más sencillo. Elige los días para los que cuenta y luego Desde y Hasta — «desde el jueves en Magrib hasta el viernes en Magrib» — o toca una opción rápida como Viernes. Si abarca dos días, elige el día normal para el que cuenta; el día islámico aparece marcado. Un dibujo del día y la noche lo muestra todo y cambia con cada ajuste.',
+        },
+      },
+    ],
+  },
+  {
     id: 6,
     date: '2026-10-30',
     tasks: ['S2-52'],

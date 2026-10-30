@@ -143,14 +143,12 @@ export function isDueToday(h: Habit, logs: HabitLogs, today: DateKey, weekStarts
 }
 
 /** "Every day", "4× a week", "Mon · Wed · Fri" in the interface language. */
-export function scheduleLabel(h: Pick<Habit, 'schedule' | 'window'>, t: I18n = tx()): string {
+export function scheduleLabel(h: Pick<Habit, 'schedule'>, t: I18n = tx()): string {
   const s = h.schedule
   if (s.type === 'daily' || (s.type === 'days' && s.days.length === 7)) return t.m.habits.everyDay
   if (s.type === 'weekly') return t.p(t.m.habits.timesAWeek, s.times)
   const names = t.weekdays('short')
-  // A timed habit counted on the day its window closes is named by the days it opens (ADR-043).
-  const shift = h.window?.countOn === 'end' ? h.window.nights : 0
-  return [...new Set(s.days.map((d) => (((d - shift) % 7) + 7) % 7))].sort().map((d) => names[d]).join(' · ')
+  return [...s.days].sort().map((d) => names[d]).join(' · ')
 }
 
 /** Unit names that mean minutes, in every interface language (lower-cased, trailing dot dropped). */

@@ -35,8 +35,11 @@ export const habits = {
     sameDay: '{start} – {end}',
     nextDay: '{start} – {end} the next day',
     laterDays: { one: '{start} – {end}, {n} day later', other: '{start} – {end}, {n} days later' },
-    countsOpen: 'counts for the day it opens',
-    countsClose: 'counts for the day it closes',
+    /** A window across days, naming them: {startDay}/{endDay} are short weekdays (“Thu”). */
+    named: '{startDay} {start} – {endDay} {end}',
+    /** A window opening before the day it counts for. */
+    dayBefore: '{start} the day before – {end}',
+    daysBefore: { one: '{start}, {n} day before – {end}', other: '{start}, {n} days before – {end}' },
   },
   tile: {
     /** A timed habit before it opens, counting down: {span} like “1h 20m”, {time} a clock time (or “Fri 3:12 PM”). */
@@ -85,29 +88,34 @@ export const habits = {
     /** Timed habits (ADR-043). */
     timed: 'Only at certain times',
     timedHint: 'Tie it to prayers or clock times — e.g. Friday between Asr and Maghrib.',
-    opens: 'Opens',
-    closes: 'Closes',
+    from: 'From',
+    until: 'Until',
+    quick: 'Quick picks',
+    /** Ready-made windows; each shows its times under its name. */
+    presets: { friday: 'Friday', morning: 'Morning', evening: 'Evening', night: 'Night' },
+    /** Which day the window starts on, relative to the day it counts for (picked under “How often”). */
+    startDays: { same: 'That day', before: 'The day before', more: { one: '{n} day before', other: '{n} days before' } },
+    endDays: { same: 'That day', after: 'The next day', more: { one: '{n} day later', other: '{n} days later' } },
+    /** A weekday further away: {day} like “Wednesday”, {rel} like “2 days before”. */
+    dayFar: '{day} ({rel})',
+    /** The drawing of the window over day and night. {day} is a weekday (“Friday”), {time} like “Thu 5:42 PM”. */
+    picture: { countsFor: 'Counts for {day}', opens: 'Opens {time}', closes: 'Closes {time}', now: 'Now', example: 'Example times' },
+    /** Which normal (midnight-to-midnight) day a window across two days is saved on. */
+    countsOn: 'Counts on',
+    countsOnHint: 'The normal day a tick is saved on — streaks and history use it.',
+    dayStarts: 'The day it starts',
+    dayEnds: 'The day it ends',
+    /** A tag on the choice that matches the Islamic day, which begins at Maghrib. */
+    islamic: 'Islamic day',
     /** In the list of prayers: a clock time instead. */
     setTime: 'A set time',
     /** Offsets from a prayer: exactly at it, {n} minutes after or before. */
     onTime: 'on time',
     offsetAfter: '{n} min after',
     offsetBefore: '{n} min before',
-    /** When it closes, after “Closes … on”. */
-    closesSameDay: 'the same day',
-    closesNextDay: 'the next day',
-    closesLater: { one: '{n} day later', other: '{n} days later' },
-    countsFor: 'Count it as done on',
-    countsForHint: 'It spans more than one day — which day should it count for?',
-    dayItOpens: 'The day it opens',
-    dayItCloses: 'The day it closes',
-    /** {day} is a weekday, e.g. “Thursday”. */
-    dayItOpensNamed: 'The day it opens ({day})',
-    dayItClosesNamed: 'The day it closes ({day})',
-    openingDaysHint: 'Pick the days it opens on.',
     countdown: 'Count down on Today',
     /** The next window, as an example: {opens} and {closes} are like “Thu, Oct 29, 3:12 PM”. */
-    next: 'Next: {opens} → {closes}',
+    next: 'Next: {opens} → {closes} · {span}',
     /** {link} is a link whose text is noPlaceLink. */
     noPlace: 'Prayer times need your location: set it in {link}.',
     noPlaceLink: 'Settings → Day and prayers',

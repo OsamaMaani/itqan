@@ -2,7 +2,7 @@ import { tx, type I18n } from '../i18n/core'
 import { addDaysKey, dayOf, fromKey } from './date'
 import { prayerTimes, type FajrPlaceInfo } from './fajr'
 import { isDueOn } from './habits'
-import type { DateKey, Habit, HabitLogs, HabitWindow, HabitWindowSettings, PrayerSettings, WindowEdge } from './types'
+import type { DateKey, Habit, HabitLogs, HabitSchedule, HabitWindow, HabitWindowSettings, PrayerSettings, WindowEdge } from './types'
 
 /**
  * Timed habits (ADR-043): a habit done between two prayers or clock times — "Friday between Asr
@@ -53,16 +53,44 @@ export function countDay(w: HabitWindow, opening: DateKey): DateKey {
   return w.countOn === 'end' ? addDaysKey(opening, w.nights) : opening
 }
 
-/** Weekdays (0 = Sunday) the windows open on, from the weekdays they count for. */
-export function openingWeekdays(days: number[], w: HabitWindow | null): number[] {
-  const shift = w && w.countOn === 'end' ? w.nights : 0
-  return days.map((d) => (((d - shift) % 7) + 7) % 7)
+/**
+ * How many days before its count day a window opens, and how many after it closes — the way the
+ * editor puts it ("from Thursday's Maghrib until Friday's", counting Friday). One is always 0.
+ */
+export function windowDays(w: HabitWindow): { before: number; after: number } {
+  return w.countOn === 'end' ? { before: w.nights, after: 0 } : { before: 0, after: w.nights }
 }
 
-/** Weekdays the windows count for, from the weekdays they open on. */
-export function countWeekdays(days: number[], w: HabitWindow | null): number[] {
-  const shift = w && w.countOn === 'end' ? w.nights : 0
-  return days.map((d) => (d + shift) % 7)
+/** The window opening `before` days ahead of its count day, or closing `after` days later. */
+export function withDays(w: HabitWindow, days: { before: number } | { after: number }): HabitWindow {
+  if ('before' in days) return days.before > 0 ? { ...w, nights: days.before, countOn: 'end' } : w.countOn === 'end' ? { ...w, nights: 0, countOn: 'start' } : w
+  return days.after > 0 ? { ...w, nights: days.after, countOn: 'start' } : w.countOn === 'start' ? { ...w, nights: 0 } : w
+}
+
+/**
+ * The same window, saved on the other calendar day it touches: the window stays where it is and the
+ * schedule's weekdays move with the count day (Thursday Maghrib to Friday Maghrib, counted Friday or
+ * Thursday). A window within one day has nothing to choose.
+ */
+export function recount(schedule: HabitSchedule, w: HabitWindow, on: HabitWindow['countOn']): { schedule: HabitSchedule; window: HabitWindow } {
+  if (w.nights === 0 || w.countOn === on) return { schedule, window: w }
+  const shift = on === 'end' ? w.nights : -w.nights
+  return {
+    schedule: schedule.type === 'days' ? { type: 'days', days: schedule.days.map((d) => (((d + shift) % 7) + 7) % 7).sort() } : schedule,
+    window: { ...w, countOn: on },
+  }
+}
+
+/**
+ * Does the window open in the evening — at Maghrib or Isha, or a clock time after today's Maghrib
+ * (6 PM without a location)? Then, by the Islamic day that begins at Maghrib, it belongs to the next day.
+ */
+export function opensInEvening(w: HabitWindow, ctx: WindowContext, today: DateKey): boolean {
+  if (w.start.kind === 'prayer') return w.start.prayer === 'maghrib' || w.start.prayer === 'isha'
+  const opens = edgeMs(w.start, today, ctx)
+  const maghrib = ctx.place ? prayerTimes(today, ctx.place, ctx.asr)?.maghrib : null
+  const [y, m, d] = today.split('-').map(Number)
+  return opens !== null && opens >= (maghrib ?? new Date(y, m - 1, d, 18).getTime())
 }
 
 /** The instant an edge falls on calendar day `k`, or null where it has none. */
@@ -190,13 +218,23 @@ export function edgeLabel(edge: WindowEdge, t: I18n = tx()): string {
   return t.f(edge.offset > 0 ? L.after : L.before, { n: Math.abs(edge.offset), prayer })
 }
 
-/** "Asr – Maghrib", "Isha – Fajr the next day", "Asr – Maghrib, 2 days later". */
-export function windowLabel(w: HabitWindow, t: I18n = tx()): string {
+/**
+ * "Asr – Maghrib", "Isha – Fajr the next day", "Maghrib the day before – Maghrib". Given the one
+ * weekday it counts for, a window across days names its days: "Thu Maghrib – Fri Maghrib".
+ */
+export function windowLabel(w: HabitWindow, t: I18n = tx(), countWeekday: number | null = null): string {
   const L = t.m.habits.window
   const vars = { start: edgeLabel(w.start, t), end: edgeLabel(w.end, t) }
   if (w.nights === 0) return t.f(L.sameDay, vars)
-  if (w.nights === 1) return t.f(L.nextDay, vars)
-  return t.p(L.laterDays, w.nights, vars)
+  const { before, after } = windowDays(w)
+  if (countWeekday !== null) {
+    const names = t.weekdays('short')
+    return t.f(L.named, { ...vars, startDay: names[(((countWeekday - before) % 7) + 7) % 7], endDay: names[(countWeekday + after) % 7] })
+  }
+  if (before === 1) return t.f(L.dayBefore, vars)
+  if (before > 1) return t.p(L.daysBefore, before, vars)
+  if (after === 1) return t.f(L.nextDay, vars)
+  return t.p(L.laterDays, after, vars)
 }
 
 /** A time span in words: "45m", "2h 5m", "1d 3h". Rounded up, so "0m" never shows while time is left. */
