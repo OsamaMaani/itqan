@@ -18,6 +18,8 @@ export const DEFAULT_SETTINGS: Settings = {
   weightUnit: 'kg',
   notify: { on: true, timer: true, reminders: true, checkIns: true },
   fajr: { place: null, angle: null, announce: true },
+  prayer: { asr: 'standard' },
+  habitWindows: { showBefore: -1, countdownStart: true, countdownLeft: true },
 }
 
 export function emptyData(): Data {
@@ -49,7 +51,7 @@ export function starterData(today: string, t: I18n = tx()): Pick<Data, 'areas' |
 
   let order = 0
   const habit = (name: string, emoji: string, a: Area, schedule: Habit['schedule'], target = 1, unit = ''): Habit =>
-    ({ id: uid(), name, emoji, areaId: a.id, schedule, target, unit, round: null, archived: false, createdAt: now, order: order++ })
+    ({ id: uid(), name, emoji, areaId: a.id, schedule, target, unit, round: null, window: null, archived: false, createdAt: now, order: order++ })
 
   const habits: Habit[] = [
     habit(s.habits.water, '💧', health, { type: 'daily' }, 8, s.units.glasses),

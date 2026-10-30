@@ -1016,3 +1016,51 @@ section; a new section is one entry in `SECTIONS`, an icon and a label and hint 
 **Rejected:** a tab strip (`Segmented`, as in Training) — eight long labels wrap into several rows on
 a phone and in French; collapsible accordions on one page — still one long page once a few are open,
 and links cannot land on a section without scrolling; a search box — eight sections do not need one.
+
+## ADR-043 | 2026-10-30 | accepted | Timed habits: a window between prayers or clock times
+
+**Context:** The owner, 2026-10-30: a habit may belong to a day, an hour or a prayer — "only on
+Fridays between Asr and Maghrib", or "from Thursday's Asr to Friday's Maghrib". When it spans two
+days, ask which day it is marked done on. Optionally count down on Today (time left, time until it
+opens), adjustable in Settings. He chose (asked in the session): ticking is never refused outside the
+window; the countdown is a switch per habit plus two global switches; how early a timed habit shows
+on Today is a Settings choice, with live examples.
+**Decision:**
+- **`Habit.window`** (schema v17, null for every existing habit): `start` and `end` edges — a prayer
+  (`fajr`, `sunrise`, `dhuhr`, `asr`, `maghrib`, `isha`) give or take minutes, or a clock `HH:mm` —
+  `nights` 0–6 (closes that many days after it opens), `countOn` `start`/`end`, and `countdown`.
+- **The schedule keeps meaning "the days a check-in counts for"** (the log days), so streaks,
+  completion, XP and every derived number read exactly what they read before: the window changes no
+  number. A window belongs to a count day; it opens that calendar day, or `nights` days earlier when it
+  counts for the day it closes. The editor shows and edits the days it *opens* ("Thursday from Asr"),
+  converting on load and save (`openingWeekdays` / `countWeekdays`), and names both days in the
+  count-day choice ("The day it opens (Thursday)" / "The day it closes (Friday)").
+- **Prayer times in `lib/fajr.ts`**, the same method and place as ADR-041 so a habit "from Fajr" opens
+  at the very moment a Fajr day begins: Dhuhr = solar noon, Asr standard (shadow = object) or Hanafi
+  (twice; `settings.prayer.asr`), Maghrib = sunset, Isha by the authority whose Fajr angle is set
+  (`ishaRule`: Egypt 17.5°, MWL 17°, Umm al-Qura 90 min after Maghrib, ISNA 15°…), with the same
+  angle-based rule where it never gets dark enough. Within ~1 min of the adhan library across seven
+  cities and seasons (tested). Approximation: a place whose Fajr angle equals MWL's 18° (Karachi) gets
+  MWL's Isha 17°, not Karachi's 18° — about 5 minutes; per-edge offsets cover a local mosque's times.
+- **What Today shows** — `todayOccurrence()`, pure and tested: a window open now (the unmet one
+  closing first if windows overlap); else today's own check-in before it opens (or all day where it
+  cannot be placed); else a window opening later today for another day, labelled "For Friday"; else
+  today's own after it closed, until the day ends. Upcoming windows show from `showBefore` minutes
+  before they open (−1 all day, the default; 0 once open). A tap counts for that occurrence's day, and
+  when that is not today a toast says which. Today's progress ring counts only today's own check-ins.
+- **A window that cannot be placed on a day is no window that day** — no location yet, no sunrise at
+  the pole, or closing before it opens (Asr to 4 PM in summer) — and the habit behaves like any other.
+  The editor warns of all three ahead: a link to Settings for the location, and how many days of the
+  coming year it would be backwards.
+- **Settings → "Day and prayers"** (was "Day start", ADR-042): Prayer times (place and Fajr angle moved
+  here from the day-start card, still saved through `setDayStart` so spans stay dated; Asr method;
+  today's six times), When a day starts, Timed habits (`settings.habitWindows`: `showBefore`,
+  `countdownStart`, `countdownLeft`). Both new settings objects are synced.
+- `calendarKey(ms)` in `date.ts` is the one sanctioned way to read a wall-calendar date from a moment
+  for display (the source guard still bans `toKey(new Date(…))` elsewhere).
+**Rejected:** refusing ticks outside the window (the owner: you may have done it and forgotten);
+making the window the source of the log day and re-reading streaks through it (moves history when a
+window is edited, and makes streak maths depend on location); a stored count day per log (a schema
+change for every log, for nothing the count-day rule doesn't already give); prayer times from a
+library (the maths is already here for Fajr); showing two tiles for one habit when windows overlap
+(one habit, one tile — the most actionable occurrence wins).

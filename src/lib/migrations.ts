@@ -6,7 +6,7 @@ import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 16
+export const SCHEMA_VERSION = 17
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -117,6 +117,22 @@ const steps: Record<number, Step> = {
       settings: { ...settings, fajr: { ...DEFAULT_SETTINGS.fajr, ...((settings.fajr as object) ?? {}) } },
     }
   },
+  // 16 → 17 (2026-10-30): a habit may be done in a window — Friday between Asr and Maghrib
+  // (ADR-043). Existing habits have none, so Today shows them exactly as before; their logs and
+  // streaks are untouched. Asr is reckoned the standard way, and timed habits show all day with
+  // both countdowns until the owner chooses otherwise.
+  16: (d) => {
+    const settings = (d.settings as Record<string, unknown> | undefined) ?? {}
+    return {
+      ...d,
+      habits: ((d.habits as Record<string, unknown>[] | undefined) ?? []).map((h) => ({ window: null, ...h })),
+      settings: {
+        ...settings,
+        prayer: { ...DEFAULT_SETTINGS.prayer, ...((settings.prayer as object) ?? {}) },
+        habitWindows: { ...DEFAULT_SETTINGS.habitWindows, ...((settings.habitWindows as object) ?? {}) },
+      },
+    }
+  },
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {
@@ -173,6 +189,8 @@ function normalizeSettings(raw: unknown): Settings {
     daily: { ...DEFAULT_SETTINGS.daily, ...(s.daily ?? {}) },
     notify: { ...DEFAULT_SETTINGS.notify, ...(s.notify ?? {}) },
     fajr: { ...DEFAULT_SETTINGS.fajr, ...(s.fajr ?? {}) },
+    prayer: { ...DEFAULT_SETTINGS.prayer, ...(s.prayer ?? {}) },
+    habitWindows: { ...DEFAULT_SETTINGS.habitWindows, ...(s.habitWindows ?? {}) },
     language, weightUnit,
   }
 }

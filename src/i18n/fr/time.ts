@@ -9,4 +9,5 @@ export const time: Messages['time'] = {
   minutes: '{m}\u00a0min',
   hours: '{h}\u00a0h',
   hoursMinutes: '{h}\u00a0h\u00a0{m}\u00a0min',
+  daysHours: '{d}\u00a0j {h}\u00a0h',
 }

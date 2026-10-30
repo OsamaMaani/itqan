@@ -94,7 +94,8 @@ exercises, routines, a program, live workouts, records (ADR-027; schema v8; `mem
 streak savers that keep the day streak alive, earned with XP and derived from history (ADR-034), and
 Notes — Keep-style notes and checklists linked to areas, projects and goals, pinnable to Today
 (ADR-035, ADR-036; schema v14), and an optional day that starts at Fajr instead of midnight, dated so
-history never moves (ADR-041; schema v16 — read days with `dayOf()`, never `toKey(new Date(…))`).
+history never moves (ADR-041; schema v16 — read days with `dayOf()`, never `toKey(new Date(…))`), and timed habits —
+between prayers or clock times, across days, with countdowns on Today (ADR-043; schema v17).
 `memory/status.json` and `dashboard/index.html` are the live answer — this
 paragraph is a snapshot and will lag them.
 

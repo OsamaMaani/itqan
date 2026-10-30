@@ -14,9 +14,10 @@ import { rich, useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
 import { dayOf, fromKey, greetingKey } from '../lib/date'
 import { goalPace, goalProgress } from '../lib/goals'
-import { isDueToday, isMetOn } from '../lib/habits'
+import { isMetOn } from '../lib/habits'
+import { todayOccurrence } from '../lib/habitWindows'
 import { enabledKinds } from '../lib/daily'
-import { areaHex, useAreaMap, useData, useMediaQuery, useProgress, useToday } from '../lib/hooks'
+import { areaHex, useAreaMap, useData, useMediaQuery, useProgress, useTick, useToday, useWindowContext } from '../lib/hooks'
 import { navigate } from '../lib/router'
 import { useStore } from '../lib/store'
 import type { Task, TimeOfDay } from '../lib/types'
@@ -59,10 +60,22 @@ export function TodayPage() {
   const overdue = d.tasks.filter((t) => !t.done && t.date !== null && t.date < today).sort(byOrder)
   const open = todays.filter((t) => !t.done).sort(byOrder)
   const done = todays.filter((t) => t.done).sort((a, b) => (b.doneAt ?? '').localeCompare(a.doneAt ?? ''))
-  const habits = d.habits.filter((h) => isDueToday(h, d.habitLogs, today, d.settings.weekStartsOn)).sort((a, b) => a.order - b.order)
-  const habitsMet = habits.filter((h) => isMetOn(h, d.habitLogs, today)).length
+  // Each habit's check-in Today is about (ADR-043): today's, or a timed habit's window — which may
+  // count for another day ("Thursday's Asr to Friday's Maghrib, for Friday"). Timed habits tick over.
+  const ctx = useWindowContext()
+  const nowMs = useTick(30_000, d.habits.some((h) => h.window && !h.archived))
+  const habits = useMemo(
+    () => d.habits.flatMap((h) => {
+      const occ = todayOccurrence(h, d.habitLogs, nowMs, today, d.settings.weekStartsOn, ctx, d.settings.habitWindows.showBefore)
+      return occ ? [{ h, occ }] : []
+    }).sort((a, b) => a.h.order - b.h.order),
+    [d.habits, d.habitLogs, nowMs, today, d.settings.weekStartsOn, d.settings.habitWindows.showBefore, ctx],
+  )
+  // Today's numbers are today's own check-ins; a window counting for tomorrow is shown, not counted.
+  const habitsToday = habits.filter((x) => x.occ.day === today)
+  const habitsMet = habitsToday.filter((x) => isMetOn(x.h, d.habitLogs, today)).length
 
-  const total = todays.length + habits.length
+  const total = todays.length + habitsToday.length
   const completed = done.length + habitsMet
   const ratio = total ? completed / total : 0
 
@@ -224,7 +237,7 @@ export function TodayPage() {
 
           <section>
             <SectionTitle right={<button onClick={() => navigate('habits')} className="text-xs font-semibold text-accent hover:underline">{m.today.allHabits}</button>}>
-              {t.f(m.today.habits, { met: habitsMet, total: habits.length })}
+              {t.f(m.today.habits, { met: habitsMet, total: habitsToday.length })}
             </SectionTitle>
             {habits.length === 0 ? (
               <EmptyState emoji="🌱" title={m.today.noHabits}>
@@ -232,7 +245,7 @@ export function TodayPage() {
               </EmptyState>
             ) : (
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
-                {habits.map((h) => <HabitTile key={h.id} habit={h} day={today} />)}
+                {habits.map(({ h, occ }) => <HabitTile key={h.id} habit={h} day={occ.day} today={today} occ={occ} now={nowMs} />)}
               </div>
             )}
           </section>

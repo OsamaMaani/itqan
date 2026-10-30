@@ -1,9 +1,10 @@
 {
   "project": "Itqan",
   "subtitle": "إتقان — daily tasks, habits and long-term goals in one calm place",
-  "updated": "2026-10-28",
+  "updated": "2026-10-30",
   "current_stage": 4,
   "next_actions": [
+    "New: a habit can be tied to prayers or clock times — e.g. Friday between Asr and Maghrib, or Thursday's Asr to Friday's Maghrib, counted on the day you choose — with a countdown on Today. Settings → Day and prayers shows today's prayer times and how timed habits appear.",
     "New: Settings opens one section at a time — a side menu on the laptop, a list on the phone — so nothing is a long scroll away.",
     "New: Itqan now announces each update in a 'What's new' window when you open it (once per device); Settings → What's new lists them all. Also: a guide and checklist when you create a goal, and clearer on/off switches on notes.",
     "New: counted habits (pages, minutes…) show their totals in Insights → Amounts, against the previous period. Edit a counted habit to give it a full round — e.g. 604 pages and the page you're on — and it shows Round 1 · 250/604 and roughly when you'll finish; a finished round starts the next. Open Itqan on the iPhone once so it updates (data format v15); sync resumes after that.",
@@ -488,6 +489,13 @@
           "module": "settings",
           "status": "done",
           "critical": false
+        },
+        {
+          "id": "S2-51",
+          "title": "Timed habits: a window between prayers (± minutes) or clock times, across days with a chosen count day, countdowns on Today, prayer times in Settings (ADR-043, schema v17)",
+          "module": "habits",
+          "status": "done",
+          "critical": true
         }
       ]
     },
@@ -721,6 +729,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-10-30",
+      "entry": "S2-51 (ADR-043), asked for by the owner: a habit can be done in a window — between two prayers (give or take minutes) or clock times, the same day or up to 6 days later — e.g. Friday Asr to Maghrib, or Thursday's Asr to Friday's Maghrib with the owner choosing which day it counts for. Habit.window (schema v17, migration + tests); the schedule still names count days, so streaks, XP and every derived number are unchanged by construction. Prayer times (Dhuhr, Asr standard/Hanafi, Maghrib, Isha by authority, angle-based at high latitudes) added to lib/fajr.ts, within ~1 min of the adhan library across seven cities. todayOccurrence() decides what Today shows and which day a tap counts for — open window, then today's before it opens, then a window opening later today for another day ('For Friday', with a toast on tick), then today's after it closed; windows that can't be placed (no location, polar, backwards) fall back to a normal habit; 47 tests. Countdowns on Today ('Opens in 1h 20m · 3:12 PM', '45m left · until 5:09 PM' with a bar), per habit and globally. Settings 'Day start' became 'Day and prayers': prayer times with today's six, day start, timed habits (how early they show, both countdowns, live examples). Owner chose: ticking allowed outside the window; countdown per habit + global; how early is a setting. Checked in the browser at 1024 px and 375 px, English and Arabic."
+    },
     {
       "date": "2026-10-28",
       "entry": "S2-50 (ADR-042), asked for by the owner: Settings was one long scroll (profile, day start, notifications, daily card, areas, sync, data, shortcuts) and easy to get lost in. Now eight sections, each at #/settings/<section>: on a laptop a sticky side menu beside the open section (General by default); on a phone #/settings is a list with one-line hints and a section opens alone with a back link. Language got its own card at the top of General. Links into Settings now land on the right section (daily card gear → Daily card, notification hints → Notifications, backup reminder → Backup and data, onboarding's sync → Sync, Notifications' 'needs sync' → a link to Sync). No data change. Checked in the browser at 1280 and 375 px, light and dark, English and Arabic."

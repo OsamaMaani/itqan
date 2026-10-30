@@ -130,7 +130,7 @@ describe('tasksDoneByDay', () => {
 
 describe('habitConsistency', () => {
   const habit = (id: string, createdAt: Date, archived = false): Habit => ({
-    id, name: id, emoji: '', areaId: null, schedule: { type: 'daily' }, target: 1, unit: '', round: null, archived, createdAt: createdAt.toISOString(), order: 0,
+    id, name: id, emoji: '', areaId: null, schedule: { type: 'daily' }, target: 1, unit: '', round: null, window: null, archived, createdAt: createdAt.toISOString(), order: 0,
   })
   const old = habit('old', new Date(2026, 8, 1))
   const fresh = habit('fresh', new Date(2026, 9, 20))
@@ -150,7 +150,7 @@ describe('habitConsistency', () => {
 
 describe('habitAmounts (ADR-038)', () => {
   const h = (id: string, o: Partial<Habit> = {}): Habit => ({
-    id, name: id, emoji: '', areaId: null, schedule: { type: 'daily' }, target: 4, unit: 'pages', round: null,
+    id, name: id, emoji: '', areaId: null, schedule: { type: 'daily' }, target: 4, unit: 'pages', round: null, window: null,
     archived: false, createdAt: new Date(2026, 9, 1, 9).toISOString(), order: 0, ...o,
   })
   const logs = {

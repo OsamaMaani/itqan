@@ -5,7 +5,7 @@ export const settings = {
   /** The sections Settings is split into; each opens on its own, at #/settings/<id>. Hints are one short line. */
   sections: {
     general: { label: 'General', hint: 'Language, name, theme, timers' },
-    day: { label: 'Day start', hint: 'At midnight or at Fajr' },
+    day: { label: 'Day and prayers', hint: 'Prayer times, day start, timed habits' },
     notifications: { label: 'Notifications', hint: 'What reaches this device' },
     daily: { label: 'Daily card', hint: 'Verse, hadith, word, wisdom, fact' },
     areas: { label: 'Areas of life', hint: 'What your tasks and habits belong to' },
@@ -66,6 +66,41 @@ export const settings = {
     countedFor: 'Counted for {day}.',
     /** The same between midnight and Fajr. {day} is the day before's date; {time} is when Fajr is. */
     countedBeforeFajr: 'Counted for {day}: Fajr is at {time}, so that day is not over yet.',
+  },
+
+  /** Settings → Day and prayers: how prayer times are reckoned (ADR-043). */
+  prayer: {
+    title: 'Prayer times',
+    body: 'Used by habits tied to a prayer, and by a day that starts at Fajr.',
+    place: 'Prayer times for',
+    unknownZone: 'Itqan does not know prayer times for your time zone yet. Give your coordinates.',
+    asr: 'Asr',
+    asrStandard: 'Standard',
+    asrHanafi: 'Hanafi',
+    asrHint: 'Standard (Shafiʿi, Maliki, Hanbali): when a shadow equals its object. Hanafi: twice it, so later.',
+    todayTimes: 'Today here',
+    noTimes: 'The sun does not rise or set here today, so there are no prayer times.',
+  },
+
+  /** Settings → Day and prayers: how timed habits show on Today (ADR-043). */
+  timedHabits: {
+    title: 'Timed habits',
+    body: 'Habits tied to a prayer or a clock time, like Friday between Asr and Maghrib. You set the times in each habit.',
+    showBefore: 'When it appears on Today',
+    allDay: 'All day, from the start of its day',
+    hoursBefore: { one: '{n} hour before it opens', other: '{n} hours before it opens' },
+    minutesBefore: '{n} minutes before it opens',
+    onceOpen: 'Only once it opens',
+    /** Live examples from today's times: {start} and {end} are prayers (or clock times), {opens} and {shows} clock times. */
+    exampleAllDay: 'Example: a habit from {start} to {end} today is there all day, and opens at {opens}.',
+    exampleBefore: 'Example: a habit from {start} to {end} today appears at {shows} and opens at {opens}.',
+    exampleOnce: 'Example: a habit from {start} to {end} today appears at {opens}, when it opens.',
+    afterClose: 'Once it closes it stays until the day ends, so you can still check it off if you forgot.',
+    countdownStart: 'Count down to when it opens',
+    countdownLeft: 'Count down the time it has left',
+    /** {example} is how the habit then reads on Today, e.g. “Opens in 1h 20m · 3:12 PM”. */
+    looksLike: 'On the habit: “{example}”',
+    perHabit: 'A habit can also turn its own countdown off, in its editor.',
   },
 
   daily: {

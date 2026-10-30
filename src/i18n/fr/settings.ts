@@ -6,7 +6,7 @@ export const settings: Messages['settings'] = {
 
   sections: {
     general: { label: 'Général', hint: 'Langue, nom, thème, minuteurs' },
-    day: { label: 'Début de journée', hint: 'À minuit ou au Fajr' },
+    day: { label: 'Jour et prières', hint: 'Heures de prière, début de journée, habitudes à horaire' },
     notifications: { label: 'Notifications', hint: 'Ce qui arrive sur cet appareil' },
     daily: { label: 'Carte du jour', hint: 'Verset, hadith, mot, sagesse, fait' },
     areas: { label: 'Domaines de vie', hint: 'Ce à quoi appartiennent tes tâches et habitudes' },
@@ -58,6 +58,37 @@ export const settings: Messages['settings'] = {
     announce: 'Après une tâche ou une habitude accomplie, me dire pour quel jour elle a compté',
     countedFor: 'Compté pour {day}.',
     countedBeforeFajr: 'Compté pour {day} : le Fajr est à {time}, cette journée n’est donc pas finie.',
+  },
+
+  prayer: {
+    title: 'Heures de prière',
+    body: 'Utilisées par les habitudes liées à une prière, et par une journée qui commence au Fajr.',
+    place: 'Heures de prière pour',
+    unknownZone: 'Itqan ne connaît pas encore les heures de prière de ton fuseau horaire. Indique tes coordonnées.',
+    asr: 'Asr',
+    asrStandard: 'Majoritaire',
+    asrHanafi: 'Hanafite',
+    asrHint: 'Majoritaire (chaféite, malékite, hanbalite) : quand l’ombre égale l’objet. Hanafite : le double, donc plus tard.',
+    todayTimes: 'Aujourd’hui ici',
+    noTimes: 'Le soleil ne se lève pas ou ne se couche pas ici aujourd’hui, donc pas d’heures de prière.',
+  },
+
+  timedHabits: {
+    title: 'Habitudes à horaire',
+    body: 'Des habitudes liées à une prière ou à une heure, comme le vendredi entre Asr et Maghreb. Les horaires se règlent dans chaque habitude.',
+    showBefore: 'Quand l’afficher sur Aujourd’hui',
+    allDay: 'Toute la journée, dès son début',
+    hoursBefore: { one: '{n} heure avant le début', other: '{n} heures avant le début' },
+    minutesBefore: '{n} minutes avant le début',
+    onceOpen: 'Seulement une fois commencée',
+    exampleAllDay: 'Exemple : une habitude de {start} à {end} aujourd’hui est là toute la journée, et commence à {opens}.',
+    exampleBefore: 'Exemple : une habitude de {start} à {end} aujourd’hui apparaît à {shows} et commence à {opens}.',
+    exampleOnce: 'Exemple : une habitude de {start} à {end} aujourd’hui apparaît à {opens}, quand elle commence.',
+    afterClose: 'Une fois terminée, elle reste jusqu’à la fin de la journée : tu peux encore la cocher si tu as oublié.',
+    countdownStart: 'Compte à rebours jusqu’au début',
+    countdownLeft: 'Compte à rebours du temps restant',
+    looksLike: 'Sur l’habitude : « {example} »',
+    perHabit: 'Chaque habitude peut aussi couper son propre compte à rebours, dans son éditeur.',
   },
 
   daily: {

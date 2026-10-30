@@ -23,7 +23,7 @@ export const ARRAY_COLLECTIONS = [
 ] as const
 type ArrayCollection = (typeof ARRAY_COLLECTIONS)[number]
 
-export const SHARED_SETTINGS = ['name', 'weekStartsOn', 'focusMinutes', 'breakMinutes', 'showHijri', 'daily', 'language', 'weightUnit', 'fajr'] as const
+export const SHARED_SETTINGS = ['name', 'weekStartsOn', 'focusMinutes', 'breakMinutes', 'showHijri', 'daily', 'language', 'weightUnit', 'fajr', 'prayer', 'habitWindows'] as const
 
 export function toEntities(d: Data): Entities {
   const e: Entities = {}

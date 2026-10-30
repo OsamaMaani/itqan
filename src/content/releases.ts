@@ -26,6 +26,33 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: 5,
+    date: '2026-10-30',
+    tasks: ['S2-51'],
+    items: [
+      {
+        emoji: '🕌',
+        text: {
+          en: 'A habit can now have its own time: between two prayers or clock times — Friday between Asr and Maghrib, or from Thursday’s Asr to Friday’s Maghrib, counted on the day you choose. Turn on “Only at certain times” when you create or edit a habit.',
+          ar: 'صار للعادة وقتها الخاص: بين صلاتين أو ساعتين — يوم الجمعة بين العصر والمغرب، أو من عصر الخميس إلى مغرب الجمعة، وتُحسب لليوم الذي تختاره. فعّل «في أوقات محددة فقط» عند إنشاء العادة أو تعديلها.',
+          fr: 'Une habitude peut maintenant avoir son moment : entre deux prières ou deux heures — le vendredi entre Asr et Maghreb, ou de l’Asr du jeudi au Maghreb du vendredi, comptée le jour que tu choisis. Active « Seulement à certains moments » en créant ou en modifiant une habitude.',
+          zh: '习惯现在可以有自己的时间：在两次礼拜或两个钟点之间——周五晡礼到昏礼之间，或从周四晡礼到周五昏礼，并计入你选择的那一天。创建或编辑习惯时打开“仅在特定时间”。',
+          es: 'Ahora un hábito puede tener su propio momento: entre dos rezos o dos horas — el viernes entre Asr y Magrib, o del Asr del jueves al Magrib del viernes, contado el día que elijas. Activa «Solo en ciertos momentos» al crear o editar un hábito.',
+        },
+      },
+      {
+        emoji: '⏳',
+        text: {
+          en: 'On Today, a timed habit counts down: how long until it opens, and how much time is left. Choose how early it appears and switch either countdown off in Settings → Day and prayers, which also shows today’s prayer times.',
+          ar: 'في صفحة اليوم، تعدّ العادة المؤقتة تنازليًا: كم بقي حتى تبدأ، وكم بقي من وقتها. اختر متى تظهر وأوقف أيًّا من العدّين من الإعدادات ← اليوم والصلوات، وفيها أيضًا مواقيت الصلاة لليوم.',
+          fr: 'Sur Aujourd’hui, une habitude à horaire fait un compte à rebours : dans combien de temps elle commence, et le temps qu’il lui reste. Choisis quand elle apparaît et coupe l’un ou l’autre dans Réglages → Jour et prières, qui montre aussi les heures de prière du jour.',
+          zh: '在“今天”页，定时习惯会倒计时：还有多久开始，还剩多少时间。在“设置 → 日期与礼拜”中选择它何时出现、关闭任一倒计时，那里也显示今天的礼拜时间。',
+          es: 'En Hoy, un hábito con horario hace cuenta atrás: cuánto falta para que empiece y cuánto tiempo le queda. Elige cuándo aparece y apaga cualquiera de las dos en Ajustes → Día y rezos, que también muestra las horas de rezo de hoy.',
+        },
+      },
+    ],
+  },
+  {
     id: 4,
     date: '2026-10-28',
     tasks: ['S2-50'],

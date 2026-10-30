@@ -6,7 +6,7 @@ export const settings: Messages['settings'] = {
 
   sections: {
     general: { label: 'General', hint: 'Idioma, nombre, tema, temporizadores' },
-    day: { label: 'Inicio del día', hint: 'A medianoche o en el Fajr' },
+    day: { label: 'Día y rezos', hint: 'Horas de rezo, inicio del día, hábitos con horario' },
     notifications: { label: 'Notificaciones', hint: 'Lo que llega a este dispositivo' },
     daily: { label: 'Tarjeta del día', hint: 'Versículo, hadiz, palabra, sabiduría, dato' },
     areas: { label: 'Áreas de la vida', hint: 'A qué pertenecen tus tareas y hábitos' },
@@ -58,6 +58,37 @@ export const settings: Messages['settings'] = {
     announce: 'Al completar una tarea o un hábito, dime para qué día contó',
     countedFor: 'Contó para el {day}.',
     countedBeforeFajr: 'Contó para el {day}: el Fajr es a las {time}, así que ese día aún no ha terminado.',
+  },
+
+  prayer: {
+    title: 'Horas de rezo',
+    body: 'Las usan los hábitos ligados a un rezo y el día que empieza en el Fajr.',
+    place: 'Horas de rezo para',
+    unknownZone: 'Itqan aún no conoce las horas de rezo de tu zona horaria. Indica tus coordenadas.',
+    asr: 'Asr',
+    asrStandard: 'Mayoritario',
+    asrHanafi: 'Hanafí',
+    asrHint: 'Mayoritario (shafií, malikí, hanbalí): cuando la sombra iguala al objeto. Hanafí: el doble, así que más tarde.',
+    todayTimes: 'Hoy aquí',
+    noTimes: 'Hoy el sol no sale o no se pone aquí, así que no hay horas de rezo.',
+  },
+
+  timedHabits: {
+    title: 'Hábitos con horario',
+    body: 'Hábitos ligados a un rezo o a una hora, como el viernes entre Asr y Magrib. Los horarios se ponen en cada hábito.',
+    showBefore: 'Cuándo mostrarlo en Hoy',
+    allDay: 'Todo el día, desde que empieza su día',
+    hoursBefore: { one: '{n} hora antes de empezar', other: '{n} horas antes de empezar' },
+    minutesBefore: '{n} minutos antes de empezar',
+    onceOpen: 'Solo cuando ya ha empezado',
+    exampleAllDay: 'Ejemplo: un hábito de {start} a {end} hoy está todo el día, y empieza a las {opens}.',
+    exampleBefore: 'Ejemplo: un hábito de {start} a {end} hoy aparece a las {shows} y empieza a las {opens}.',
+    exampleOnce: 'Ejemplo: un hábito de {start} a {end} hoy aparece a las {opens}, cuando empieza.',
+    afterClose: 'Cuando termina, sigue ahí hasta el final del día, así que aún puedes marcarlo si se te olvidó.',
+    countdownStart: 'Cuenta atrás hasta que empieza',
+    countdownLeft: 'Cuenta atrás del tiempo que le queda',
+    looksLike: 'En el hábito: «{example}»',
+    perHabit: 'Cada hábito puede apagar también su propia cuenta atrás, en su editor.',
   },
 
   daily: {

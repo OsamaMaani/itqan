@@ -6,7 +6,7 @@ export const settings: Messages['settings'] = {
 
   sections: {
     general: { label: '通用', hint: '语言、名字、主题、计时' },
-    day: { label: '一天的开始', hint: '午夜或晨礼' },
+    day: { label: '日期与礼拜', hint: '礼拜时间、一天的开始、定时习惯' },
     notifications: { label: '通知', hint: '本设备会收到什么' },
     daily: { label: '每日卡片', hint: '经文、圣训、单词、智慧、小知识' },
     areas: { label: '人生领域', hint: '任务和习惯的归属' },
@@ -58,6 +58,37 @@ export const settings: Messages['settings'] = {
     announce: '完成任务或习惯后，告诉我它计入了哪一天',
     countedFor: '已计入{day}。',
     countedBeforeFajr: '已计入{day}：晨礼在 {time}，所以那一天还没结束。',
+  },
+
+  prayer: {
+    title: '礼拜时间',
+    body: '用于与礼拜相关的习惯，以及从晨礼开始的一天。',
+    place: '礼拜时间依据',
+    unknownZone: 'Itqan 还不知道你所在时区的礼拜时间。请填写坐标。',
+    asr: '晡礼',
+    asrStandard: '多数学派',
+    asrHanafi: '哈乃斐',
+    asrHint: '多数学派（沙斐仪、马立克、罕百里）：影长等于物长时。哈乃斐：两倍物长，因此更晚。',
+    todayTimes: '今天此地',
+    noTimes: '今天这里太阳不升起或不落下，所以没有礼拜时间。',
+  },
+
+  timedHabits: {
+    title: '定时习惯',
+    body: '与礼拜或钟点相关的习惯，例如周五晡礼到昏礼之间。时间在每个习惯里设置。',
+    showBefore: '何时在“今天”页显示',
+    allDay: '全天，从当天开始',
+    hoursBefore: { other: '开始前 {n} 小时' },
+    minutesBefore: '开始前 {n} 分钟',
+    onceOpen: '开始后才显示',
+    exampleAllDay: '例如：今天从{start}到{end}的习惯全天可见，{opens} 开始。',
+    exampleBefore: '例如：今天从{start}到{end}的习惯在 {shows} 出现，{opens} 开始。',
+    exampleOnce: '例如：今天从{start}到{end}的习惯在 {opens} 开始时出现。',
+    afterClose: '结束后它会保留到当天结束，忘了的话仍可打勾。',
+    countdownStart: '倒计时到开始',
+    countdownLeft: '倒计时剩余时间',
+    looksLike: '习惯上显示：“{example}”',
+    perHabit: '每个习惯也可以在编辑器里单独关闭倒计时。',
   },
 
   daily: {

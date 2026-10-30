@@ -8,4 +8,6 @@ export const time = {
   minutes: '{m}m',
   hours: '{h}h',
   hoursMinutes: '{h}h {m}m',
+  /** More than a day: {d} days and {h} hours, e.g. a countdown “1d 3h”. */
+  daysHours: '{d}d {h}h',
 }

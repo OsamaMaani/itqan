@@ -73,6 +73,8 @@ export interface Habit {
   unit: string
   /** Optional: the whole the daily amount works through, e.g. 604 pages of the Quran (ADR-038). */
   round: HabitRound | null
+  /** Optional: the time it is done in — between two prayers or clock times (ADR-043). Schema v17. */
+  window: HabitWindow | null
   archived: boolean
   createdAt: string
   order: number
@@ -87,6 +89,32 @@ export interface HabitRound {
   size: number
   from: DateKey
   done: number
+}
+
+export const PRAYERS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'] as const
+export type Prayer = (typeof PRAYERS)[number]
+
+/** One end of a habit's window (ADR-043): a prayer's time, give or take minutes, or a clock time. */
+export type WindowEdge =
+  | { kind: 'prayer'; prayer: Prayer; /** minutes after it; negative = before */ offset: number }
+  | { kind: 'time'; /** "HH:mm" */ time: string }
+
+/**
+ * When a habit is done (ADR-043): it opens at `start` on a calendar day and closes at `end` that
+ * day or `nights` days later — "Thursday from Asr to Friday's Maghrib" is nights 1. Prayer times
+ * are those of the calendar day of each edge, where the owner is. The habit's schedule names the
+ * days a check-in counts for (its log days, as always); with nights > 0, `countOn` says whether
+ * that is the day it opens or the day it closes. Streaks and history read only the log days, so
+ * the window never changes a number — it decides what Today shows, and which day a tap there counts for.
+ */
+export interface HabitWindow {
+  start: WindowEdge
+  end: WindowEdge
+  /** 0 = closes the day it opens; 1 = the next day … up to 6 */
+  nights: number
+  countOn: 'start' | 'end'
+  /** Count down to it on Today (when the countdowns are on in Settings). */
+  countdown: boolean
 }
 
 /** habitId -> dateKey -> amount logged that day */
@@ -511,8 +539,29 @@ export interface Settings {
   weightUnit: WeightUnit
   /** What this device announces (ADR-031). Device-local, never synced. Schema v11. */
   notify: NotifySettings
-  /** Where and how Fajr is reckoned when a day starts at Fajr (ADR-041). Synced. Schema v16. */
+  /**
+   * Where and how Fajr is reckoned (ADR-041). The place and angle are also where every prayer time
+   * is reckoned for timed habits (ADR-043). Synced. Schema v16.
+   */
   fajr: FajrSettings
+  /** How the other prayer times are reckoned (ADR-043). Synced. Schema v17. */
+  prayer: PrayerSettings
+  /** How timed habits show on Today (ADR-043). Synced. Schema v17. */
+  habitWindows: HabitWindowSettings
+}
+
+export interface PrayerSettings {
+  /** Asr when a shadow is its own length plus its noon shadow (most schools), or twice it (Hanafi). */
+  asr: 'standard' | 'hanafi'
+}
+
+export interface HabitWindowSettings {
+  /** How long before it opens a timed habit appears on Today, in minutes; -1 = all of the day it opens, 0 = once it opens. */
+  showBefore: number
+  /** "Opens in 1h 20m" before it opens. */
+  countdownStart: boolean
+  /** "45m left" while it is open. */
+  countdownLeft: boolean
 }
 
 /**

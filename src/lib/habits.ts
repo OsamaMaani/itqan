@@ -125,22 +125,32 @@ export function completionRate(
   return total ? met / total : 0
 }
 
-/** Should this habit appear in today's list? Weekly habits stay until the week's quota is met. */
-export function isDueToday(h: Habit, logs: HabitLogs, today: DateKey, weekStartsOn: 0 | 1 | 6): boolean {
+/**
+ * Is a check-in on `day` still wanted — scheduled that day, and for a weekly habit, the week's
+ * quota not yet met (or met on that very day, so it stays to be seen or undone)?
+ */
+export function isDueOn(h: Habit, logs: HabitLogs, day: DateKey, weekStartsOn: 0 | 1 | 6): boolean {
   if (h.archived) return false
   if (h.schedule.type === 'weekly') {
-    return metDaysInWeek(h, logs, today, weekStartsOn) < h.schedule.times || isMetOn(h, logs, today)
+    return metDaysInWeek(h, logs, day, weekStartsOn) < h.schedule.times || isMetOn(h, logs, day)
   }
-  return isScheduled(h, today)
+  return isScheduled(h, day)
+}
+
+/** Should this habit appear in today's list? Weekly habits stay until the week's quota is met. */
+export function isDueToday(h: Habit, logs: HabitLogs, today: DateKey, weekStartsOn: 0 | 1 | 6): boolean {
+  return isDueOn(h, logs, today, weekStartsOn)
 }
 
 /** "Every day", "4× a week", "Mon · Wed · Fri" in the interface language. */
-export function scheduleLabel(h: Habit, t: I18n = tx()): string {
+export function scheduleLabel(h: Pick<Habit, 'schedule' | 'window'>, t: I18n = tx()): string {
   const s = h.schedule
   if (s.type === 'daily' || (s.type === 'days' && s.days.length === 7)) return t.m.habits.everyDay
   if (s.type === 'weekly') return t.p(t.m.habits.timesAWeek, s.times)
   const names = t.weekdays('short')
-  return [...s.days].sort().map((d) => names[d]).join(' · ')
+  // A timed habit counted on the day its window closes is named by the days it opens (ADR-043).
+  const shift = h.window?.countOn === 'end' ? h.window.nights : 0
+  return [...new Set(s.days.map((d) => (((d - shift) % 7) + 7) % 7))].sort().map((d) => names[d]).join(' · ')
 }
 
 /** Unit names that mean minutes, in every interface language (lower-cased, trailing dot dropped). */

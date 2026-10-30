@@ -39,7 +39,7 @@ interface Actions {
   setTaskStage: (id: ID, stage: TaskStage | 'done') => boolean
   toggleTaskBlocked: (id: ID) => void
   // habits
-  addHabit: (h: Omit<Habit, 'id' | 'createdAt' | 'order' | 'archived' | 'round'> & { round?: Habit['round'] }) => ID
+  addHabit: (h: Omit<Habit, 'id' | 'createdAt' | 'order' | 'archived' | 'round' | 'window'> & { round?: Habit['round']; window?: Habit['window'] }) => ID
   updateHabit: (id: ID, patch: Partial<Habit>) => void
   deleteHabit: (id: ID) => void
   setHabitAmount: (id: ID, day: DateKey, amount: number) => void
@@ -250,7 +250,7 @@ export const useStore = create<Store>()(
       // --- habits ----------------------------------------------------------------
       addHabit: (h) => {
         const id = uid()
-        set((s) => ({ habits: [...s.habits, { round: null, ...h, id, archived: false, createdAt: now(), order: s.habits.length }] }))
+        set((s) => ({ habits: [...s.habits, { round: null, window: null, ...h, id, archived: false, createdAt: now(), order: s.habits.length }] }))
         return id
       },
       updateHabit: (id, patch) =>

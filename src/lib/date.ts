@@ -57,6 +57,15 @@ export function dayOf(at: Date | string): DateKey {
   return fajr !== null && d.getTime() < fajr ? toKey(addDays(fromKey(k), -1)) : k
 }
 
+/**
+ * The date on the wall calendar at a moment, ignoring when a day starts. Only for clock times —
+ * whether a time shown needs its weekday, which date a prayer time is on — never for which day
+ * something counts for: that is dayOf.
+ */
+export function calendarKey(ms: number): DateKey {
+  return toKey(new Date(ms))
+}
+
 /** The day it is now — the day a check-in, a finished task or a new entry counts for. */
 export function todayKey(now: Date = new Date()): DateKey {
   return dayOf(now)

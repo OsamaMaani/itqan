@@ -64,4 +64,7 @@ The vocabulary is fixed. Use these words in code, UI and memory alike.
 | **Set** | One logged set: reps, weight, time or distance, and effort. Warm-up sets never count for PRs. | `WorkoutSet` |
 | **Effort** | How hard a set was: Easy, Good, Hard, Failed. | `Effort` |
 | **PR** | Personal record on an exercise. | `personalRecords()` |
+| **Timed habit** | A habit done in a window between two prayers or clock times — "Friday, Asr to Maghrib" (ADR-043). | `Habit.window` |
+| **Window** | When a timed habit is done: opens at one edge, closes at another the same day or `nights` days later. | `HabitWindow`, `windowSpan()` |
+| **Count day** | The day a timed habit's check-in is logged on: the day its window opens or the day it closes (`countOn`). The schedule names count days. | `todayOccurrence()` |
 | **DateKey** | A local-time day as `yyyy-MM-dd`. Never UTC. | `DateKey` |

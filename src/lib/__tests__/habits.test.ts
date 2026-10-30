@@ -4,7 +4,7 @@ import { addDaysKey } from '../date'
 import type { Habit, HabitLogs } from '../types'
 
 const habit = (schedule: Habit['schedule'], target = 1): Habit => ({
-  id: 'h', name: 'H', emoji: '', areaId: null, schedule, target, unit: '', round: null, archived: false,
+  id: 'h', name: 'H', emoji: '', areaId: null, schedule, target, unit: '', round: null, window: null, archived: false,
   createdAt: '2026-10-01T08:00:00.000Z', order: 0,
 })
 const logs = (...days: string[]): HabitLogs => ({ h: Object.fromEntries(days.map((d) => [d, 1])) })

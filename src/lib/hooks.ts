@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { todayKey } from './date'
+import { deviceZone, resolveFajr } from './fajr'
+import type { WindowContext } from './habitWindows'
 import { dayStreak, levelInfo, totalXp, xpEvents, xpOn } from './gamification'
 import type { GoalSources } from './goals'
 import { useStore } from './store'
@@ -18,6 +20,13 @@ export function useToday(): string {
     return () => clearInterval(id)
   }, [spans])
   return k
+}
+
+/** Where and how prayer times are reckoned for timed habits (ADR-043), stable while the settings are. */
+export function useWindowContext(): WindowContext {
+  const fajr = useStore((s) => s.settings.fajr)
+  const asr = useStore((s) => s.settings.prayer.asr)
+  return useMemo(() => ({ place: resolveFajr(fajr, deviceZone()), asr }), [fajr, asr])
 }
 
 /** Re-render every `ms` while `active`. */

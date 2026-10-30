@@ -1,4 +1,4 @@
-import type { DateKey, FajrSettings, FajrSpan } from './types'
+import type { DateKey, FajrSettings, FajrSpan, Prayer, PrayerSettings } from './types'
 
 /**
  * Fajr times (ADR-041), for the optional rule that a day starts at Fajr instead of midnight.
@@ -73,6 +73,76 @@ export function fajrMs(k: DateKey, lat: number, lng: number, angle: number): num
   }
   if (cache.size > 5000) cache.clear()
   cache.set(id, out)
+  return out
+}
+
+// --- The other prayers (ADR-043) ---------------------------------------------------------------
+// Same method and same conventions as Fajr above, so a habit "from Fajr" opens at the very moment
+// a day that starts at Fajr begins. Dhuhr is solar noon; Asr when a shadow reaches its length (or
+// twice it, Hanafi) plus its noon shadow; Maghrib is sunset; Isha an angle after sunset, or a fixed
+// time after Maghrib (Umm al-Qura), with the same angle-based rule as Fajr where it never gets dark enough.
+
+const tan = (d: number) => Math.tan(d * RAD)
+const acot = (x: number) => Math.atan(1 / x) / RAD
+
+/** Isha by the authority whose Fajr angle this is: an angle below the horizon, or minutes after Maghrib. */
+export function ishaRule(fajrAngle: number): { angle: number } | { minutes: number } {
+  switch (fajrAngle) {
+    case EGYPT: return { angle: 17.5 }
+    case UMM_AL_QURA: return { minutes: 90 }
+    case MWL: return { angle: 17 }
+    case SEA: return { angle: 18 }
+    case 19: return { angle: 17 } // Morocco
+    case 17.7: return { angle: 14 } // Tehran
+    case 16: return { angle: 15 } // Russia
+    default: return { angle: fajrAngle } // ISNA 15/15, France 12/12, Dubai 18.2/18.2 and any other
+  }
+}
+
+/** The six times of a day, as epoch ms. */
+export type PrayerTimes = Record<Prayer, number>
+
+const timesCache = new Map<string, PrayerTimes | null>()
+
+/**
+ * The prayer times of local calendar day `k` at a place, as epoch ms — Isha may fall after
+ * midnight in a high-latitude summer, and is still that day's Isha. Null where the sun does not
+ * rise or set that day (polar day and night): there are no times to hold a habit to.
+ */
+export function prayerTimes(k: DateKey, place: FajrPlaceInfo, asr: PrayerSettings['asr']): PrayerTimes | null {
+  const { lat, lng, angle } = place
+  const id = `${k}|${lat}|${lng}|${angle}|${asr}`
+  const hit = timesCache.get(id)
+  if (hit !== undefined) return hit
+  const [y, m, d] = k.split('-').map(Number)
+  const jd = julian(y, m, d) - lng / (15 * 24)
+  const factor = asr === 'hanafi' ? 2 : 1
+  const isha = ishaRule(angle)
+  const keep = (x: number, prev: number) => (Number.isNaN(x) ? prev : x)
+  const asrAt = (h: number) => angleTime(jd, lat, -acot(factor + tan(Math.abs(lat - sun(jd + h / 24).decl))), h, false)
+  let sunrise = 6, sunset = 18, noon = 12, asrH = 13, ishaH = 18
+  let rose = true
+  for (let i = 0; i < 2; i++) {
+    const r = angleTime(jd, lat, 0.833, sunrise, true), s = angleTime(jd, lat, 0.833, sunset, false)
+    rose = !Number.isNaN(r) && !Number.isNaN(s)
+    sunrise = keep(r, sunrise); sunset = keep(s, sunset)
+    noon = fix(12 - sun(jd + noon / 24).eqt, 24)
+    asrH = keep(asrAt(asrH), asrH)
+    if ('angle' in isha) ishaH = keep(angleTime(jd, lat, isha.angle, ishaH, false), Number.NaN)
+  }
+  let out: PrayerTimes | null = null
+  const fajr = fajrMs(k, lat, lng, angle)
+  if (rose && fajr !== null) {
+    if ('minutes' in isha) ishaH = sunset + isha.minutes / 60
+    else {
+      const portion = (isha.angle / 60) * fix(sunrise - sunset, 24)
+      if (Number.isNaN(ishaH) || fix(ishaH - sunset, 24) > portion) ishaH = sunset + portion
+    }
+    const ms = (h: number) => Date.UTC(y, m - 1, d) + Math.round((h - lng / 15) * 3600_000)
+    out = { fajr, sunrise: ms(sunrise), dhuhr: ms(noon), asr: ms(asrH), maghrib: ms(sunset), isha: ms(ishaH) }
+  }
+  if (timesCache.size > 5000) timesCache.clear()
+  timesCache.set(id, out)
   return out
 }
 

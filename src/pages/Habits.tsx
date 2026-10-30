@@ -1,4 +1,4 @@
-import { Check, Flame, Pencil, Plus, Repeat, Timer, Trophy } from 'lucide-react'
+import { Check, Clock, Flame, Pencil, Plus, Repeat, Timer, Trophy } from 'lucide-react'
 import { usePageAction } from '../components/Shell'
 import { useState } from 'react'
 import { HabitEditor } from '../components/HabitEditor'
@@ -9,6 +9,7 @@ import { celebrate } from '../lib/celebrate'
 import { announceCounted } from '../lib/dayStart'
 import { addDaysKey } from '../lib/date'
 import { amountOn, completionRate, countsMinutes, isMetOn, isScheduled, roundProgress, scheduleLabel, streak } from '../lib/habits'
+import { windowLabel } from '../lib/habitWindows'
 import { areaHex, useAreaMap, useData, useToday } from '../lib/hooks'
 import { navigate } from '../lib/router'
 import { useStore } from '../lib/store'
@@ -84,6 +85,12 @@ function HabitRow({ habit }: { habit: Habit }) {
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
             <AreaChip area={area} />
             <span>{scheduleLabel(habit, t)}</span>
+            {habit.window && (
+              <span className="inline-flex items-center gap-1">
+                · <Clock size={11} /> {windowLabel(habit.window, t)}
+                {habit.window.nights > 0 && ` · ${habit.window.countOn === 'end' ? m.habits.window.countsClose : m.habits.window.countsOpen}`}
+              </span>
+            )}
             {(target > 1 || habit.unit) && <span>· {t.f(m.habits.targetPerDay, { target, unit: habit.unit })}</span>}
             {round && (
               <span>
