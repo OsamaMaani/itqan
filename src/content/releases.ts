@@ -26,6 +26,23 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: 6,
+    date: '2026-10-30',
+    tasks: ['S2-52'],
+    items: [
+      {
+        emoji: '💾',
+        text: {
+          en: 'While sync is working, Itqan no longer says your data lives only in this browser: a sync counts as a backup. If sync stops for two weeks, it reminds you again.',
+          ar: 'ما دامت المزامنة تعمل، لم يعد إتقان يقول إن بياناتك موجودة في هذا المتصفح فقط: فالمزامنة تُعدّ نسخة احتياطية. وإن توقفت المزامنة أسبوعين، يذكّرك من جديد.',
+          fr: 'Tant que la synchronisation fonctionne, Itqan ne dit plus que tes données ne sont que dans ce navigateur : une synchronisation compte comme une sauvegarde. Si elle s’arrête deux semaines, il te le rappelle.',
+          zh: '只要同步正常，Itqan 不会再说你的数据只在这个浏览器里：一次同步就算一次备份。如果同步停了两周，它会再次提醒你。',
+          es: 'Mientras la sincronización funcione, Itqan ya no dice que tus datos solo están en este navegador: una sincronización cuenta como copia de seguridad. Si se detiene dos semanas, te lo vuelve a recordar.',
+        },
+      },
+    ],
+  },
+  {
     id: 5,
     date: '2026-10-30',
     tasks: ['S2-51'],

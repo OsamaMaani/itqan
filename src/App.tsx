@@ -9,13 +9,14 @@ import { Toaster } from './components/Toaster'
 import { WhatsNew } from './components/WhatsNew'
 import { tx } from './i18n/core'
 import { useDocumentLanguage } from './i18n/react'
+import { backupNudge } from './lib/backup'
 import { celebrate } from './lib/celebrate'
 import { SAVERS } from './lib/gamification'
 import { useMediaQuery, useProgress } from './lib/hooks'
 import { navigate, ROUTES, useRoute, useRouteParam, type Route } from './lib/router'
 import { startNotifier } from './lib/notifier'
 import { refreshPush } from './lib/pushDevice'
-import { startSync } from './lib/sync/engine'
+import { startSync, useSync } from './lib/sync/engine'
 import { useStore } from './lib/store'
 import { toast } from './lib/toast'
 import { FocusPage } from './pages/Focus'
@@ -132,18 +133,20 @@ function useLevelUp() {
   }, [level.level, level.rank])
 }
 
-/** Data lives only in this browser (ADR-002), so nudge for a backup every two weeks. */
+/** Data lives in this browser (ADR-002): nudge for a backup when there has been no download or sync for two weeks. */
 function useBackupReminder() {
   useEffect(() => {
     const t = setTimeout(() => {
       const s = useStore.getState()
-      if (!s.settings.onboarded) return
-      const last = s.settings.lastBackupAt ? new Date(s.settings.lastBackupAt).getTime() : 0
-      const first = s.tasks.reduce((m, t) => Math.min(m, new Date(t.createdAt).getTime()), Date.now())
-      const days = (Date.now() - Math.max(last, first)) / 86_400_000
-      if (days >= 14) {
+      const nudge = backupNudge({
+        onboarded: s.settings.onboarded,
+        lastBackupAt: s.settings.lastBackupAt,
+        firstTaskAt: s.tasks.reduce((m, t) => Math.min(m, new Date(t.createdAt).getTime()), Date.now()),
+        lastSyncAt: useSync.getState().lastSyncAt,
+      }, Date.now())
+      if (nudge) {
         const { m } = tx()
-        toast({ emoji: '💾', message: last ? m.app.backupDue : m.app.backupNever, action: { label: m.app.backUp, run: () => navigate('settings', 'data') } }, 10000)
+        toast({ emoji: '💾', message: nudge === 'due' ? m.app.backupDue : m.app.backupNever, action: { label: m.app.backUp, run: () => navigate('settings', 'data') } }, 10000)
       }
     }, 3000)
     return () => clearTimeout(t)

@@ -1064,3 +1064,16 @@ window is edited, and makes streak maths depend on location); a stored count day
 change for every log, for nothing the count-day rule doesn't already give); prayer times from a
 library (the maths is already here for Fajr); showing two tiles for one habit when windows overlap
 (one habit, one tile — the most actionable occurrence wins).
+
+## ADR-044 | 2026-10-30 | accepted | A successful sync counts as a backup
+
+**Context:** The owner, 2026-10-30: "Your data lives only in this browser" appeared every time he
+opened Itqan, though he syncs. The backup nudge (ADR-002) predates sync (ADR-016) and only knew
+downloaded backups; it began once his first task turned 14 days old.
+**Decision:** `backupNudge()` in `lib/backup.ts` (pure, tested): the last safe copy is the newer of
+the last download and the last successful sync (`useSync.lastSyncAt`). The nudge shows only after 14
+days without either — "It has been 2 weeks since your last backup" — and "lives only in this browser"
+only when there has never been either. So sync that quietly stops working still brings it back.
+**Rejected:** hiding the nudge whenever sync is configured (a sync broken for weeks would go
+unnoticed); a separate "sync is stale" message (the Sync badge already reports errors; the backup
+nudge covering it is enough).

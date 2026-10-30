@@ -45,3 +45,23 @@ export function parseBackup(text: string): Data {
   }
   return migrate(d, b.schemaVersion)
 }
+
+/** Days without a safe copy elsewhere before Itqan suggests a backup. */
+export const BACKUP_NUDGE_DAYS = 14
+
+/**
+ * Whether to suggest a backup on opening (ADR-002), and which words: 'due' after a while without
+ * one, 'never' when this browser holds the only copy. A successful sync is a backup too (ADR-016):
+ * the encrypted copy in the private repo, with its history, restores onto any device — so while
+ * sync keeps working the nudge never shows. Counted from the last download or sync, or from the
+ * first task for someone who has had neither, so a new user is not nagged on day one.
+ */
+export function backupNudge(
+  s: { onboarded: boolean; lastBackupAt: string | null; firstTaskAt: number; lastSyncAt: number | null }, now: number,
+): 'due' | 'never' | null {
+  if (!s.onboarded) return null
+  const downloaded = s.lastBackupAt ? new Date(s.lastBackupAt).getTime() : 0
+  const safe = Math.max(downloaded || 0, s.lastSyncAt ?? 0)
+  if ((now - Math.max(safe, s.firstTaskAt)) / 86_400_000 < BACKUP_NUDGE_DAYS) return null
+  return safe ? 'due' : 'never'
+}
