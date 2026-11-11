@@ -107,6 +107,20 @@ export const insights = {
     emptyTitle: 'No focus sessions in this period',
     emptyBody: 'Sessions you finish on Focus show up here — time, rhythm and where it went.',
     start: 'Start a session',
+    /** Pauses logged on Focus (ADR-049). */
+    interruptions: 'Interruptions',
+    interruptionsNote: 'Pauses in sessions and breaks, and what caused them',
+    pauses: { one: '{n} pause', other: '{n} pauses' },
+    /** Under the pause count: time spent paused. {time} like "1h 20m". */
+    pausedFor: '{time} paused',
+    /** Under the pause count: how many paused a focus session (not a break). */
+    duringFocus: { one: '{n} during focus', other: '{n} during focus' },
+    noReason: 'No reason given',
+    noInterruptions: 'No pauses in this period.',
+    /** Focus cycles in the period (ADR-049). */
+    cycles: 'Focus cycles',
+    /** Under the cycle count. {done} finished in full, out of {n}. */
+    cyclesSub: '{done} of {n} finished in full',
   },
 
   /** The Reading section (ADR-047): every sitting, linked to a habit or not. */

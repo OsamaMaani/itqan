@@ -7,7 +7,7 @@ function session(day: string, hh: number, mm: number, minutes: number, extra: Pa
   const [y, mo, d] = day.split('-').map(Number)
   return {
     id: `${day}-${hh}-${mm}`, startedAt: new Date(y, mo - 1, d, hh, mm).toISOString(), minutes, label: 'Study',
-    areaId: null, goalId: null, taskId: null, habitId: null, habitAmount: 0, ...extra,
+    areaId: null, goalId: null, taskId: null, habitId: null, habitAmount: 0, cycleId: null, ...extra,
   }
 }
 

@@ -4,6 +4,7 @@
   "updated": "2026-11-11",
   "current_stage": 4,
   "next_actions": [
+    "New: focus cycles — plan several sessions with breaks; each step asks before moving on, can be extended, pauses log why, and prayer times are planned around.",
     "Fixed: PDF pages on the iPhone no longer stay white — pages draw one at a time, nearest first, use far less memory, and big scanned books open fast. Pinch to zoom.",
     "New: link a book to a habit (pages or minutes), a task (done at page N) or a goal (a milestone, its pages, or an amount when finished). Insights has a Reading section.",
     "New: Library — add PDFs and read them in Itqan; they open on the same page on your laptop and iPhone. Bookmarks, night mode and reading time; paper books tracked by page.",
@@ -515,6 +516,13 @@
           "module": "habits",
           "status": "done",
           "critical": false
+        },
+        {
+          "id": "S2-54",
+          "title": "Focus cycles: planned sessions and breaks that wait for an answer (next step, +5/10/15 min, skip, end), pause with a reason, paused-break choice, prayer-aware plans, templates, summary, Insights and badges (ADR-049, schema v19)",
+          "module": "focus",
+          "status": "done",
+          "critical": true
         }
       ]
     },
@@ -762,6 +770,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-11-11",
+      "entry": "S2-54 (ADR-049), asked by the owner: focus cycles. Plan sessions × focus / break with an optional long break, edit each step (length, own task or habit), presets and synced templates. Each step runs as the ordinary timer with cycleId; when one runs out it waits (never auto-advances, the owner's choice), notifies once and nudges after 5 min (helper, page and push relay), and asks: next step, +5/10/15 min (counted from the answer, so waiting is never focus), skip break, end. Shown on Focus and as a floating card on any screen. A paused break offers continue or start the next session. Every pause is logged as an interruption with an optional reason (call, someone, distraction, prayer, other) — Insights shows them. Prayer times that fall inside a session are flagged at planning and before each next session; 'Break for Asr' splits the session around a 15-min prayer break. Ended cycles keep a summary (Focus card, Insights count, badges cycle-1/cycles-10). Schema v19 with migration tests; 616 tests."
+    },
     {
       "date": "2026-11-11",
       "entry": "S3-06 (ADR-048), reported by the owner: many PDF pages stayed white on the iPhone. Reproduced on a 60-page scanned book on an emulated, 4x-throttled phone and traced in pdf.js's code: no canvasMaxAreaInBytes on iOS (pdf.js probes by allocating huge canvases; WebKit blanks canvases over 16.7 MP), page.cleanup() never called (~35 MB of decoded image per scanned page kept), all nearby pages drawn at once, and the whole file read into memory. New PageRenderer: one page at a time nearest first (two on laptops), buffer of 6/12 drawn pages with a pixel cap, cleanup after each page and doc.cleanup when idle, off-screen redraw on zoom, retry smaller then Try again, reopen the PDF if the engine stops. lib/pdfBudget.ts (tested): 5 MP pages and 2x density on phones, iOS canvas limit passed to pdf.js. PDFs opened by 512 KB byte ranges from the IndexedDB Blob. Pinch to zoom with focal point kept (tested with synthetic touches). Measured old vs new builds over the same 30 pages: no blank pages, renderer memory 1,655 -> 1,244 MB. Not testable here on a real iPhone."

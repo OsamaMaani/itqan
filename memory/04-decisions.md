@@ -1229,3 +1229,57 @@ laptop build); rendering in an OffscreenCanvas worker of our own (pdf.js already
 worker; the drawing is not the bottleneck); a lower-resolution first pass (decoding, not resolution,
 is what costs on scanned pages); not being able to test on a real iPhone is a known gap — the
 Chrome emulation reproduces the scheduling and memory, not WebKit's exact limits.
+
+## ADR-049 | 2026-11-11 | accepted | Focus cycles: planned sessions and breaks that wait for an answer
+
+**Context:** The owner, 2026-11-11: plan several focus sessions one after another, each a set
+length, with planned breaks between; pause the whole cycle for an interruption — and, when paused in
+a break, be asked whether to continue the break or start the next session; when any session or
+break ends, be notified and asked whether to go on or extend it by some minutes. Asked for further
+ideas. His choices (asked the same day): the cycle **waits for an answer** (nothing moves on by
+itself); plans are **simple, with editable steps**; all four extras — **saved templates**,
+**prayer-aware cycles**, an **interruption log**, a **cycle summary and badges**; breaks show
+**only the timer**.
+**Decision:**
+- **The timer stays the one running thing.** A cycle (`Data.cycle`, `ActiveCycle`, device-local
+  like the timer) holds its `steps` and the current `index`; each step runs as an ordinary
+  `ActiveTimer` with `cycleId`. When a cycle's step runs out, `TimerWatcher` does not finish it: it
+  sounds and notifies once (and once more after `CYCLE_NUDGE_MS`, 5 min) and the timer stays at
+  zero, *waiting* (derived: `cycleId && endsAt <= now`). Nothing is saved while it waits.
+- **Answers:** the next step (`nextStep` saves a focus step as a normal `FocusSession` with
+  `cycleId`, so XP, habits, Insights and achievements see it like any session); `+5/+10/+15 min`
+  (`extendStep` — the extra counts from the moment of the answer, so waiting time is never focus);
+  skip the break; end the cycle. "Done early" (`endStepNow`) shortens the step to what was worked
+  and waits like a step that ran out. A paused break offers "Continue break · m:ss left" or "Start
+  session N now". The question shows on Focus and, on any other screen, as a floating card
+  (`CyclePrompt`); notifications go through the existing timer alerts (helper, page, push relay),
+  their text naming the session and what is next.
+- **Plans:** `buildSteps(plan)` from sessions × focus / break, an optional long break every N
+  sessions; no break after the last session. Each step's length can be edited, a step removed, and
+  a session given its own task or habit (else the cycle's). Presets Classic 4×25/5, Deep work
+  3×50/10, Marathon 6×25/5 + 20 every 3; the owner's templates (`cycleTemplates`, synced) keep the
+  simple shape only.
+- **Prayers:** `prayerCrossings` finds sessions a prayer time (Fajr, Dhuhr, Asr, Maghrib, Isha —
+  where Fajr is reckoned, ADR-041/043) falls inside, at planning and again on each waiting prompt
+  for the next session; "Break for Asr" (`fitPrayer`) stops the session at the prayer, adds a
+  15-minute prayer break and continues the rest after; under 5 minutes before the prayer the break
+  comes first (the break before becomes it), under 5 minutes after, those minutes are dropped.
+  Only steps not yet started are ever changed (`setCycleSteps` keeps the running one and those before).
+- **Interruptions** (`interruptions`, synced): every pause — of any timer, not only cycles — is
+  logged at once with `during`, then its `seconds` on resume/finish and an optional reason (call,
+  someone, distraction, prayer, other) from chips shown while paused. Insights → Focus shows pauses,
+  time paused and reasons for the period (`interruptionStats`).
+- **Summary** (`focusCycles`, synced): ending a cycle with any focus saved records sessions done of
+  planned, focus minutes, extended minutes, pauses, `completed` (every planned session saved);
+  shown on Focus for 30 minutes; Insights counts cycles; badges `cycle-1` and `cycles-10` count
+  completed ones. A single timer started elsewhere (a habit, a task, the command bar) ends a running
+  cycle first, saving its focus.
+- Schema v19: `FocusSession.cycleId`, `ActiveTimer.cycleId/pauseId`, `cycle`, `cycleTemplates`,
+  `focusCycles`, `interruptions`.
+**Rejected:** moving on automatically after a grace period (the owner chose to be asked); one
+saved session per extension (an extended session is one sitting); saving templates with every
+step edit (the simple shape is what is reused; edits are per day); keeping the pause log on the
+session (a discarded session would lose the interruption that caused it); asking the reason with a
+dialog before pausing (a phone call should pause in one tap); a cycle-level timer separate from the
+step timer (two clocks to keep in sync, and every existing timer path — helper, push, tab title —
+already knows the one).

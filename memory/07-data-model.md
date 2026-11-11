@@ -16,8 +16,12 @@ Zustand as `{ state: Data, version: SCHEMA_VERSION }`.
 | `habitLogs` | `{ [habitId]: { [DateKey]: amount } }` | A map, not an array: O(1) per day, compact. Amount 0 = key removed |
 | `goals` | `Goal[]` | `startValue` = progress before tracking began; milestones inline; `link` = follow Training instead of check-ins (v8) |
 | `goalLogs` | `GoalLog[]` | Check-ins; current value = startValue + Σ amounts |
-| `focusSessions` | `FocusSession[]` | Only *finished* focus time is stored; `habitId` + `habitAmount` = the habit it was for and what it added to that habit's log on its start day (v10, ADR-029) |
-| `timer` | `ActiveTimer \| null` | Persisted so a running timer survives reload; `endsAt` is epoch ms |
+| `focusSessions` | `FocusSession[]` | Only *finished* focus time is stored; `habitId` + `habitAmount` = the habit it was for and what it added to that habit's log on its start day (v10, ADR-029); `cycleId` = the focus cycle it was part of (v19, ADR-049) |
+| `timer` | `ActiveTimer \| null` | Persisted so a running timer survives reload; `endsAt` is epoch ms; `cycleId` = the cycle it is a step of, `pauseId` = the interruption logged for the pause it is in (v19). Device-local |
+| `cycle` | `ActiveCycle \| null` | The focus cycle running on this device (ADR-049): `steps` (`kind`, `minutes`, `tag` long/prayer, `prayer`, own `taskId`/`habitId`), `index`, what it is for, `extendedMinutes`, `pauses`. Device-local, never synced (v19) |
+| `cycleTemplates` | `CycleTemplate[]` | Saved cycle plans: name + sessions, focus, break, long break and how often (v19, synced) |
+| `focusCycles` | `FocusCycle[]` | Cycles that ended with focus saved: sessions of planned, minutes, extended minutes, pauses, `completed` — drive Insights and the `cycle-1`/`cycles-10` badges (v19, synced) |
+| `interruptions` | `Interruption[]` | Every pause of a timer: `at`, `seconds` (0 until resumed), `reason` (call/person/distraction/prayer/other or null), `during` focus/break, `label`, `cycleId` (v19, synced) |
 | `dayNotes` | `{ [DateKey]: DayNote }` | Intention, mood, reflection |
 | `reviews` | `{ [weekStart]: WeeklyReview }` | Keyed by the week's first DateKey |
 | `memories` | `Memory[]` | `date` = when it happened; text, emoji, tags, favourite (ADR-014) |
@@ -69,8 +73,8 @@ XP, levels, achievements, streaks, streak savers, completion rates and goal prog
 4. `normalize()` must still produce a complete `Data` from partial input.
 5. Backups from the old version must import (they pass through the same `migrate`).
 
-Current version: **18**. History: 1 = initial; 2 = `memories`, `ideas`, `reminders`; 3 = `projects`,
+Current version: **19**. History: 1 = initial; 2 = `memories`, `ideas`, `reminders`; 3 = `projects`,
 `contacts`, `interactions`, `Task.projectId`, `Reminder.contactId`, `Reminder.countYears`; 4 = `Task.stage`,
 `Task.blocked`, `Project.progressMode/manualProgress/view/pinned`, `projectUpdates`; 5 = `achievements`
 (all 2026-10-16); 6 = `Settings.daily` (2026-10-17); 7 = `Settings.language` (2026-10-17); 8 = Training — `exercises`,
-`routines`, `program`, `workouts`, `workoutSets`, `Goal.link`, `Settings.weightUnit` (2026-10-20, ADR-027); 9 = program mode `flexible`, no data change (2026-10-21, ADR-028); 10 = `FocusSession.habitId/habitAmount`, `ActiveTimer.habitId` (2026-10-21, ADR-029); 11 = `pushTargets`, `Settings.notify` (2026-10-23, ADR-031); 12 = `PushTarget.kinds` (2026-10-24, ADR-033); 13 = `notes` (2026-10-26, ADR-035); 14 = `Note.onToday` (2026-10-26, ADR-036); 15 = `Habit.round` (2026-10-27, ADR-038); 16 = `fajrSpans`, `Settings.fajr` (2026-10-28, ADR-041); 17 = `Habit.window`, `Settings.prayer`, `Settings.habitWindows` (2026-10-30, ADR-043); 18 = `books`, `bookPlaces`, `bookmarks`, `readingSessions` (2026-11-11, ADR-046).
+`routines`, `program`, `workouts`, `workoutSets`, `Goal.link`, `Settings.weightUnit` (2026-10-20, ADR-027); 9 = program mode `flexible`, no data change (2026-10-21, ADR-028); 10 = `FocusSession.habitId/habitAmount`, `ActiveTimer.habitId` (2026-10-21, ADR-029); 11 = `pushTargets`, `Settings.notify` (2026-10-23, ADR-031); 12 = `PushTarget.kinds` (2026-10-24, ADR-033); 13 = `notes` (2026-10-26, ADR-035); 14 = `Note.onToday` (2026-10-26, ADR-036); 15 = `Habit.round` (2026-10-27, ADR-038); 16 = `fajrSpans`, `Settings.fajr` (2026-10-28, ADR-041); 17 = `Habit.window`, `Settings.prayer`, `Settings.habitWindows` (2026-10-30, ADR-043); 18 = `books`, `bookPlaces`, `bookmarks`, `readingSessions` (2026-11-11, ADR-046); 19 = `FocusSession.cycleId`, `ActiveTimer.cycleId/pauseId`, `cycle`, `cycleTemplates`, `focusCycles`, `interruptions` (2026-11-11, ADR-049).

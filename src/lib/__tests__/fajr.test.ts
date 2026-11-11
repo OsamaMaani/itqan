@@ -137,7 +137,7 @@ describe('an owner switching to Fajr after months of use', () => {
   const history: Data = {
     ...emptyData(),
     tasks: [doneTask('a', at('2026-10-17', 1, 30)), doneTask('b', at('2026-10-18', 2)), doneTask('c', at('2026-10-19', 0, 40))],
-    focusSessions: [{ id: 'f', startedAt: at('2026-10-19', 1).toISOString(), minutes: 25, label: '', areaId: null, goalId: null, taskId: null, habitId: null, habitAmount: 0 }],
+    focusSessions: [{ id: 'f', startedAt: at('2026-10-19', 1).toISOString(), minutes: 25, label: '', areaId: null, goalId: null, taskId: null, habitId: null, habitAmount: 0, cycleId: null }],
     habitLogs: {},
   }
   it('nothing already done moves: XP, the day streak and day counts are identical after switching', () => {

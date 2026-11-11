@@ -11,6 +11,7 @@ import { badges as computeBadges, xpByDay } from '../lib/gamification'
 import { completionRate, isMetOn, streak } from '../lib/habits'
 import { useData, useProgress, useToday } from '../lib/hooks'
 import { change, focusStats, focusStreak, habitAmounts, habitConsistency, previousRange, readingStats, tasksDoneByDay } from '../lib/insights'
+import { cycleStats, interruptionStats } from '../lib/focusCycle'
 import { navigate } from '../lib/router'
 import type { DateKey } from '../lib/types'
 
@@ -290,6 +291,10 @@ function FocusSection({ days, today, s, xLabels }: { days: DateKey[]; today: Dat
   const habits = useMemo(() => new Map(d.habits.map((h) => [h.id, h])), [d.habits])
   const goals = useMemo(() => new Map(d.goals.map((g) => [g.id, g])), [d.goals])
   const areas = useMemo(() => new Map(d.areas.map((a) => [a.id, a])), [d.areas])
+  const pauses = useMemo(() => interruptionStats(d.interruptions, days[0], today), [d.interruptions, days, today])
+  const cycles = useMemo(() => cycleStats(d.focusCycles, days[0], today), [d.focusCycles, days, today])
+  const maxReason = Math.max(1, ...pauses.byReason.map((r) => r.count))
+  const reasonEmoji = { call: '📞', person: '🗣️', distraction: '📱', prayer: '🕌', other: '✳️' } as const
 
   if (f.sessions === 0) {
     return (
@@ -465,6 +470,40 @@ function FocusSection({ days, today, s, xLabels }: { days: DateKey[]; today: Dat
                 sub={t.f(mf.bestDaySub, { date: t.d(f.bestDay.date, 'weekdayShort'), sessions: t.p(mf.sessionCount, f.byDay[f.bestDay.date].sessions) })} />
             )}
           </div>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="p-5">
+          <SectionTitle>{mf.interruptions}</SectionTitle>
+          <p className="-mt-2 mb-3 text-xs text-muted">{mf.interruptionsNote}</p>
+          {pauses.count === 0 ? (
+            <p className="text-sm text-muted">{mf.noInterruptions}</p>
+          ) : (
+            <>
+              <div className="mb-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                <span className="text-2xl font-extrabold tabular">{t.p(mf.pauses, pauses.count)}</span>
+                <span className="text-xs text-muted">{t.f(mf.pausedFor, { time: t.dur(pauses.minutes) })}</span>
+                <span className="text-xs text-muted">{t.p(mf.duringFocus, pauses.duringFocus)}</span>
+              </div>
+              <div className="space-y-2.5">
+                {pauses.byReason.map((r) => (
+                  <div key={r.reason ?? 'none'} className="grid grid-cols-[7.5rem_1fr_4rem] items-center gap-3 text-sm">
+                    <span className="truncate text-xs font-semibold text-muted">{r.reason ? `${reasonEmoji[r.reason]} ${m.focus.cycle.reasons[r.reason]}` : mf.noReason}</span>
+                    <ProgressBar value={r.count / maxReason} height={8} />
+                    <span className="text-end text-xs font-bold tabular">{t.n(r.count)} · {t.dur(r.minutes)}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </Card>
+
+        <Card className="p-5">
+          <SectionTitle>{mf.cycles}</SectionTitle>
+          <div className="text-2xl font-extrabold tabular">{t.n(cycles.cycles)}</div>
+          <p className="text-xs text-muted">{t.f(mf.cyclesSub, { done: t.n(cycles.completed), n: t.n(cycles.cycles) })}</p>
+          {cycles.cycles > 0 && <p className="mt-3 text-sm">{t.p(mf.sessionCount, cycles.sessions)} · {t.dur(cycles.focusMinutes)}</p>}
         </Card>
       </div>
     </div>

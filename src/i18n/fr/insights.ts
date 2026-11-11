@@ -71,6 +71,15 @@ export const insights: Messages['insights'] = {
     emptyTitle: 'Aucune session de concentration sur cette période',
     emptyBody: 'Les sessions terminées dans Concentration apparaissent ici — temps, rythme et répartition.',
     start: 'Lancer une session',
+    interruptions: 'Interruptions',
+    interruptionsNote: 'Les mises en pause pendant les sessions et les pauses, et leurs causes',
+    pauses: { one: '{n} mise en pause', other: '{n} mises en pause' },
+    pausedFor: '{time} en pause',
+    duringFocus: { one: '{n} pendant la concentration', other: '{n} pendant la concentration' },
+    noReason: 'Aucune raison indiquée',
+    noInterruptions: 'Aucune mise en pause sur cette période.',
+    cycles: 'Cycles de concentration',
+    cyclesSub: '{done} sur {n} menés à leur terme',
   },
 
   reading: {

@@ -8,8 +8,9 @@ import { migrate, SCHEMA_VERSION } from './migrations'
 import { emptyData, starterData } from './seed'
 import { setDayRule, todayKey } from './date'
 import { deviceZone, resolveFajr, switchFajr } from './fajr'
+import { sessionCount } from './focusCycle'
 import type {
-  Achievement, ActiveTimer, Area, Book, BookStatus, Contact, Data, DateKey, DayNote, Exercise, FajrSettings, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory, Note,
+  Achievement, ActiveCycle, ActiveTimer, Area, CycleStep, CycleTemplate, FocusCycle, InterruptionReason, Book, BookStatus, Contact, Data, DateKey, DayNote, Exercise, FajrSettings, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory, Note,
   Project, ProjectUpdate, PushTarget, ReadingSession, Reminder, Routine, RoutineItem, Settings, Task, TaskStage, TrainingProgram, WeeklyReview, Workout, WorkoutSet,
 } from './types'
 import { birthdayReminderDate } from './connections'
@@ -54,12 +55,29 @@ interface Actions {
   toggleMilestone: (goalId: ID, milestoneId: ID) => boolean
   setGoalStatus: (id: ID, status: Goal['status']) => void
   // focus
-  startTimer: (t: Omit<ActiveTimer, 'endsAt' | 'remainingMs' | 'startedAt'>) => void
-  pauseTimer: () => void
+  /** Starts a single timer; a cycle running on this device ends first (its focus so far is saved). */
+  startTimer: (t: Omit<ActiveTimer, 'endsAt' | 'remainingMs' | 'startedAt' | 'cycleId' | 'pauseId'>) => void
+  /** Pauses and logs the interruption (ADR-049); returns its id, or null when nothing was running. */
+  pauseTimer: () => ID | null
   resumeTimer: () => void
   /** Ends the timer. Saves a focus session when `save` and in focus mode. */
   finishTimer: (save: boolean) => number
   deleteFocusSession: (id: ID) => void
+  setInterruptionReason: (id: ID, reason: InterruptionReason | null) => void
+  // focus cycles (ADR-049)
+  startCycle: (c: Pick<ActiveCycle, 'steps' | 'label' | 'areaId' | 'goalId' | 'taskId' | 'habitId'>) => void
+  /** Adds minutes to the current step — running, paused, or ended and waiting. */
+  extendStep: (minutes: number) => void
+  /** Ends the current focus step now; the cycle then waits like when its time is up. */
+  endStepNow: () => void
+  /** Saves the current step (a focus session) and starts the next; ends the cycle after the last. */
+  nextStep: () => FocusCycle | null
+  /** Replaces the steps after the current one; the current step and those before never change. */
+  setCycleSteps: (steps: CycleStep[]) => void
+  /** Ends the cycle: the current focus so far is saved, and the cycle's summary kept. */
+  endCycle: () => FocusCycle | null
+  saveCycleTemplate: (t: Omit<CycleTemplate, 'id' | 'createdAt'>) => ID
+  deleteCycleTemplate: (id: ID) => void
   // notes & reviews
   setDayNote: (day: DateKey, patch: Partial<DayNote>) => void
   saveReview: (r: Omit<WeeklyReview, 'savedAt'>) => void
@@ -280,6 +298,10 @@ export const useStore = create<Store>()(
             habitLogs,
             focusSessions: s.focusSessions.map((f) => (f.habitId === id ? { ...f, habitId: null, habitAmount: 0 } : f)),
             timer: s.timer?.habitId === id ? { ...s.timer, habitId: null } : s.timer,
+            cycle: s.cycle && {
+              ...s.cycle, habitId: s.cycle.habitId === id ? null : s.cycle.habitId,
+              steps: s.cycle.steps.map((x) => (x.habitId === id ? { ...x, habitId: null } : x)),
+            },
             program: s.program?.habitId === id ? { ...s.program, habitId: null, updatedAt: now() } : s.program,
             books: s.books.map((b) => (b.habit?.habitId === id ? { ...b, habit: null, updatedAt: now() } : b)),
             readingSessions: s.readingSessions.map((r) => (r.habitId === id ? { ...r, habitId: null, habitAmount: 0 } : r)),
@@ -342,17 +364,30 @@ export const useStore = create<Store>()(
         })),
 
       // --- focus -----------------------------------------------------------------
-      startTimer: (t) =>
-        set({ timer: { ...t, endsAt: Date.now() + t.totalMs, remainingMs: t.totalMs, startedAt: now() } }),
-      pauseTimer: () =>
-        set((s) =>
-          s.timer?.endsAt
-            ? { timer: { ...s.timer, remainingMs: Math.max(0, s.timer.endsAt - Date.now()), endsAt: null } }
-            : {},
-        ),
-      resumeTimer: () =>
-        set((s) => (s.timer && !s.timer.endsAt ? { timer: { ...s.timer, endsAt: Date.now() + s.timer.remainingMs } } : {})),
+      startTimer: (t) => {
+        if (get().cycle) get().endCycle()
+        set({ timer: { ...t, endsAt: Date.now() + t.totalMs, remainingMs: t.totalMs, startedAt: now(), cycleId: null, pauseId: null } })
+      },
+      pauseTimer: () => {
+        const t = get().timer
+        // Ended and waiting is not running: there is nothing to pause.
+        if (!t?.endsAt || t.endsAt <= Date.now()) return null
+        const id = uid()
+        set((s) => ({
+          timer: { ...t, remainingMs: Math.max(0, t.endsAt! - Date.now()), endsAt: null, pauseId: id },
+          interruptions: [...s.interruptions, { id, at: now(), seconds: 0, reason: null, during: t.mode, label: t.label, cycleId: t.cycleId }],
+          cycle: s.cycle && t.cycleId === s.cycle.id ? { ...s.cycle, pauses: s.cycle.pauses + 1 } : s.cycle,
+        }))
+        return id
+      },
+      resumeTimer: () => {
+        closePause()
+        set((s) => (s.timer && !s.timer.endsAt ? { timer: { ...s.timer, endsAt: Date.now() + s.timer.remainingMs } } : {}))
+      },
+      setInterruptionReason: (id, reason) =>
+        set((s) => ({ interruptions: s.interruptions.map((x) => (x.id === id ? { ...x, reason } : x)) })),
       finishTimer: (save) => {
+        closePause()
         const t = get().timer
         if (!t) return 0
         const remaining = t.endsAt ? Math.max(0, t.endsAt - Date.now()) : t.remainingMs
@@ -367,7 +402,7 @@ export const useStore = create<Store>()(
               ...s.focusSessions,
               {
                 id: uid(), startedAt: t.startedAt, minutes, label: t.label, areaId: t.areaId, goalId: t.goalId, taskId: t.taskId,
-                habitId: habit?.id ?? null, habitAmount,
+                habitId: habit?.id ?? null, habitAmount, cycleId: t.cycleId,
               },
             ],
           }))
@@ -380,6 +415,65 @@ export const useStore = create<Store>()(
         set({ timer: null })
         return 0
       },
+      startCycle: (c) => {
+        if (get().timer) get().finishTimer(true)
+        if (get().cycle) get().endCycle()
+        if (!c.steps.length) return
+        set({ cycle: { ...c, id: uid(), startedAt: now(), index: 0, extendedMinutes: 0, pauses: 0 } })
+        runStep(0)
+      },
+      extendStep: (minutes) => {
+        const t = get().timer
+        if (!t || minutes <= 0) return
+        const ms = minutes * 60_000
+        set((s) => ({
+          // Waiting time after the end is not focus: the extra minutes count from now.
+          timer: t.endsAt === null
+            ? { ...t, totalMs: t.totalMs + ms, remainingMs: t.remainingMs + ms }
+            : { ...t, totalMs: t.totalMs + ms, endsAt: Math.max(t.endsAt, Date.now()) + ms },
+          cycle: s.cycle && t.mode === 'focus' && t.cycleId === s.cycle.id ? { ...s.cycle, extendedMinutes: s.cycle.extendedMinutes + minutes } : s.cycle,
+        }))
+      },
+      endStepNow: () => {
+        closePause()
+        const t = get().timer
+        if (!t) return
+        const remaining = t.endsAt === null ? t.remainingMs : Math.max(0, t.endsAt - Date.now())
+        set({ timer: { ...t, totalMs: Math.max(0, t.totalMs - remaining), remainingMs: 0, endsAt: Date.now() } })
+      },
+      nextStep: () => {
+        const c = get().cycle
+        if (!c) return null
+        if (get().timer?.cycleId === c.id) get().finishTimer(true)
+        const i = c.index + 1
+        if (i >= c.steps.length) return get().endCycle()
+        runStep(i)
+        return null
+      },
+      setCycleSteps: (steps) =>
+        set((s) => (s.cycle ? { cycle: { ...s.cycle, steps: [...s.cycle.steps.slice(0, s.cycle.index + 1), ...steps.slice(s.cycle.index + 1)] } } : {})),
+      endCycle: () => {
+        const c = get().cycle
+        if (!c) return null
+        if (get().timer?.cycleId === c.id) get().finishTimer(true)
+        const mine = get().focusSessions.filter((f) => f.cycleId === c.id)
+        set({ cycle: null })
+        // A cycle stopped before any focus was saved left nothing to remember.
+        if (!mine.length) return null
+        const record: FocusCycle = {
+          id: c.id, startedAt: c.startedAt, endedAt: now(), label: c.label,
+          plannedSessions: sessionCount(c.steps), sessions: mine.length, focusMinutes: mine.reduce((n, f) => n + f.minutes, 0),
+          extendedMinutes: c.extendedMinutes, pauses: c.pauses, completed: mine.length >= sessionCount(c.steps),
+        }
+        set((s) => ({ focusCycles: [...s.focusCycles, record] }))
+        return record
+      },
+      saveCycleTemplate: (t) => {
+        const id = uid()
+        set((s) => ({ cycleTemplates: [...s.cycleTemplates, { ...t, id, createdAt: now() }] }))
+        return id
+      },
+      deleteCycleTemplate: (id) => set((s) => ({ cycleTemplates: s.cycleTemplates.filter((x) => x.id !== id) })),
       /** Deletes the session and takes back exactly what it added to its habit (ADR-029). */
       deleteFocusSession: (id) => {
         const f = get().focusSessions.find((x) => x.id === id)
@@ -841,7 +935,7 @@ export const useStore = create<Store>()(
         reviews: s.reviews, memories: s.memories, ideas: s.ideas, notes: s.notes, reminders: s.reminders, projects: s.projects,
         projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
         exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets, fajrSpans: s.fajrSpans,
-        books: s.books, bookPlaces: s.bookPlaces, bookmarks: s.bookmarks, readingSessions: s.readingSessions,
+        books: s.books, bookPlaces: s.bookPlaces, bookmarks: s.bookmarks, readingSessions: s.readingSessions, cycle: s.cycle, cycleTemplates: s.cycleTemplates, focusCycles: s.focusCycles, interruptions: s.interruptions,
         settings: s.settings,
       }),
       migrate: (persisted, version) => migrate(persisted, version) as unknown as Store,
@@ -853,6 +947,46 @@ export const useStore = create<Store>()(
 // whenever they change — by a switch here, a sync from another device, or a restored backup.
 setDayRule(useStore.getState().fajrSpans)
 useStore.subscribe((s, prev) => { if (s.fajrSpans !== prev.fajrSpans) setDayRule(s.fajrSpans) })
+
+/** Closes the pause the timer is in, if any: how long it lasted goes on its interruption (ADR-049). */
+function closePause(): void {
+  const t = useStore.getState().timer
+  if (!t?.pauseId) return
+  const id = t.pauseId
+  useStore.setState((s) => ({
+    timer: s.timer && { ...s.timer, pauseId: null },
+    interruptions: s.interruptions.map((x) => (x.id === id ? { ...x, seconds: Math.max(0, Math.round((Date.now() - Date.parse(x.at)) / 1000)) } : x)),
+  }))
+}
+
+/**
+ * Starts step `i` of the running cycle as the timer. A focus step is for its own task or habit
+ * when it names one, else for what the whole cycle is for; one that no longer exists is dropped.
+ */
+function runStep(i: number): void {
+  const s = useStore.getState()
+  const c = s.cycle
+  const step = c?.steps[i]
+  if (!c || !step) return
+  const m = tx().m.focus
+  const own = step.taskId !== null || step.habitId !== null
+  const task = s.tasks.find((x) => x.id === (own ? step.taskId : c.taskId))
+  const habit = s.habits.find((x) => x.id === (own ? step.habitId : c.habitId))
+  const focus = step.kind === 'focus'
+  const breakName = step.tag === 'prayer' && step.prayer ? tx().f(m.cycle.prayerBreak, { prayer: m.cycle.prayers[step.prayer as keyof typeof m.cycle.prayers] }) : step.tag === 'long' ? m.cycle.longBreak : m.breakLabel
+  useStore.setState({
+    cycle: { ...c, index: i },
+    timer: {
+      mode: step.kind, totalMs: step.minutes * 60_000, endsAt: Date.now() + step.minutes * 60_000, remainingMs: step.minutes * 60_000, startedAt: now(),
+      label: focus ? (own ? task?.title ?? habit?.name : undefined) ?? c.label : breakName,
+      areaId: focus ? c.areaId ?? task?.areaId ?? habit?.areaId ?? null : null,
+      goalId: focus ? c.goalId ?? task?.goalId ?? null : null,
+      taskId: focus ? task?.id ?? null : null,
+      habitId: focus ? habit?.id ?? null : null,
+      cycleId: c.id, pauseId: null,
+    },
+  })
+}
 
 /**
  * What a book's links do once its page or status says so (ADR-047), run after every page and status
@@ -896,7 +1030,7 @@ export function snapshot(s: Store): Data {
     reviews: s.reviews, memories: s.memories, ideas: s.ideas, notes: s.notes, reminders: s.reminders, projects: s.projects,
     projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
     exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets, fajrSpans: s.fajrSpans,
-        books: s.books, bookPlaces: s.bookPlaces, bookmarks: s.bookmarks, readingSessions: s.readingSessions,
+        books: s.books, bookPlaces: s.bookPlaces, bookmarks: s.bookmarks, readingSessions: s.readingSessions, cycle: s.cycle, cycleTemplates: s.cycleTemplates, focusCycles: s.focusCycles, interruptions: s.interruptions,
     settings: s.settings,
   }
 }

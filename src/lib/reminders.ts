@@ -4,7 +4,8 @@ import {
 } from 'date-fns'
 import { tx, type I18n } from '../i18n/core'
 import { fromKey, toKey } from './date'
-import type { ActiveTimer, DateKey, Reminder } from './types'
+import { sessionCount, sessionNumber } from './focusCycle'
+import type { ActiveCycle, ActiveTimer, DateKey, Reminder } from './types'
 
 /**
  * Reminder maths: when a reminder occurs, and when its alerts fire. Pure and tested — the
@@ -112,14 +113,43 @@ export interface ScheduledAlert {
  * if Itqan is minimised or closed. A paused timer has no alert; resuming gives a new key, so the
  * helper drops the old end time and fires the new one.
  */
-export function timerAlert(timer: ActiveTimer | null, t: I18n = tx()): ScheduledAlert | null {
+export function timerAlert(timer: ActiveTimer | null, t: I18n = tx(), cycle: ActiveCycle | null = null): ScheduledAlert | null {
   if (!timer?.endsAt) return null
   const focus = timer.mode === 'focus'
+  const n = Math.round(timer.totalMs / 60000)
   return {
     key: `timer|${timer.startedAt}|${timer.endsAt}`,
     fireAt: timer.endsAt,
     title: `${focus ? '🎯' : '☕'} ${t.m.focus.appName}`,
-    body: focus ? t.f(t.m.focus.focusDoneNotify, { n: Math.round(timer.totalMs / 60000) }) : t.m.focus.breakOverNotify,
+    body: (cycle && timer.cycleId === cycle.id ? cycleEndBody(timer, cycle, t) : null)
+      ?? (focus ? t.f(t.m.focus.focusDoneNotify, { n }) : t.m.focus.breakOverNotify),
+    urgent: false,
+  }
+}
+
+/** What the end of a cycle's step says: which session it was, and what comes next (ADR-049). */
+function cycleEndBody(timer: ActiveTimer, c: ActiveCycle, t: I18n): string {
+  const m = t.m.focus.cycle
+  const total = sessionCount(c.steps)
+  const last = c.index >= c.steps.length - 1
+  if (timer.mode === 'focus') {
+    if (last) return t.f(m.notifyLastDone, { total })
+    return t.f(m.notifyFocusDone, { n: sessionNumber(c.steps, c.index), total, m: Math.round(timer.totalMs / 60000) })
+  }
+  return t.f(m.notifyBreakDone, { n: sessionNumber(c.steps, c.index) + 1, total })
+}
+
+/** How long a cycle waits for an answer before reminding the owner once that it is waiting. */
+export const CYCLE_NUDGE_MS = 5 * 60_000
+
+/** The one reminder that a cycle's step ended and the cycle is still waiting (ADR-049). */
+export function cycleNudgeAlert(timer: ActiveTimer | null, cycle: ActiveCycle | null, t: I18n = tx()): ScheduledAlert | null {
+  if (!timer?.endsAt || !cycle || timer.cycleId !== cycle.id) return null
+  return {
+    key: `timer-nudge|${timer.startedAt}|${timer.endsAt}`,
+    fireAt: timer.endsAt + CYCLE_NUDGE_MS,
+    title: `⏳ ${t.m.focus.appName}`,
+    body: t.m.focus.cycle.notifyNudge,
     urgent: false,
   }
 }

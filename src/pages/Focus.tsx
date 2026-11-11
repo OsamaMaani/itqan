@@ -2,8 +2,9 @@ import { motion } from 'motion/react'
 import { Coffee, Pause, Play, RotateCcw, Square, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { AreaPicker } from '../components/AreaPicker'
+import { CycleChoices, CycleControls, CyclePlanner, CycleStrip, CycleSummary, isWaiting, PauseReasons } from '../components/focus/cycle'
 import { mmss, remainingMs } from '../components/TimerWatcher'
-import { AreaChip, Button, Card, cx, EmptyState, IconButton, Input, Label, PageHeader, Select } from '../components/ui'
+import { AreaChip, Button, Card, cx, EmptyState, IconButton, Input, Label, PageHeader, Segmented, Select } from '../components/ui'
 import { tx } from '../i18n/core'
 import { rich, useI18n } from '../i18n/react'
 import { AREA_HEX } from '../lib/colors'
@@ -33,6 +34,13 @@ export function FocusPage() {
   const [goalId, setGoalId] = useState<string | null>(null)
   const [taskId, setTaskId] = useState<string | null>(null)
   const [habitId, setHabitId] = useState<string | null>(null)
+  // Which way of starting was used last, remembered on this device only (a convenience, not data).
+  const [mode, setModeState] = useState<'single' | 'cycle'>(() => {
+    try { return d.cycle || localStorage.getItem('itqan-focus-mode') === 'cycle' ? 'cycle' : 'single' } catch { return 'single' }
+  })
+  const setMode = (v: 'single' | 'cycle') => { setModeState(v); try { localStorage.setItem('itqan-focus-mode', v) } catch { /* private mode */ } }
+  const [dismissed, setDismissed] = useState<string | null>(null)
+  const cycle = d.cycle
 
   const openTasks = d.tasks.filter((x) => !x.done && x.date !== null && x.date <= today)
   const activeGoals = d.goals.filter((g) => g.status === 'active')
@@ -52,6 +60,16 @@ export function FocusPage() {
   const total = timer ? timer.totalMs : minutes * 60000
   const progress = timer ? 1 - left / total : 0
   const isBreak = timer?.mode === 'break'
+  const waiting = isWaiting(timer, now)
+  const inCycle = !!timer?.cycleId && !!cycle
+  // The summary of a cycle that ended in the last half hour, until it is closed.
+  const lastCycle = d.focusCycles.at(-1)
+  const summary = !timer && lastCycle && lastCycle.id !== dismissed && now - Date.parse(lastCycle.endedAt) < 30 * 60_000 ? lastCycle : null
+  const task0 = openTasks.find((x) => x.id === taskId)
+  const what = {
+    label: label || task0?.title || habit?.name || m.focus.defaultLabel,
+    areaId: areaId ?? task0?.areaId ?? habit?.areaId ?? null, goalId: goalId ?? task0?.goalId ?? null, taskId, habitId: habit?.id ?? null,
+  }
 
   const start = () => {
     const task = openTasks.find((x) => x.id === taskId)
@@ -81,6 +99,8 @@ export function FocusPage() {
       <PageHeader title={m.nav.focus} subtitle={m.focus.subtitle} />
       <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
         <Card className="flex flex-col items-center p-6 sm:p-10">
+          {inCycle && <CycleStrip cycle={cycle!} mode={timer!.mode} />}
+          {summary && <div className="mb-6 flex w-full justify-center"><CycleSummary record={summary} onClose={() => setDismissed(summary.id)} /></div>}
           <div className="relative grid place-items-center">
             <svg viewBox="0 0 300 300" className="h-auto w-[min(300px,72vw)] -rotate-90">
               <defs>
@@ -96,7 +116,7 @@ export function FocusPage() {
               />
             </svg>
             <div className="absolute text-center">
-              <div className="text-xs font-bold uppercase tracking-[0.2em] text-muted">{timer ? (isBreak ? m.focus.state.break : m.focus.state.focus) : m.focus.state.ready}</div>
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-muted">{waiting ? '🔔' : timer ? (isBreak ? m.focus.state.break : m.focus.state.focus) : m.focus.state.ready}</div>
               <div dir="ltr" className="my-1 text-5xl font-extrabold sm:text-6xl tabular tracking-tight">{mmss(left)}</div>
               <div className="mx-auto max-w-48 truncate text-sm text-muted">{timer?.label ?? (label || m.focus.idleLabel)}</div>
             </div>
@@ -104,15 +124,18 @@ export function FocusPage() {
 
           {!timer ? (
             <div className="mt-8 w-full max-w-md space-y-4">
-              <div className="flex flex-wrap justify-center gap-2">
+              <div className="flex justify-center">
+                <Segmented value={mode} onChange={setMode} options={[{ value: 'single' as const, label: m.focus.cycle.mode.single }, { value: 'cycle' as const, label: m.focus.cycle.mode.cycle }]} />
+              </div>
+              {mode === 'single' && <div className="flex flex-wrap justify-center gap-2">
                 {PRESETS.map((p) => (
                   <button key={p} onClick={() => setMinutes(p)} className={cx('h-10 w-14 rounded-xl text-sm font-bold transition', minutes === p ? 'bg-gradient-accent text-accent-fg' : 'bg-surface-2 text-muted hover:text-text')}>
                     {t.f(m.time.minutes, { m: p })}
                   </button>
                 ))}
                 <Input type="number" min={1} max={240} value={minutes} onChange={(e) => setMinutes(Math.max(1, Number(e.target.value) || 1))} className="w-20 text-center" />
-              </div>
-              <Input placeholder={m.focus.labelPlaceholder} value={label} onChange={(e) => setLabel(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && start()} />
+              </div>}
+              <Input placeholder={m.focus.labelPlaceholder} value={label} onChange={(e) => setLabel(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && mode === 'single' && start()} />
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <Label>{m.focus.task}</Label>
@@ -138,12 +161,15 @@ export function FocusPage() {
                 {habit && <p className="mt-1.5 text-xs text-muted">{t.f(countsMinutes(habit) ? m.focus.habitAddsMinutes : m.focus.habitChecksIn, { name: habit.name })}</p>}
               </div>
               <div><Label>{m.common.area}</Label><AreaPicker value={areaId} onChange={setAreaId} /></div>
-              <div className="flex justify-center gap-2 pt-2">
+              {mode === 'cycle' && (
+                <CyclePlanner what={what} tasks={openTasks} habits={habits} />
+              )}
+              {mode === 'single' && <div className="flex justify-center gap-2 pt-2">
                 <Button variant="primary" className="h-12 px-8 text-base" onClick={start}><Play size={18} fill="currentColor" /> {m.focus.start}</Button>
                 <Button variant="soft" className="h-12" onClick={() => startTimer({ mode: 'break', totalMs: d.settings.breakMinutes * 60000, label: m.focus.breakLabel, areaId: null, goalId: null, taskId: null, habitId: null })}>
                   <Coffee size={18} /> {m.focus.takeBreak}
                 </Button>
-              </div>
+              </div>}
               {/* Permission is asked once, in Settings (ADR-031) — here only a pointer while it hasn't been. */}
               {!HAS_HELPER && d.settings.notify.on && d.settings.notify.timer && ('Notification' in window ? Notification.permission === 'default' : pushSupport() === 'home-screen') && (
                 <p className="text-center text-xs text-muted">
@@ -151,8 +177,14 @@ export function FocusPage() {
                 </p>
               )}
             </div>
+          ) : waiting ? (
+            <div className="mt-8 flex w-full justify-center"><CycleChoices /></div>
+          ) : inCycle ? (
+            <CycleControls />
           ) : (
-            <div className="mt-8 flex gap-3">
+            <div className="mt-8 flex flex-col items-center gap-4">
+            {!timer.endsAt && timer.pauseId && <PauseReasons id={timer.pauseId} />}
+            <div className="flex gap-3">
               {timer.endsAt ? (
                 <Button variant="soft" className="h-12 px-6" onClick={pauseTimer}><Pause size={18} /> {m.focus.pause}</Button>
               ) : (
@@ -160,6 +192,7 @@ export function FocusPage() {
               )}
               {!isBreak && <Button variant="soft" className="h-12 px-6" onClick={() => finishTimer(true)} title={m.focus.finishTitle}><Square size={16} /> {m.focus.finish}</Button>}
               <Button variant="ghost" className="h-12" onClick={() => finishTimer(false)} title={m.focus.discard}><RotateCcw size={16} /> {m.focus.discard}</Button>
+            </div>
             </div>
           )}
         </Card>
@@ -191,6 +224,7 @@ export function FocusPage() {
             ) : sessionsToday.map((f) => (
               <div key={f.id} className="group flex items-center gap-3 rounded-xl px-3 py-2 hover:bg-surface-2/60">
                 <span className="w-[4.5rem] shrink-0 text-xs text-muted tabular">{t.d(new Date(f.startedAt), 'time')}</span>
+                {f.cycleId && <span className="rounded-md bg-accent-soft px-1.5 py-0.5 text-[10px] font-bold text-accent">{m.focus.cycle.tag}</span>}
                 <span className="flex-1 truncate text-sm">{f.habitId && habitById.get(f.habitId) ? `${habitById.get(f.habitId)!.emoji} ` : ''}{f.label}</span>
                 <AreaChip area={f.areaId ? areas.get(f.areaId) : undefined} />
                 <span className="text-sm font-bold tabular">{t.dur(f.minutes)}</span>

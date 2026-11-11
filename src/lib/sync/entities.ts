@@ -10,7 +10,7 @@ import type { Data, Settings } from '../types'
  *   settings:shared                   the settings that should follow you across devices
  *   program:main                      the training program, only once it has been saved (ADR-027)
  *
- * Device-local, never synced: the running focus timer, theme, sounds, notification choices,
+ * Device-local, never synced: the running focus timer and cycle (ADR-049), theme, sounds, notification choices,
  * onboarding and backup dates — each device keeps its own.
  */
 
@@ -20,7 +20,7 @@ export const ARRAY_COLLECTIONS = [
   'areas', 'tasks', 'habits', 'goals', 'goalLogs', 'focusSessions', 'memories', 'ideas', 'notes', 'reminders',
   'projects', 'projectUpdates', 'contacts', 'interactions', 'achievements',
   'exercises', 'routines', 'workouts', 'workoutSets', 'pushTargets', 'fajrSpans',
-  'books', 'bookPlaces', 'bookmarks', 'readingSessions',
+  'books', 'bookPlaces', 'bookmarks', 'readingSessions', 'cycleTemplates', 'focusCycles', 'interruptions',
 ] as const
 type ArrayCollection = (typeof ARRAY_COLLECTIONS)[number]
 
@@ -45,7 +45,7 @@ export function toEntities(d: Data): Entities {
 }
 
 function sortKey(item: Record<string, unknown>): string {
-  return String(item.createdAt ?? item.startedAt ?? '')
+  return String(item.createdAt ?? item.startedAt ?? item.at ?? '')
 }
 
 /**

@@ -28,6 +28,7 @@ export function emptyData(): Data {
     focusSessions: [], timer: null, dayNotes: {}, reviews: {}, memories: [], ideas: [], notes: [], reminders: [], projects: [], projectUpdates: [], contacts: [], interactions: [], achievements: [],
     exercises: [], routines: [], program: null, workouts: [], workoutSets: [], pushTargets: [], fajrSpans: [],
     books: [], bookPlaces: [], bookmarks: [], readingSessions: [],
+    cycle: null, cycleTemplates: [], focusCycles: [], interruptions: [],
     settings: { ...DEFAULT_SETTINGS },
   }
 }

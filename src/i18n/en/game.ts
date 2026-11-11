@@ -35,4 +35,6 @@ export const badges = {
   'workouts-50': { title: 'Iron will', desc: 'Finish 50 workouts' },
   'record-1': { title: 'Stronger', desc: 'Set a personal record' },
   'weeks-4': { title: 'Four solid weeks', desc: 'Meet your training plan 4 weeks in a row' },
+  'cycle-1': { title: 'Full circle', desc: 'Finish every session of a focus cycle' },
+  'cycles-10': { title: 'In rhythm', desc: 'Finish 10 focus cycles' },
 }

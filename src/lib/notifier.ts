@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import { checkIn } from './connections'
 import { toKey } from './date'
 import { buildPushRequest, type PushMessage, type PushRequest } from './push'
-import { at, buildSchedule, timerAlert, type ScheduledAlert } from './reminders'
+import { at, buildSchedule, cycleNudgeAlert, timerAlert, type ScheduledAlert } from './reminders'
 import { useStore } from './store'
 import { toast } from './toast'
 import type { NotifySettings, PushKinds, PushTarget, Reminder } from './types'
@@ -74,8 +74,9 @@ let ended: ScheduledAlert[] = []
 
 function timerAlerts(now: number): ScheduledAlert[] {
   ended = ended.filter((a) => a.fireAt > now - ENDED_KEEP_MS)
-  const live = timerAlert(useStore.getState().timer)
-  return live ? [...ended, live] : ended
+  const { timer, cycle } = useStore.getState()
+  const live = [timerAlert(timer, tx(), cycle), cycleNudgeAlert(timer, cycle)].filter((a): a is ScheduledAlert => !!a)
+  return [...ended, ...live]
 }
 
 /** What the helper receives: an alert, whether it shows on this desktop, and pushes for other devices. */
@@ -243,10 +244,13 @@ export function startNotifier(): void {
   schedule()
   useStore.subscribe((s, prev) => {
     if (s.timer !== prev.timer) {
-      const a = timerAlert(prev.timer)
+      const a = timerAlert(prev.timer, tx(), prev.cycle)
       if (a && a.fireAt <= Date.now()) ended.push(a)
-      schedule()
+      const nudge = cycleNudgeAlert(prev.timer, prev.cycle)
+      if (nudge && nudge.fireAt <= Date.now()) ended.push(nudge)
     }
+    // A cycle's steps change what its alerts say (ADR-049).
+    if (s.timer !== prev.timer || s.cycle !== prev.cycle) schedule()
     if (s.reminders !== prev.reminders || s.contacts !== prev.contacts || s.interactions !== prev.interactions) schedule()
     if (s.pushTargets !== prev.pushTargets || s.settings.notify !== prev.settings.notify) schedule()
   })

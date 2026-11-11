@@ -50,7 +50,7 @@ export function useData(): Data {
       reviews: s.reviews, memories: s.memories, ideas: s.ideas, notes: s.notes, reminders: s.reminders, projects: s.projects,
       projectUpdates: s.projectUpdates, achievements: s.achievements, contacts: s.contacts, interactions: s.interactions,
       exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets, fajrSpans: s.fajrSpans,
-        books: s.books, bookPlaces: s.bookPlaces, bookmarks: s.bookmarks, readingSessions: s.readingSessions, settings: s.settings,
+        books: s.books, bookPlaces: s.bookPlaces, bookmarks: s.bookmarks, readingSessions: s.readingSessions, cycle: s.cycle, cycleTemplates: s.cycleTemplates, focusCycles: s.focusCycles, interruptions: s.interruptions, settings: s.settings,
     })),
   )
 }

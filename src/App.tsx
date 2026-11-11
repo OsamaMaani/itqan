@@ -5,6 +5,7 @@ import { GlobalNoteEditor } from './components/NoteEditor'
 import { GlobalBookDialogs } from './components/library/Books'
 import { MobileHeader, MobileNav, Sidebar } from './components/Shell'
 import { TaskEditor } from './components/TaskEditor'
+import { CyclePrompt } from './components/focus/cycle'
 import { TimerWatcher } from './components/TimerWatcher'
 import { Toaster } from './components/Toaster'
 import { WhatsNew } from './components/WhatsNew'
@@ -86,6 +87,7 @@ export default function App() {
       <CommandPalette open={palette} onClose={() => setPalette(false)} />
       <TaskEditor open={newTask} onClose={() => setNewTask(false)} />
       <TimerWatcher />
+      <CyclePrompt />
       <GlobalAchievementEditor />
       <GlobalNoteEditor />
       <GlobalBookDialogs />

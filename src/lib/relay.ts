@@ -44,7 +44,7 @@ export function timerTargets(targets: PushTarget[], self: string | null): PushTa
 
 /** Called when the page finishes a timer that ran out: tells the other devices, through the relay. */
 export async function relayTimerEnd(timer: ActiveTimer, now = Date.now()): Promise<void> {
-  const a = timerAlert(timer)
+  const a = timerAlert(timer, tx(), useStore.getState().cycle)
   if (!HAS_RELAY || !a || now - a.fireAt > LATE_MS) return
   const targets = timerTargets(useStore.getState().pushTargets, thisDeviceId())
   const msg: PushMessage = { title: a.title, body: a.body, tag: 'itqan-timer' }

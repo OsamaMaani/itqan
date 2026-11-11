@@ -38,4 +38,6 @@ export const badges: Messages['badges'] = {
   'workouts-50': { title: 'Volonté de fer', desc: 'Termine 50 séances' },
   'record-1': { title: 'Cap franchi', desc: 'Établis un record personnel' },
   'weeks-4': { title: 'Quatre semaines solides', desc: 'Respecte ton programme 4\u00a0semaines d’affilée' },
+  'cycle-1': { title: 'Boucle bouclée', desc: 'Termine toutes les sessions d’un cycle de concentration' },
+  'cycles-10': { title: 'Dans le rythme', desc: 'Termine 10 cycles de concentration' },
 }

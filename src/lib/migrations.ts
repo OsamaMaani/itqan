@@ -6,7 +6,7 @@ import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 18
+export const SCHEMA_VERSION = 19
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -142,6 +142,18 @@ const steps: Record<number, Step> = {
     bookmarks: d.bookmarks ?? [],
     readingSessions: d.readingSessions ?? [],
   }),
+  // 18 → 19 (2026-11-11): focus cycles (ADR-049). Sessions and a running timer belong to no
+  // cycle; a running timer is in no pause the log knows of. Three new collections start empty and
+  // no cycle runs. Nothing existing changes.
+  18: (d) => ({
+    ...d,
+    focusSessions: ((d.focusSessions as Record<string, unknown>[] | undefined) ?? []).map((f) => ({ cycleId: null, ...f })),
+    timer: d.timer && typeof d.timer === 'object' ? { cycleId: null, pauseId: null, ...(d.timer as object) } : (d.timer ?? null),
+    cycle: d.cycle ?? null,
+    cycleTemplates: d.cycleTemplates ?? [],
+    focusCycles: d.focusCycles ?? [],
+    interruptions: d.interruptions ?? [],
+  }),
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {
@@ -188,6 +200,10 @@ export function normalize(d: Record<string, unknown>): Data {
     bookPlaces: pick('bookPlaces'),
     bookmarks: pick('bookmarks'),
     readingSessions: pick('readingSessions'),
+    cycle: pick('cycle'),
+    cycleTemplates: pick('cycleTemplates'),
+    focusCycles: pick('focusCycles'),
+    interruptions: pick('interruptions'),
     settings: normalizeSettings(d.settings),
   }
 }

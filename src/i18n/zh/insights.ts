@@ -71,6 +71,15 @@ export const insights: Messages['insights'] = {
     emptyTitle: '这段时间还没有专注记录',
     emptyBody: '在专注页完成的每次专注都会显示在这里——时长、节奏和去向。',
     start: '开始专注',
+    interruptions: '干扰',
+    interruptionsNote: '专注和休息中的暂停及其原因',
+    pauses: { other: '暂停 {n} 次' },
+    pausedFor: '暂停 {time}',
+    duringFocus: { other: '专注时 {n} 次' },
+    noReason: '未填原因',
+    noInterruptions: '这段时间没有暂停。',
+    cycles: '专注循环',
+    cyclesSub: '{n} 个中有 {done} 个完整完成',
   },
 
   reading: {

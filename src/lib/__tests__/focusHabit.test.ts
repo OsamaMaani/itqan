@@ -18,7 +18,7 @@ const DAY = '2026-10-20'
 function endedTimer(minutes: number, habitId: string | null): ActiveTimer {
   return {
     mode: 'focus', endsAt: Date.now() - 1, remainingMs: 0, totalMs: minutes * 60000, startedAt: LATE,
-    label: 'Session', areaId: null, goalId: null, taskId: null, habitId,
+    label: 'Session', areaId: null, goalId: null, taskId: null, habitId, cycleId: null, pauseId: null,
   }
 }
 

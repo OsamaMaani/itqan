@@ -227,7 +227,7 @@ export type BadgeId =
   | 'first-step' | 'tasks-50' | 'tasks-250' | 'streak-7' | 'streak-30' | 'streak-100' | 'active-14'
   | 'focus-10h' | 'focus-100h' | 'focus-90' | 'goal-1' | 'goal-5' | 'review-4' | 'early' | 'owl'
   | 'level-5' | 'level-10' | 'days-30' | 'memories-10' | 'ideas-25' | 'idea-done' | 'project-done'
-  | 'proud-10' | 'people-10' | 'people-50' | 'workout-1' | 'workouts-10' | 'workouts-50' | 'record-1' | 'weeks-4'
+  | 'proud-10' | 'people-10' | 'people-50' | 'workout-1' | 'workouts-10' | 'workouts-50' | 'record-1' | 'weeks-4' | 'cycle-1' | 'cycles-10'
 
 export function badges(d: Data, today: DateKey): Badge[] {
   const ev = xpEvents(d)
@@ -252,6 +252,7 @@ export function badges(d: Data, today: DateKey): Badge[] {
   const record = finished.some((w) => (records.get(w.id) ?? 0) > 0)
   const weekRun = bestWeekRun(finished, plannedPerWeek(d.program, d.routines ?? []), d.settings.weekStartsOn, today)
 
+  const cyclesDone = (d.focusCycles ?? []).filter((c) => c.completed).length
   const a = (id: BadgeId, emoji: string, unlocked: boolean): Badge => ({ id, emoji, unlocked })
 
   return [
@@ -285,5 +286,7 @@ export function badges(d: Data, today: DateKey): Badge[] {
     a('workouts-50', '🦾', finished.length >= 50),
     a('record-1', '📈', record),
     a('weeks-4', '🗓️', weekRun >= 4),
+    a('cycle-1', '🔄', cyclesDone >= 1),
+    a('cycles-10', '🎼', cyclesDone >= 10),
   ]
 }

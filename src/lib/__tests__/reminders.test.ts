@@ -74,7 +74,7 @@ describe('desktop schedule', () => {
 describe('timer alert', () => {
   const timer = (p: Partial<ActiveTimer>): ActiveTimer => ({
     mode: 'focus', endsAt: 1_000_000, remainingMs: 1_500_000, totalMs: 1_500_000, startedAt: '2026-10-21T03:30:00',
-    label: 'Read', areaId: null, goalId: null, taskId: null, habitId: 'h', ...p,
+    label: 'Read', areaId: null, goalId: null, taskId: null, habitId: 'h', cycleId: null, pauseId: null, ...p,
   })
   it('a running timer alerts when it ends', () => {
     const a = timerAlert(timer({}))

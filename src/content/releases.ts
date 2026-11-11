@@ -26,6 +26,43 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: 11,
+    date: '2026-11-11',
+    tasks: ['S2-54'],
+    items: [
+      {
+        emoji: '🔄',
+        text: {
+          en: 'New on Focus: cycles. Plan several sessions with breaks between them — 4 × 25 / 5, or your own — and change any step’s length or what it’s for. When a session or break ends you’re notified and asked: go on, add 5, 10 or 15 minutes, skip the break, or end. Paused in a break? Continue it or start the next session.',
+          ar: 'جديد في التركيز: الدورات. خطّط لعدة جلسات بينها استراحات — 4 × 25 / 5 أو كما تريد — وغيّر مدة أي خطوة أو ما هي له. عند انتهاء جلسة أو استراحة يصلك إشعار ويُسأل: المتابعة، أو إضافة 5 أو 10 أو 15 دقيقة، أو تخطي الاستراحة، أو الإنهاء. وإذا أوقفت الاستراحة مؤقتًا فاختر بين إكمالها وبدء الجلسة التالية.',
+          fr: 'Nouveau dans Concentration : les cycles. Planifie plusieurs sessions avec des pauses entre elles — 4 × 25 / 5, ou à ta façon — et change la durée ou l’objet de chaque étape. À la fin d’une session ou d’une pause, tu reçois une notification et Itqan te demande : continuer, ajouter 5, 10 ou 15 min, passer la pause ou arrêter. En pause pendant une pause ? Reprends-la ou lance la session suivante.',
+          zh: '专注新功能：循环。安排几段专注，中间穿插休息——4 × 25 / 5，或按你的方式——还可以修改每一步的时长或内容。每段专注或休息结束时都会通知你并询问：继续、加 5、10 或 15 分钟、跳过休息，或结束。休息时暂停了？可以继续休息，或直接开始下一段专注。',
+          es: 'Nuevo en Concentración: ciclos. Planifica varias sesiones con descansos entre ellas —4 × 25 / 5, o a tu manera— y cambia la duración o el objetivo de cada paso. Cuando termina una sesión o un descanso, recibes un aviso y Itqan te pregunta: seguir, añadir 5, 10 o 15 minutos, saltar el descanso o terminar. ¿Pausaste un descanso? Continúalo o empieza la siguiente sesión.',
+        },
+      },
+      {
+        emoji: '🕌',
+        text: {
+          en: 'Cycles know the prayer times: if a session would run into Asr, one tap stops it at the prayer and adds a prayer break. Save your favourite plans as templates; they follow you to the iPhone.',
+          ar: 'الدورات تعرف أوقات الصلاة: إن كانت جلسة ستمتد إلى العصر مثلًا، فبنقرة واحدة تتوقف عند الصلاة وتُضاف استراحة للصلاة. واحفظ خططك المفضلة قوالبَ تنتقل معك إلى الآيفون.',
+          fr: 'Les cycles connaissent les heures de prière : si une session déborde sur Asr, un seul geste l’arrête à la prière et ajoute une pause pour prier. Enregistre tes plans préférés comme modèles ; ils te suivent sur l’iPhone.',
+          zh: '循环会考虑礼拜时间：如果某段专注会跨过晡礼，点一下就能在礼拜时停下并加入一段礼拜休息。把常用的安排保存为模板，iPhone 上也能用。',
+          es: 'Los ciclos conocen los horarios de oración: si una sesión llega al Asr, con un toque se detiene en la oración y se añade un descanso para rezar. Guarda tus planes favoritos como plantillas; te acompañan al iPhone.',
+        },
+      },
+      {
+        emoji: '📞',
+        text: {
+          en: 'When you pause, tap what interrupted you — a call, someone, a distraction, prayer. Insights now shows your interruptions and focus cycles, and a finished cycle shows its summary. Two new badges.',
+          ar: 'عند الإيقاف المؤقت، انقر على ما قاطعك — مكالمة، شخص، تشتت، صلاة. وصارت الإحصاءات تعرض المقاطعات ودورات التركيز، وتظهر خلاصة كل دورة عند انتهائها. وشارتان جديدتان.',
+          fr: 'Quand tu fais une pause, touche ce qui t’a interrompu — un appel, quelqu’un, une distraction, la prière. Les statistiques montrent maintenant tes interruptions et tes cycles, et un cycle terminé affiche son bilan. Deux nouveaux badges.',
+          zh: '暂停时，点一下是什么打断了你——电话、有人找、分心、礼拜。统计页现在会显示打断情况和专注循环，循环结束时还会显示总结。另有两枚新徽章。',
+          es: 'Al pausar, toca qué te interrumpió: una llamada, alguien, una distracción, la oración. Estadísticas ahora muestra tus interrupciones y ciclos de enfoque, y un ciclo terminado muestra su resumen. Dos insignias nuevas.',
+        },
+      },
+    ],
+  },
+  {
     id: 10,
     date: '2026-11-11',
     tasks: ['S3-06'],

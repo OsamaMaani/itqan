@@ -177,6 +177,8 @@ export interface FocusSession {
   habitId: ID | null
   /** What finishing it added to that habit's log on the session's day — taken back exactly on delete. */
   habitAmount: number
+  /** The focus cycle it was part of (ADR-049); null for a single session. Schema v19. */
+  cycleId: ID | null
 }
 
 export interface ActiveTimer {
@@ -192,6 +194,93 @@ export interface ActiveTimer {
   goalId: ID | null
   taskId: ID | null
   habitId: ID | null
+  /** The step of the running cycle this timer is (ADR-049); null for a single timer. Schema v19. */
+  cycleId: ID | null
+  /** The interruption logged for the pause it is in, while paused (ADR-049). Schema v19. */
+  pauseId: ID | null
+}
+
+/** One step of a focus cycle (ADR-049): a session or a break. */
+export interface CycleStep {
+  kind: 'focus' | 'break'
+  minutes: number
+  /** A break that is the long one, or made for a prayer — shown by that name. */
+  tag: 'long' | 'prayer' | null
+  /** The prayer a prayer break is for. */
+  prayer: Prayer | null
+  /** A focus step's own task or habit; null = what the whole cycle is for. */
+  taskId: ID | null
+  habitId: ID | null
+}
+
+/** The simple shape a cycle is planned from, and what a template keeps. 0 = no long break. */
+export interface CyclePlan {
+  sessions: number
+  focusMinutes: number
+  breakMinutes: number
+  longBreakMinutes: number
+  longBreakEvery: number
+}
+
+/** A saved cycle plan (ADR-049). Synced. Schema v19. */
+export interface CycleTemplate extends CyclePlan {
+  id: ID
+  name: string
+  createdAt: string
+}
+
+/**
+ * The cycle running on this device (ADR-049). Device-local, like the timer: the timer is its
+ * current step, and the cycle says which step that is and what comes next. Schema v19.
+ */
+export interface ActiveCycle {
+  id: ID
+  startedAt: string
+  steps: CycleStep[]
+  /** The step the timer is, or was when it ended and the cycle waits for the owner. */
+  index: number
+  /** What every focus step is for, unless the step names its own task or habit. */
+  label: string
+  areaId: ID | null
+  goalId: ID | null
+  taskId: ID | null
+  habitId: ID | null
+  /** Minutes added to focus steps with "+N min". */
+  extendedMinutes: number
+  pauses: number
+}
+
+/** A cycle that ended (ADR-049): its summary, kept for Insights and the badges. Synced. Schema v19. */
+export interface FocusCycle {
+  id: ID
+  startedAt: string
+  endedAt: string
+  label: string
+  plannedSessions: number
+  /** Focus steps that were saved (a minute or more). */
+  sessions: number
+  focusMinutes: number
+  extendedMinutes: number
+  pauses: number
+  /** Every planned session was done. */
+  completed: boolean
+}
+
+export const INTERRUPTION_REASONS = ['call', 'person', 'distraction', 'prayer', 'other'] as const
+export type InterruptionReason = (typeof INTERRUPTION_REASONS)[number]
+
+/** A pause of a focus session or break, and why (ADR-049). Synced. Schema v19. */
+export interface Interruption {
+  id: ID
+  /** When the pause started. */
+  at: string
+  /** How long it lasted; 0 until resumed. */
+  seconds: number
+  /** null until the owner says why — it is never asked twice. */
+  reason: InterruptionReason | null
+  during: 'focus' | 'break'
+  label: string
+  cycleId: ID | null
 }
 
 export interface DayNote {
@@ -799,5 +888,10 @@ export interface Data {
   bookPlaces: BookPlace[]
   bookmarks: Bookmark[]
   readingSessions: ReadingSession[]
+  /** Focus cycles (ADR-049). Schema v19. `cycle` is device-local; the rest sync. */
+  cycle: ActiveCycle | null
+  cycleTemplates: CycleTemplate[]
+  focusCycles: FocusCycle[]
+  interruptions: Interruption[]
   settings: Settings
 }

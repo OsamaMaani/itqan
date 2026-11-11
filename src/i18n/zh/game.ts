@@ -36,4 +36,6 @@ export const badges: Messages['badges'] = {
   'workouts-50': { title: '钢铁意志', desc: '完成 50 次训练' },
   'record-1': { title: '更强了', desc: '创造一项个人纪录' },
   'weeks-4': { title: '扎实四周', desc: '连续 4 周完成训练计划' },
+  'cycle-1': { title: '圆满一圈', desc: '完成一个专注循环的每一节' },
+  'cycles-10': { title: '渐入节奏', desc: '完成 10 个专注循环' },
 }

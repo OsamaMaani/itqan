@@ -97,7 +97,8 @@ Notes — Keep-style notes and checklists linked to areas, projects and goals, p
 history never moves (ADR-041; schema v16 — read days with `dayOf()`, never `toKey(new Date(…))`), and timed habits —
 between prayers or clock times, across days, with countdowns on Today (ADR-043; schema v17), and the
 Library — PDFs read in Itqan on the same page on every device (the files stay per device in IndexedDB),
-and books read elsewhere (ADR-046; schema v18).
+and books read elsewhere (ADR-046; schema v18), and focus cycles — planned sessions and breaks that wait
+for an answer, extend, fit around prayers, log interruptions (ADR-049; schema v19).
 `memory/status.json` and `dashboard/index.html` are the live answer — this
 paragraph is a snapshot and will lag them.
 

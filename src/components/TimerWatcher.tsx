@@ -3,6 +3,7 @@ import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
 import { useTick } from '../lib/hooks'
 import { helperAnnouncesTimer, showSystemNotification, wants } from '../lib/notifier'
+import { cycleNudgeAlert, timerAlert, type ScheduledAlert } from '../lib/reminders'
 import { relayTimerEnd } from '../lib/relay'
 import { useStore } from '../lib/store'
 import { toast } from '../lib/toast'
@@ -15,6 +16,9 @@ export function mmss(ms: number): string {
 export function remainingMs(t: { endsAt: number | null; remainingMs: number; totalMs: number }, now: number): number {
   return t.endsAt ? Math.min(t.totalMs, Math.max(0, t.endsAt - now)) : t.remainingMs
 }
+
+/** Cycle alerts this page has announced, so a re-render or StrictMode never repeats one. */
+const announced = new Set<string>()
 
 /**
  * Mounted once at the app root, so a running timer finishes (and is saved) whichever
@@ -29,7 +33,25 @@ export function TimerWatcher() {
   useEffect(() => {
     if (!timer) { document.title = m.focus.appName; return }
     const left = remainingMs(timer, now)
-    document.title = t.f(m.focus.tabTitle, { icon: timer.endsAt ? '▶' : '⏸', time: mmss(left), mode: timer.mode === 'focus' ? m.focus.state.focus : m.focus.state.break, app: m.focus.appName })
+    const waiting = !!timer.cycleId && !!timer.endsAt && left <= 0
+    document.title = t.f(m.focus.tabTitle, { icon: waiting ? '🔔' : timer.endsAt ? '▶' : '⏸', time: mmss(waiting ? now - timer.endsAt! : left), mode: timer.mode === 'focus' ? m.focus.state.focus : m.focus.state.break, app: m.focus.appName })
+    // A cycle's step that ran out waits for the owner's answer (ADR-049): announced once, and
+    // once more if no answer comes; the cycle prompt asks what next.
+    if (timer.endsAt && left <= 0 && timer.cycleId) {
+      const { cycle } = useStore.getState()
+      const announce = (a: ScheduledAlert | null, sound: boolean) => {
+        if (!a || announced.has(a.key) || now < a.fireAt) return
+        announced.add(a.key)
+        // Long past (the app was closed): the helper or the push said it already, or it is stale.
+        if (now - a.fireAt > 60_000) return
+        if (sound) celebrate.timerDone()
+        if (!helperAnnouncesTimer() && wants('timer')) void showSystemNotification(a.title, a.body, { tag: 'itqan-timer' })
+        if (!helperAnnouncesTimer() && sound) void relayTimerEnd(timer)
+      }
+      announce(timerAlert(timer, t, cycle), true)
+      announce(cycleNudgeAlert(timer, cycle, t), false)
+      return
+    }
     if (timer.endsAt && left <= 0) {
       const { finishTimer, startTimer, settings, timer: live } = useStore.getState()
       // Already finished by an earlier run of this effect (StrictMode runs effects twice).

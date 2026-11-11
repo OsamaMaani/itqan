@@ -223,18 +223,19 @@ describe('v9 → v10 (focus sessions for a habit)', () => {
     const session = { id: 'f1', startedAt: '2026-10-20T08:00:00.000Z', minutes: 25, label: 'Read', areaId: 'a', goalId: 'g', taskId: null }
     const timer = { mode: 'focus', endsAt: null, remainingMs: 1000, totalMs: 1500000, startedAt: 'x', label: 'L', areaId: null, goalId: null, taskId: 't' }
     const d = migrate({ focusSessions: [session], timer, habitLogs: { h: { '2026-10-20': 3 } } }, 9)
-    expect(d.focusSessions).toEqual([{ ...session, habitId: null, habitAmount: 0 }])
-    expect(d.timer).toEqual({ ...timer, habitId: null })
+    // v19 (ADR-049) adds cycleId on the way up.
+    expect(d.focusSessions).toEqual([{ ...session, habitId: null, habitAmount: 0, cycleId: null }])
+    expect(d.timer).toEqual({ ...timer, habitId: null, cycleId: null, pauseId: null })
     expect(d.habitLogs).toEqual({ h: { '2026-10-20': 3 } })
   })
   it('no timer stays no timer, and fields already there are kept', () => {
     const d = migrate({ timer: null, focusSessions: [{ id: 'f', habitId: 'h', habitAmount: 2 }] }, 9)
     expect(d.timer).toBeNull()
-    expect(d.focusSessions).toEqual([{ id: 'f', habitId: 'h', habitAmount: 2 }])
+    expect(d.focusSessions).toEqual([{ id: 'f', habitId: 'h', habitAmount: 2, cycleId: null }])
   })
   it('a v9 backup restores with its sessions', () => {
     const b = { app: 'itqan', schemaVersion: 9, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [], focusSessions: [{ id: 'f', minutes: 10 }] } }
-    expect(parseBackup(JSON.stringify(b)).focusSessions).toEqual([{ id: 'f', minutes: 10, habitId: null, habitAmount: 0 }])
+    expect(parseBackup(JSON.stringify(b)).focusSessions).toEqual([{ id: 'f', minutes: 10, habitId: null, habitAmount: 0, cycleId: null }])
   })
 })
 
@@ -248,7 +249,7 @@ describe('v10 → v11 (notifications, ADR-031)', () => {
     expect(d.settings.daily.verse).toBe(false)
     expect(d.pushTargets).toEqual([])
     expect(d.tasks).toEqual([{ id: 't' }])
-    expect(d.focusSessions).toEqual([{ id: 'f', minutes: 25 }])
+    expect(d.focusSessions).toEqual([{ id: 'f', minutes: 25, cycleId: null }])
   })
   it('choices and registrations already there are kept, and a missing choice gets its default', () => {
     const target = { id: 'p', label: 'iPhone', endpoint: 'https://web.push.apple.com/x' }
@@ -463,6 +464,48 @@ describe('v17 → v18 (the Library, ADR-046)', () => {
       bookPlaces: [{ id: 'b', page: 120, at: '2026-11-11T10:00:00.000Z' }],
       bookmarks: [{ id: 'm', bookId: 'b', page: 77, note: 'Chapter on patience', createdAt: '2026-11-05T10:00:00.000Z' }],
       readingSessions: [{ id: 'r', bookId: 'b', date: '2026-11-11', startedAt: '2026-11-11T09:30:00.000Z', minutes: 25, fromPage: 110, toPage: 120, pages: 10, habitId: 'h', habitAmount: 10 }],
+    }
+    expect(parseBackup(JSON.stringify(toBackup(data)))).toEqual(data)
+  })
+})
+
+describe('v18 → v19 (focus cycles, ADR-049)', () => {
+  it('sessions and a running timer belong to no cycle; new collections start empty; nothing else changes', () => {
+    const old = {
+      focusSessions: [{ id: 'f', startedAt: '2026-11-10T08:00:00.000Z', minutes: 25, label: 'French', areaId: null, goalId: null, taskId: null, habitId: 'h', habitAmount: 25 }],
+      timer: { mode: 'focus', endsAt: 1, remainingMs: 0, totalMs: 1500000, startedAt: '2026-11-11T08:00:00.000Z', label: 'Read', areaId: null, goalId: null, taskId: null, habitId: null },
+      habitLogs: { h: { '2026-11-10': 25 } }, books: [{ id: 'b', title: 'Deep Work' }], settings: { name: 'N', focusMinutes: 50 },
+    }
+    const d = migrate(structuredClone(old), 18)
+    expect(d.focusSessions).toEqual([{ ...old.focusSessions[0], cycleId: null }])
+    expect(d.timer).toEqual({ ...old.timer, cycleId: null, pauseId: null })
+    expect(d.cycle).toBeNull()
+    expect(d.cycleTemplates).toEqual([])
+    expect(d.focusCycles).toEqual([])
+    expect(d.interruptions).toEqual([])
+    expect(d.habitLogs).toEqual(old.habitLogs)
+    expect(d.books).toEqual(old.books)
+    expect(d.settings.focusMinutes).toBe(50)
+  })
+  it('no timer stays no timer; existing cycle data is never overwritten; a v1 backup comes all the way up', () => {
+    expect(migrate({ timer: null }, 18).timer).toBeNull()
+    const cycleTemplates = [{ id: 'c', name: 'Study', sessions: 3, focusMinutes: 50, breakMinutes: 10, longBreakMinutes: 0, longBreakEvery: 0, createdAt: '' }]
+    const f = { id: 'f', cycleId: 'x' }
+    const d = migrate({ cycleTemplates, focusSessions: [f] }, 18)
+    expect(d.cycleTemplates).toEqual(cycleTemplates)
+    expect(d.focusSessions).toEqual([f])
+    expect(migrate({ tasks: [] }, 1).interruptions).toEqual([])
+    const b = { app: 'itqan', schemaVersion: 18, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [], focusSessions: [{ id: 'f', minutes: 5 }] } }
+    const back = parseBackup(JSON.stringify(b))
+    expect(back.focusSessions).toEqual([{ id: 'f', minutes: 5, cycleId: null }])
+    expect(back.focusCycles).toEqual([])
+  })
+  it('a backup with cycles round-trips exactly (current shape)', () => {
+    const data = {
+      ...emptyData(),
+      cycleTemplates: [{ id: 'c', name: 'Classic', sessions: 4, focusMinutes: 25, breakMinutes: 5, longBreakMinutes: 15, longBreakEvery: 4, createdAt: '2026-11-11T08:00:00.000Z' }],
+      focusCycles: [{ id: 'y', startedAt: '2026-11-11T08:00:00.000Z', endedAt: '2026-11-11T10:00:00.000Z', label: 'Study', plannedSessions: 4, sessions: 4, focusMinutes: 105, extendedMinutes: 5, pauses: 1, completed: true }],
+      interruptions: [{ id: 'i', at: '2026-11-11T08:40:00.000Z', seconds: 180, reason: 'call' as const, during: 'focus' as const, label: 'Study', cycleId: 'y' }],
     }
     expect(parseBackup(JSON.stringify(toBackup(data)))).toEqual(data)
   })

@@ -55,7 +55,7 @@ function TimerBadge() {
   if (!timer) return null
   return (
     <span className={cx('ms-auto rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular', timer.mode === 'break' ? 'bg-sky-500/15 text-sky-500' : 'bg-accent-soft text-accent')}>
-      {mmss(remainingMs(timer, now))}
+      {timer.cycleId && timer.endsAt && timer.endsAt <= now ? '🔔' : mmss(remainingMs(timer, now))}
     </span>
   )
 }
