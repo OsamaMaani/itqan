@@ -20,6 +20,7 @@ export const ARRAY_COLLECTIONS = [
   'areas', 'tasks', 'habits', 'goals', 'goalLogs', 'focusSessions', 'memories', 'ideas', 'notes', 'reminders',
   'projects', 'projectUpdates', 'contacts', 'interactions', 'achievements',
   'exercises', 'routines', 'workouts', 'workoutSets', 'pushTargets', 'fajrSpans',
+  'books', 'bookPlaces', 'bookmarks', 'readingSessions',
 ] as const
 type ArrayCollection = (typeof ARRAY_COLLECTIONS)[number]
 

@@ -596,6 +596,108 @@ export interface FajrSpan {
   createdAt: string
 }
 
+// --- Library (ADR-046, schema v18) ---------------------------------------------------------
+
+export const BOOK_STATUSES = ['want', 'reading', 'finished'] as const
+export type BookStatus = (typeof BOOK_STATUSES)[number]
+
+/**
+ * The PDF a book is read from. Only this description syncs; the file itself stays in each
+ * device's own storage (IndexedDB, `lib/pdfStore.ts`) and is matched by its SHA-256, so the same
+ * PDF picked on the laptop and on the iPhone is recognised as the same book whatever its name.
+ */
+export interface BookFile {
+  /** SHA-256 of the file's bytes, hex */
+  hash: string
+  /** The file's name when it was added */
+  name: string
+  size: number
+}
+
+/** What reading a book counts toward (ADR-046): a habit, by pages read or by minutes. */
+export interface BookHabitLink {
+  habitId: ID
+  counts: 'pages' | 'minutes'
+}
+
+/** A task reading this book is for; done when the book reaches `untilPage` (null = done by hand). */
+export interface BookTaskLink {
+  taskId: ID
+  untilPage: number | null
+}
+
+/** How a book moves a goal: ticks a milestone once finished, adds its pages, or adds an amount once finished. */
+export type BookGoalLink =
+  | { goalId: ID; kind: 'milestone'; milestoneId: ID }
+  | { goalId: ID; kind: 'pages' }
+  | { goalId: ID; kind: 'finished'; amount: number }
+
+/** A book in the Library: a PDF read in Itqan, or a paper (or any other) book whose page is updated by hand. */
+export interface Book {
+  id: ID
+  title: string
+  author: string
+  /** null = a book read outside Itqan */
+  file: BookFile | null
+  /** Total pages; for a PDF, read from the file. null = unknown */
+  pages: number | null
+  status: BookStatus
+  /** Local day it was started and finished */
+  startedOn: DateKey | null
+  finishedOn: DateKey | null
+  areaId: ID | null
+  /** Cover tint for a book with no PDF page to show */
+  color: AreaColor | null
+  notes: string
+  habit: BookHabitLink | null
+  task: BookTaskLink | null
+  goal: BookGoalLink | null
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * Where a book is open — its own collection, one per book (`id` = the book's id), so reading on the
+ * iPhone and renaming the book on the laptop never overwrite each other in sync: the newest place wins.
+ */
+export interface BookPlace {
+  id: ID
+  /** 1-based */
+  page: number
+  /** ISO instant the page was reached */
+  at: string
+}
+
+/** A marked page. Its own collection so bookmarks made on two devices both survive sync. */
+export interface Bookmark {
+  id: ID
+  bookId: ID
+  page: number
+  note: string
+  createdAt: string
+}
+
+/**
+ * One sitting with a book: in the reader, or a page update for a book read elsewhere. Kept when
+ * the book is deleted — it is reading history. `habitId` + `habitAmount` = the habit it was counted
+ * toward and what it added to that habit's log on `date`, so deleting it can take that back.
+ */
+export interface ReadingSession {
+  id: ID
+  bookId: ID
+  /** The local day it started (`dayOf`) */
+  date: DateKey
+  startedAt: string
+  /** Active reading minutes (idle time is not counted) */
+  minutes: number
+  fromPage: number
+  toPage: number
+  /** Pages read in it: distinct pages stayed on in the reader, or pages moved forward when updated by hand */
+  pages: number
+  habitId: ID | null
+  habitAmount: number
+}
+
 /** Per-device notification choices (ADR-031). The browser's own permission is asked once, from Settings. */
 export interface NotifySettings {
   /** Master switch: nothing is announced on this device when off. */
@@ -692,5 +794,10 @@ export interface Data {
   pushTargets: PushTarget[]
   /** When a day started at Fajr instead of midnight (ADR-041). Schema v16. */
   fajrSpans: FajrSpan[]
+  /** The Library (ADR-046). Schema v18. */
+  books: Book[]
+  bookPlaces: BookPlace[]
+  bookmarks: Bookmark[]
+  readingSessions: ReadingSession[]
   settings: Settings
 }

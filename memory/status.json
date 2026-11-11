@@ -1,9 +1,10 @@
 {
   "project": "Itqan",
   "subtitle": "إتقان — daily tasks, habits and long-term goals in one calm place",
-  "updated": "2026-10-31",
+  "updated": "2026-11-11",
   "current_stage": 4,
   "next_actions": [
+    "New: Library — add PDFs and read them in Itqan; they open on the same page on your laptop and iPhone. Bookmarks, night mode and reading time; paper books tracked by page.",
     "New: setting a habit's time is simpler — one-tap quick picks (Friday: Thursday Maghrib to Friday Maghrib), From/Until with the days named, a 'Counts on' choice of the normal day with the Islamic day marked, and a picture of the window over day and night.",
     "Fixed: the 'Your data lives only in this browser' reminder no longer shows while sync is working — a sync counts as a backup.",
     "New: a habit can be tied to prayers or clock times — e.g. Friday between Asr and Maghrib, or Thursday's Asr to Friday's Maghrib, counted on the day you choose — with a countdown on Today. Settings → Day and prayers shows today's prayer times and how timed habits appear.",
@@ -529,9 +530,10 @@
         },
         {
           "id": "S3-02",
-          "title": "Reading list: books, pages, shelves",
+          "title": "Library: PDFs read in Itqan on the same page on every device (files stay per device), books read elsewhere, bookmarks, night mode, reading time (ADR-046, schema v18)",
           "module": "learning",
-          "status": "todo"
+          "status": "done",
+          "critical": true
         },
         {
           "id": "S3-03",
@@ -542,6 +544,12 @@
         {
           "id": "S3-04",
           "title": "French: vocabulary review and oral-practice log",
+          "module": "learning",
+          "status": "todo"
+        },
+        {
+          "id": "S3-05",
+          "title": "Library links: a book counts toward a habit (pages or minutes), a task (done at page N) or a goal (milestone, pages, amount when finished); reading in Insights",
           "module": "learning",
           "status": "todo"
         }
@@ -687,7 +695,7 @@
     {
       "slug": "learning",
       "name": "Learning companions",
-      "status": "not-started"
+      "status": "in-progress"
     },
     {
       "slug": "sync",
@@ -745,6 +753,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-11-11",
+      "entry": "S3-02 (ADR-046), from the owner: a PDF opened on the laptop should reopen on the same page on the iPhone. Free options weighed (Google Play Books: online-only on Linux; Zotero: 300 MB free) and the owner chose to build a Library in Itqan. Schema v18: books, bookPlaces (one per book, newest wins in sync), bookmarks and readingSessions — each its own synced collection, tested with a laptop-rename vs phone-read merge and bookmarks from two devices. PDFs stay in each device's IndexedDB keyed by SHA-256; picking the same file on the other device recognises it and opens on the synced page. pdf.js 6.5 loaded on first use, its worker inlined as a classic blob worker and JBIG2/JPEG 2000 wasm bundled, so it works from file:// (checked in headless Chrome against app/index.html) and on the hosted app (wasm precached). Reader: one scroll, pages drawn near the screen only, night mode, zoom, bookmarks with notes, go-to-page and a page slider; a page counts as read after 10 s on screen, minutes only while active. Books read elsewhere: 'I'm on page N' + minutes. Links to habits/tasks/goals and Insights next (S3-05). Checked in the browser at 1280 and 375 px."
+    },
     {
       "date": "2026-10-31",
       "entry": "S2-53 (ADR-045), from the owner trying to set up Surah al-Kahf (Thursday Maghrib to Friday Maghrib): the timed-habit editor was hard to follow — the day chips meant the day the window opens, then a separate 'which day does it count for?' question. Now the chips are the days it counts for (as stored, no conversion), and From/Until each pick a day relative to it (That day / The day before / The next day, named 'Thursday'/'Friday' when one day is picked) plus a prayer or clock time; the count day follows. The owner then added: the Islamic day starts at Maghrib, but a tick must land on one normal day of their choosing — so a window across two days shows 'Counts on: Thursday | Friday' under the picture (recount() keeps the window and moves the weekdays), the Islamic-day option tagged (opensInEvening()). Quick picks: Friday (Thu Maghrib → Fri Maghrib, sets Fri), Morning (Fajr → Sunrise), Evening (Asr → Maghrib), Night (Isha → Fajr next day). WindowPicture draws the window over the real day and night where the owner is (typical times without a location), dims outside it, marks opens/closes and the day it counts for, and redraws on every change. No data change. windowDays()/withDays() and the named list label ('Thu Maghrib – Fri Maghrib') tested. Checked in the browser at 1280 px and 375 px, English and Arabic (RTL)."

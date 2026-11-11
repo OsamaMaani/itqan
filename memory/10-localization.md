@@ -216,4 +216,15 @@ glossary term flags it.
 | Pin / Pinned | تثبيت / مثبّتة | épingler / épinglée | 置顶 / 已置顶 | fijar / fijada |
 | Archive (notes) | الأرشيف | archives | 归档 | archivo |
 
+**Library (ADR-046)** — added 2026-11-11:
+
+| English | العربية | Français | 简体中文 | Español |
+|---|---|---|---|---|
+| Library (screen) | المكتبة | Bibliothèque | 书库 | Biblioteca |
+| Book | كتاب | livre | 书 | libro |
+| Want to read / Reading / Finished | أريد قراءته / قيد القراءة / مقروء | À lire / En cours / Lu | 想读 / 在读 / 读完 | Por leer / Leyendo / Leído |
+| Bookmark | علامة | marque-page | 书签 | marcador |
+| Reading time | وقت القراءة | temps de lecture | 阅读时间 | tiempo de lectura |
+| Night mode | الوضع الليلي | mode nuit | 夜间模式 | modo noche |
+
 French *série* already means streak; in Training it means a set, and context keeps them apart.

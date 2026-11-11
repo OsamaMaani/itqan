@@ -26,6 +26,23 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: 8,
+    date: '2026-11-11',
+    tasks: ['S3-02'],
+    items: [
+      {
+        emoji: '📚',
+        text: {
+          en: 'New: Library. Add a PDF and read it right here — it opens on the page where you stopped, on your laptop and your iPhone. Bookmark pages, switch to night mode, and see your reading time. Books you read on paper fit too: keep your page by hand. On the other device, choose the same PDF once; the files stay on each device, only your page syncs.',
+          ar: 'جديد: المكتبة. أضف ملف PDF واقرأه هنا مباشرة، فيُفتح على الصفحة التي توقفت عندها، على حاسوبك وهاتفك. ضع علامات على الصفحات، وانتقل إلى الوضع الليلي، واطّلع على وقت قراءتك. وللكتب الورقية مكان أيضًا: احفظ صفحتك بنفسك. على الجهاز الآخر، اختر ملف PDF نفسه مرة واحدة؛ تبقى الملفات على كل جهاز، ولا يُزامَن إلا موضعك.',
+          fr: 'Nouveau : la Bibliothèque. Ajoute un PDF et lis-le ici même : il s’ouvre à la page où tu t’es arrêté, sur ton ordinateur comme sur ton iPhone. Marque des pages, passe en mode nuit et vois ton temps de lecture. Les livres papier ont aussi leur place : note ta page toi-même. Sur l’autre appareil, choisis une fois le même PDF ; les fichiers restent sur chaque appareil, seule ta page est synchronisée.',
+          zh: '新功能：书库。添加 PDF 就能直接在这里阅读，无论在电脑还是 iPhone 上，都会从你停下的那一页打开。可以加书签、切换夜间模式、查看阅读时间。纸质书也能放进来：自己记下页码。在另一台设备上选一次同一个 PDF 即可；文件留在各自的设备上，同步的只有你读到的位置。',
+          es: 'Nuevo: Biblioteca. Añade un PDF y léelo aquí mismo: se abre en la página donde lo dejaste, en tu portátil y en tu iPhone. Marca páginas, cambia al modo noche y consulta tu tiempo de lectura. Los libros en papel también caben: apunta tu página a mano. En el otro dispositivo, elige una vez el mismo PDF; los archivos se quedan en cada dispositivo y solo se sincroniza tu página.',
+        },
+      },
+    ],
+  },
+  {
     id: 7,
     date: '2026-10-31',
     tasks: ['S2-53'],

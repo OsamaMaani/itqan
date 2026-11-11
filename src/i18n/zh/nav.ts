@@ -10,6 +10,7 @@ export const nav: Messages['nav'] = {
   training: '训练',
   ideas: '想法',
   notes: '笔记',
+  library: '书库',
   reminders: '提醒',
   connections: '联系人',
   memories: '回忆',

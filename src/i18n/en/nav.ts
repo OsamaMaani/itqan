@@ -8,6 +8,7 @@ export const nav = {
   training: 'Training',
   ideas: 'Ideas',
   notes: 'Notes',
+  library: 'Library',
   reminders: 'Reminders',
   connections: 'Connections',
   memories: 'Memories',

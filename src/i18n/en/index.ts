@@ -14,6 +14,7 @@ import { review } from './review'
 import { projects } from './projects'
 import { ideas } from './ideas'
 import { notes } from './notes'
+import { library } from './library'
 import { memories } from './memories'
 import { settings } from './settings'
 import { sync } from './sync'
@@ -38,6 +39,6 @@ import { workout } from './workout'
 
 export const en = {
   common, nav, time, app, levels, badges, today, palette, quickAdd, tasks, plan, focus, habits, goals, insights, review,
-  projects, ideas, notes, memories, achievements, reminders, connections, settings, sync, onboarding, daily, seed, store, errors,
+  projects, ideas, notes, library, memories, achievements, reminders, connections, settings, sync, onboarding, daily, seed, store, errors,
   gym, training, workout, streak,
 }

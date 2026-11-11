@@ -67,4 +67,10 @@ The vocabulary is fixed. Use these words in code, UI and memory alike.
 | **Timed habit** | A habit done in a window between two prayers or clock times — "Friday, Asr to Maghrib" (ADR-043). | `Habit.window` |
 | **Window** | When a timed habit is done: opens at one edge, closes at another the same day or `nights` days later. | `HabitWindow`, `windowSpan()` |
 | **Count day** | The day a timed habit's check-in is logged on: the day its window opens or the day it closes (`countOn`). The schedule names count days. | `todayOccurrence()` |
+| **Library** | The screen of books: PDFs read in Itqan and books read elsewhere (ADR-046). | route `library` |
+| **Book** | One book in the Library; has a PDF (`file`) or not. Statuses: Want to read, Reading, Finished. | `Book`, `BookStatus` |
+| **Place** | The page a book is open at — synced, newest wins. | `BookPlace`, `placeOf()` |
+| **Bookmark** | A marked page in a PDF book, with an optional note. | `Bookmark` |
+| **Reader** | The full-screen PDF view. | `Reader` |
+| **Reading session** | One sitting with a book: active minutes and pages read. Never "focus session". | `ReadingSession` |
 | **DateKey** | A local-time day as `yyyy-MM-dd`. Never UTC. | `DateKey` |

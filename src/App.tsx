@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CommandPalette } from './components/CommandPalette'
 import { Onboarding } from './components/Onboarding'
 import { GlobalNoteEditor } from './components/NoteEditor'
+import { GlobalBookDialogs } from './components/library/Books'
 import { MobileHeader, MobileNav, Sidebar } from './components/Shell'
 import { TaskEditor } from './components/TaskEditor'
 import { TimerWatcher } from './components/TimerWatcher'
@@ -28,6 +29,7 @@ import { IdeasPage } from './pages/Ideas'
 import { InsightsPage } from './pages/Insights'
 import { MemoriesPage } from './pages/Memories'
 import { NotesPage } from './pages/Notes'
+import { LibraryPage } from './pages/Library'
 import { PlanPage } from './pages/Plan'
 import { ProjectsPage } from './pages/Projects'
 import { RemindersPage } from './pages/Reminders'
@@ -38,7 +40,7 @@ import { TrainingPage } from './pages/Training'
 
 const PAGES: Record<Route, () => React.ReactElement> = {
   today: TodayPage, plan: PlanPage, habits: HabitsPage, goals: GoalsPage, projects: ProjectsPage, connections: ConnectionsPage,
-  focus: FocusPage, training: TrainingPage, ideas: IdeasPage, notes: NotesPage, reminders: RemindersPage, memories: MemoriesPage, achievements: AchievementsPage,
+  focus: FocusPage, training: TrainingPage, ideas: IdeasPage, notes: NotesPage, library: LibraryPage, reminders: RemindersPage, memories: MemoriesPage, achievements: AchievementsPage,
   insights: InsightsPage, review: ReviewPage, settings: SettingsPage,
 }
 
@@ -86,6 +88,7 @@ export default function App() {
       <TimerWatcher />
       <GlobalAchievementEditor />
       <GlobalNoteEditor />
+      <GlobalBookDialogs />
       <Toaster />
       <Onboarding />
       <WhatsNew />

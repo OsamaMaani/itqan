@@ -40,6 +40,9 @@ possible, and published on **GitHub**. He may offer it to others later.
 - **Notes** (2026-10-26) — Keep-style notes and checklists: pin, colour, label, search, archive;
   attach to an area, project or goal; any note or line becomes a task (ADR-035); pin one to
   Today to see it every day (ADR-036).
+- **Library** (2026-11-11) — PDFs read inside Itqan that open on the same page on the laptop and
+  the iPhone, with bookmarks, night mode and reading time; books read on paper tracked by hand
+  (ADR-046).
 - **Projects** — bigger pieces of work broken into tasks, with progress and deadlines.
 - **Achievements** — real wins recorded per year and category, with a year in review and export.
 - **Connections** — the people who matter: how often to check in, birthdays, notes, history.

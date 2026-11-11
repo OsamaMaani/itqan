@@ -1109,3 +1109,55 @@ asked which day it counts for. Three abstractions for one idea, and nothing show
 history is midnight-based, ADR-041 already lets the day start at Fajr; one normal day per tick is what
 the owner asked for); a schema with independent before/after days (no real habit needs both);
 an SVG clock-face picture (two days on a dial is harder to read than a strip).
+
+## ADR-046 | 2026-11-11 | accepted | The Library: PDFs and books, the same page on every device
+
+**Context:** The owner, 2026-11-11: a PDF opened on the laptop should open on the same page on the
+iPhone. Free tools came close (Google Play Books: online-only on a Linux laptop; Zotero: 300 MB free
+storage) and he chose to build it into Itqan as a books library. Asked in the session, he chose: the
+Library holds PDFs read in Itqan *and* books read elsewhere (paper, Kindle) tracked by hand; reading
+time, bookmarks and night mode now, highlights later; a book may be linked by the owner to any habit
+(pages or minutes), a task, or a goal (a milestone, its pages, or an amount when finished) — links are
+his choice per book, never automatic, and unlinked reading counts as general reading in Insights.
+Stage 3's "Reading list" (S3-02) becomes this. The links and Insights land as S3-05.
+**Decision:**
+- **Data (schema v18):** `books` (title, author, `file` = { SHA-256 `hash`, name, size } or null,
+  `pages`, `status` want/reading/finished with `startedOn`/`finishedOn`, area, cover colour, notes, and
+  the three links, null until S3-05), `bookPlaces` (one per book, `id` = the book's id: page + when),
+  `bookmarks` and `readingSessions` (date via `dayOf`, active minutes, from/to page, pages read,
+  `habitId` + `habitAmount` like `FocusSession`). Each is its own synced collection, so the place
+  read on the phone and a rename on the laptop never overwrite each other, the newest place wins, and
+  bookmarks made on two devices both survive (tested). Deleting a book removes its place and
+  bookmarks; its sessions stay as reading history.
+- **The PDF never syncs.** Each device keeps its own copy in IndexedDB (`lib/pdfStore.ts`, database
+  `itqan-files`: `pdfs` and `covers` by hash). Sync goes through one file in a GitHub repo — no place
+  for 100 MB of books — and localStorage holds ~5 MB. The same file picked on the other device is
+  recognised by its hash (the file name does not matter) and opens on the synced page; a different
+  file attached to a book asks first. Covers are drawn from page 1 on each device.
+- **pdf.js 6.5 (`pdfjs-dist`), loaded on first use** (`lib/pdf.ts`). The laptop app is one file
+  opened from disk (ADR-012), where a module worker from a blob URL is refused and nothing can be
+  fetched: the worker file is inlined as text, its last line `export{…}` and two `import.meta.url`
+  reads rewritten, and started as a classic worker from a blob; the JBIG2 and JPEG 2000 wasm decoders
+  (scanned books) are bundled and served by a custom `BinaryDataFactory`. Checked from `file://` in
+  Chrome: IndexedDB, hashing, the worker and rendering all work. No CMaps or standard-font files
+  (~2.5 MB): system fonts stand in, so a rare PDF with unembedded CJK fonts may show wrong glyphs —
+  add the CMaps if one turns up. The hosted app precaches the wasm (`globPatterns` += wasm).
+- **The reader** (`components/library/Reader.tsx`, route `#/library/<id>`): every page in one
+  vertical scroll, drawn only near the screen and released after (iOS canvas memory), at most 5 MP a
+  page; opens at the synced place (or a bookmark's page); the place follows the page 0.8 s after it
+  settles. Night mode inverts the page; zoom and night are per device (localStorage). ←/→, PageUp/Down,
+  B (bookmark), Esc. Text selection and highlights are not built (owner: later).
+- **What a sitting counts** (`lib/library.ts`, pure, tested): a page is read once it was on screen
+  10 s in total in the sitting (flicking through counts nothing); minutes count only while the reader
+  is visible and touched within 5 minutes, and a gap over a minute (a sleeping laptop) counts none.
+  A book read elsewhere: "I'm on page N" + optional minutes → a session of the pages moved forward.
+  The session is saved every 30 s of reading, when the app is hidden and when the reader closes.
+- **Status:** opening a book to read makes it Reading; reaching the end (the last page, or the last
+  two of a book over 50 pages) offers "Mark finished" — never automatic.
+**Rejected:** syncing the PDFs through the GitHub repo (size limits, and every sync would carry
+them); the book's page inside `Book` (a rename on one device and reading on another would overwrite
+each other); deriving the page from the latest session (a session is written every 30 s; a tiny
+entity per book is simpler and merges the same way); pdf.js's own viewer (`pdf_viewer`, big, and
+built around one page element per page plus its CSS); counting pages by the furthest page reached
+(jumping to the index would "read" hundreds of pages); marking a book finished on its last page
+automatically (back matter, or a quick look at the end).

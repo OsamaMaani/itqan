@@ -6,7 +6,7 @@ import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 17
+export const SCHEMA_VERSION = 18
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -133,6 +133,15 @@ const steps: Record<number, Step> = {
       },
     }
   },
+  // 17 → 18 (2026-11-11): the Library (ADR-046). Four new collections start empty; nothing
+  // existing changes.
+  17: (d) => ({
+    ...d,
+    books: d.books ?? [],
+    bookPlaces: d.bookPlaces ?? [],
+    bookmarks: d.bookmarks ?? [],
+    readingSessions: d.readingSessions ?? [],
+  }),
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {
@@ -175,6 +184,10 @@ export function normalize(d: Record<string, unknown>): Data {
     workoutSets: pick('workoutSets'),
     pushTargets: pick('pushTargets'),
     fajrSpans: pick('fajrSpans'),
+    books: pick('books'),
+    bookPlaces: pick('bookPlaces'),
+    bookmarks: pick('bookmarks'),
+    readingSessions: pick('readingSessions'),
     settings: normalizeSettings(d.settings),
   }
 }

@@ -95,7 +95,9 @@ streak savers that keep the day streak alive, earned with XP and derived from hi
 Notes — Keep-style notes and checklists linked to areas, projects and goals, pinnable to Today
 (ADR-035, ADR-036; schema v14), and an optional day that starts at Fajr instead of midnight, dated so
 history never moves (ADR-041; schema v16 — read days with `dayOf()`, never `toKey(new Date(…))`), and timed habits —
-between prayers or clock times, across days, with countdowns on Today (ADR-043; schema v17).
+between prayers or clock times, across days, with countdowns on Today (ADR-043; schema v17), and the
+Library — PDFs read in Itqan on the same page on every device (the files stay per device in IndexedDB),
+and books read elsewhere (ADR-046; schema v18).
 `memory/status.json` and `dashboard/index.html` are the live answer — this
 paragraph is a snapshot and will lag them.
 

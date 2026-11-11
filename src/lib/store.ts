@@ -9,8 +9,8 @@ import { emptyData, starterData } from './seed'
 import { setDayRule, todayKey } from './date'
 import { deviceZone, resolveFajr, switchFajr } from './fajr'
 import type {
-  Achievement, ActiveTimer, Area, Contact, Data, DateKey, DayNote, Exercise, FajrSettings, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory, Note,
-  Project, ProjectUpdate, PushTarget, Reminder, Routine, RoutineItem, Settings, Task, TaskStage, TrainingProgram, WeeklyReview, Workout, WorkoutSet,
+  Achievement, ActiveTimer, Area, Book, BookStatus, Contact, Data, DateKey, DayNote, Exercise, FajrSettings, Goal, Habit, ID, Idea, IdeaStatus, InteractionKind, Memory, Note,
+  Project, ProjectUpdate, PushTarget, ReadingSession, Reminder, Routine, RoutineItem, Settings, Task, TaskStage, TrainingProgram, WeeklyReview, Workout, WorkoutSet,
 } from './types'
 import { birthdayReminderDate } from './connections'
 
@@ -138,6 +138,21 @@ interface Actions {
   finishWorkout: (id: ID) => void
   /** Deletes the workout and its sets, and takes back the habit tick it gave. */
   deleteWorkout: (id: ID) => void
+  // library (ADR-046)
+  addBook: (b: Pick<Book, 'title'> & Partial<Omit<Book, 'id' | 'createdAt' | 'updatedAt'>>) => ID
+  updateBook: (id: ID, patch: Partial<Omit<Book, 'id' | 'createdAt'>>) => void
+  /** Sets the status and the day it was started or finished; finishing also moves the place to the last page. */
+  setBookStatus: (id: ID, status: BookStatus) => void
+  /** Removes the book, its place and bookmarks. Its reading sessions stay: they are history. */
+  deleteBook: (id: ID) => void
+  /** Where the book is open now — the newest place wins in sync. */
+  setBookPlace: (bookId: ID, page: number) => void
+  addBookmark: (bookId: ID, page: number, note?: string) => ID
+  updateBookmark: (id: ID, note: string) => void
+  deleteBookmark: (id: ID) => void
+  /** Adds or updates (same id) a reading session; a session with neither minutes nor pages is removed. */
+  saveReadingSession: (r: Omit<ReadingSession, 'habitId' | 'habitAmount'>) => void
+  deleteReadingSession: (id: ID) => void
   // notifications (ADR-031)
   /** Adds this device's push registration, or replaces it (same id) when the subscription changed. */
   savePushTarget: (t: PushTarget) => void
@@ -182,6 +197,7 @@ export const useStore = create<Store>()(
           ideas: s.ideas.map((i) => (i.areaId === id ? { ...i, areaId: null } : i)),
           notes: s.notes.map((n) => (n.areaId === id ? { ...n, areaId: null } : n)),
           projects: s.projects.map((p) => (p.areaId === id ? { ...p, areaId: null } : p)),
+          books: s.books.map((b) => (b.areaId === id ? { ...b, areaId: null } : b)),
         })),
 
       // --- tasks -----------------------------------------------------------------
@@ -265,6 +281,8 @@ export const useStore = create<Store>()(
             focusSessions: s.focusSessions.map((f) => (f.habitId === id ? { ...f, habitId: null, habitAmount: 0 } : f)),
             timer: s.timer?.habitId === id ? { ...s.timer, habitId: null } : s.timer,
             program: s.program?.habitId === id ? { ...s.program, habitId: null, updatedAt: now() } : s.program,
+            books: s.books.map((b) => (b.habit?.habitId === id ? { ...b, habit: null, updatedAt: now() } : b)),
+            readingSessions: s.readingSessions.map((r) => (r.habitId === id ? { ...r, habitId: null, habitAmount: 0 } : r)),
           }
         }),
       setHabitAmount: (id, day, amount) =>
@@ -293,6 +311,7 @@ export const useStore = create<Store>()(
           notes: s.notes.map((n) => (n.goalId === id ? { ...n, goalId: null } : n)),
           projects: s.projects.map((p) => (p.goalId === id ? { ...p, goalId: null } : p)),
           achievements: s.achievements.map((a) => (a.goalId === id ? { ...a, goalId: null } : a)),
+          books: s.books.map((b) => (b.goal?.goalId === id ? { ...b, goal: null, updatedAt: now() } : b)),
         })),
       logGoal: (goalId, amount, note = '', date = todayKey()) => {
         const log = { id: uid(), goalId, amount, note, date, createdAt: now() }
@@ -714,6 +733,60 @@ export const useStore = create<Store>()(
         }
       },
 
+      // --- library (ADR-046) -------------------------------------------------------
+      addBook: (b) => {
+        const id = uid()
+        const t = now()
+        set((s) => ({
+          books: [...s.books, {
+            author: '', file: null, pages: null, status: 'want', startedOn: null, finishedOn: null, areaId: null, color: null,
+            notes: '', habit: null, task: null, goal: null, ...b, id, createdAt: t, updatedAt: t,
+          }],
+        }))
+        return id
+      },
+      updateBook: (id, patch) =>
+        set((s) => ({ books: s.books.map((b) => (b.id === id ? { ...b, ...patch, updatedAt: now() } : b)) })),
+      setBookStatus: (id, status) => {
+        const b = get().books.find((x) => x.id === id)
+        if (!b || b.status === status) return
+        const today = todayKey()
+        get().updateBook(id, {
+          status,
+          startedOn: status === 'want' ? null : b.startedOn ?? today,
+          finishedOn: status === 'finished' ? today : null,
+        })
+        if (status === 'finished' && b.pages) get().setBookPlace(id, b.pages)
+      },
+      deleteBook: (id) =>
+        set((s) => ({
+          books: s.books.filter((b) => b.id !== id),
+          bookPlaces: s.bookPlaces.filter((p) => p.id !== id),
+          bookmarks: s.bookmarks.filter((m) => m.bookId !== id),
+        })),
+      setBookPlace: (bookId, page) =>
+        set((s) => {
+          const p = Math.max(1, Math.round(page))
+          if (s.bookPlaces.find((x) => x.id === bookId)?.page === p) return {}
+          return { bookPlaces: [...s.bookPlaces.filter((x) => x.id !== bookId), { id: bookId, page: p, at: now() }] }
+        }),
+      addBookmark: (bookId, page, note = '') => {
+        const id = uid()
+        set((s) => ({ bookmarks: [...s.bookmarks, { id, bookId, page, note, createdAt: now() }] }))
+        return id
+      },
+      updateBookmark: (id, note) => set((s) => ({ bookmarks: s.bookmarks.map((m) => (m.id === id ? { ...m, note } : m)) })),
+      deleteBookmark: (id) => set((s) => ({ bookmarks: s.bookmarks.filter((m) => m.id !== id) })),
+      saveReadingSession: (r) =>
+        set((s) => {
+          const old = s.readingSessions.find((x) => x.id === r.id)
+          const rest = s.readingSessions.filter((x) => x.id !== r.id)
+          if (r.minutes <= 0 && r.pages <= 0) return old ? { readingSessions: rest } : {}
+          const next: ReadingSession = { habitId: null, habitAmount: 0, ...old, ...r, date: old?.date ?? r.date }
+          return { readingSessions: old ? s.readingSessions.map((x) => (x.id === r.id ? next : x)) : [...s.readingSessions, next] }
+        }),
+      deleteReadingSession: (id) => set((s) => ({ readingSessions: s.readingSessions.filter((x) => x.id !== id) })),
+
       // --- notifications (ADR-031) ----------------------------------------------
       savePushTarget: (t) => set((s) => ({ pushTargets: [...s.pushTargets.filter((x) => x.id !== t.id), t] })),
       removePushTarget: (id) => set((s) => ({ pushTargets: s.pushTargets.filter((x) => x.id !== id) })),
@@ -745,6 +818,7 @@ export const useStore = create<Store>()(
         reviews: s.reviews, memories: s.memories, ideas: s.ideas, notes: s.notes, reminders: s.reminders, projects: s.projects,
         projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
         exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets, fajrSpans: s.fajrSpans,
+        books: s.books, bookPlaces: s.bookPlaces, bookmarks: s.bookmarks, readingSessions: s.readingSessions,
         settings: s.settings,
       }),
       migrate: (persisted, version) => migrate(persisted, version) as unknown as Store,
@@ -776,6 +850,7 @@ export function snapshot(s: Store): Data {
     reviews: s.reviews, memories: s.memories, ideas: s.ideas, notes: s.notes, reminders: s.reminders, projects: s.projects,
     projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
     exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets, fajrSpans: s.fajrSpans,
+        books: s.books, bookPlaces: s.bookPlaces, bookmarks: s.bookmarks, readingSessions: s.readingSessions,
     settings: s.settings,
   }
 }

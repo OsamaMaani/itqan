@@ -423,3 +423,47 @@ describe('v16 → v17 (timed habits, ADR-043)', () => {
     expect(parseBackup(JSON.stringify(toBackup(data)))).toEqual(data)
   })
 })
+
+describe('v17 → v18 (the Library, ADR-046)', () => {
+  it('adds four empty collections and keeps every existing record exactly', () => {
+    const old = {
+      tasks: [{ id: 't', title: 'Read chapter 3' }], habits: [{ id: 'h', name: 'Read', target: 10, unit: 'pages', window: null, round: null }],
+      habitLogs: { h: { '2026-11-10': 12 } }, notes: [{ id: 'n', title: 'Quotes' }], settings: { name: 'N', language: 'ar' },
+    }
+    const d = migrate(structuredClone(old), 17)
+    expect(d.books).toEqual([])
+    expect(d.bookPlaces).toEqual([])
+    expect(d.bookmarks).toEqual([])
+    expect(d.readingSessions).toEqual([])
+    expect(d.tasks).toEqual(old.tasks)
+    expect(d.habits).toEqual(old.habits)
+    expect(d.habitLogs).toEqual(old.habitLogs)
+    expect(d.notes).toEqual(old.notes)
+    expect(d.settings.language).toBe('ar')
+  })
+  it('never overwrites a library already there; a v1 backup comes all the way up', () => {
+    const books = [{ id: 'b', title: 'Deep Work' }]
+    const bookPlaces = [{ id: 'b', page: 40, at: '2026-11-11T10:00:00.000Z' }]
+    const d = migrate({ books, bookPlaces }, 17)
+    expect(d.books).toEqual(books)
+    expect(d.bookPlaces).toEqual(bookPlaces)
+    expect(migrate({ tasks: [] }, 1).books).toEqual([])
+    const b = { app: 'itqan', schemaVersion: 17, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [] } }
+    expect(parseBackup(JSON.stringify(b)).readingSessions).toEqual([])
+  })
+  it('a backup with a library round-trips exactly (current shape)', () => {
+    const data = {
+      ...emptyData(),
+      books: [{
+        id: 'b', title: 'Riyad as-Salihin', author: 'An-Nawawi', file: { hash: 'ab12', name: 'riyad.pdf', size: 1000 }, pages: 420,
+        status: 'reading' as const, startedOn: '2026-11-01', finishedOn: null, areaId: null, color: null, notes: '',
+        habit: { habitId: 'h', counts: 'pages' as const }, task: null, goal: { goalId: 'g', kind: 'finished' as const, amount: 1 },
+        createdAt: '2026-11-01T10:00:00.000Z', updatedAt: '2026-11-01T10:00:00.000Z',
+      }],
+      bookPlaces: [{ id: 'b', page: 120, at: '2026-11-11T10:00:00.000Z' }],
+      bookmarks: [{ id: 'm', bookId: 'b', page: 77, note: 'Chapter on patience', createdAt: '2026-11-05T10:00:00.000Z' }],
+      readingSessions: [{ id: 'r', bookId: 'b', date: '2026-11-11', startedAt: '2026-11-11T09:30:00.000Z', minutes: 25, fromPage: 110, toPage: 120, pages: 10, habitId: 'h', habitAmount: 10 }],
+    }
+    expect(parseBackup(JSON.stringify(toBackup(data)))).toEqual(data)
+  })
+})

@@ -38,7 +38,7 @@ export default defineConfig({
         ],
       },
       // push-sw.js (public/) adds the push and notification-click handlers (ADR-031).
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'], importScripts: ['push-sw.js'] },
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2,wasm}'], importScripts: ['push-sw.js'] },
     }),
   ],
   build: local

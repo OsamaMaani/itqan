@@ -10,6 +10,7 @@ export const nav: Messages['nav'] = {
   training: 'Entrenamiento',
   ideas: 'Ideas',
   notes: 'Notas',
+  library: 'Biblioteca',
   reminders: 'Recordatorios',
   connections: 'Contactos',
   memories: 'Recuerdos',

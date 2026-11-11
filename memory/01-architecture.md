@@ -106,6 +106,14 @@ through **the push relay** instead (ADR-037): `lib/relay.ts` builds the same enc
 POSTs it to a Cloudflare Worker (`relay/`), which applies the helper's guards and forwards it. The
 relay's address is the build variable `VITE_PUSH_RELAY` (repo variable `PUSH_RELAY_URL`).
 
+## The Library's files (ADR-046)
+
+PDFs are not part of `Data` and never sync: each device keeps its copies in IndexedDB
+(`lib/pdfStore.ts`, database `itqan-files`, stores `pdfs` and `covers`, keyed by SHA-256). A book
+carries only the hash; the place, bookmarks and reading sessions sync like everything else.
+`lib/pdf.ts` loads pdf.js on first use, with its worker inlined as a classic blob worker and its wasm
+decoders bundled, so the reader works from `file://` as well as the hosted app.
+
 ## The path to "others can use it" (not built)
 
 When/if Itqan becomes multi-user (Stage 4), add **sync, not a rewrite**: keep the local store as
