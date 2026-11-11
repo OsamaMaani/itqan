@@ -108,4 +108,27 @@ export const insights = {
     emptyBody: 'Sessions you finish on Focus show up here — time, rhythm and where it went.',
     start: 'Start a session',
   },
+
+  /** The Reading section (ADR-047): every sitting, linked to a habit or not. */
+  reading: {
+    title: 'Reading',
+    open: 'Library',
+    time: 'Reading time',
+    pages: 'Pages read',
+    days: 'Reading days',
+    daysOf: { one: '{read} of {n} day', other: '{read} of {n} days' },
+    finished: 'Books finished',
+    perDay: 'Minutes per day',
+    /** {pages} is already a full phrase: "12 pages". */
+    dayTip: '{date}: {time} · {pages}',
+    forHabits: 'Toward habits',
+    general: 'General reading',
+    forHabitsValue: 'Toward habits: {time}',
+    generalValue: 'General reading: {time}',
+    byBook: 'By book',
+    deletedBook: 'A deleted book',
+    pagesCount: { one: '{n} page', other: '{n} pages' },
+    emptyTitle: 'No reading in this period',
+    emptyBody: 'Read a PDF in the Library, or update the page of a book you read on paper, and it shows here.',
+  },
 }

@@ -620,7 +620,7 @@ export interface BookHabitLink {
   counts: 'pages' | 'minutes'
 }
 
-/** A task reading this book is for; done when the book reaches `untilPage` (null = done by hand). */
+/** A task reading this book is for: done when the book reaches `untilPage`, or when it is finished (null). */
 export interface BookTaskLink {
   taskId: ID
   untilPage: number | null

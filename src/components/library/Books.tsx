@@ -1,18 +1,20 @@
-import { BookOpen, FileText, Pencil, Trash2, Upload, X } from 'lucide-react'
+import { BookOpen, CheckSquare, FileText, Pencil, Repeat, Target, Trash2, Upload, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
+import { tx } from '../../i18n/core'
 import { useI18n } from '../../i18n/react'
 import { AREA_HEX } from '../../lib/colors'
 import { todayKey } from '../../lib/date'
+import { countsMinutes } from '../../lib/habits'
 import { useAreaMap } from '../../lib/hooks'
 import { bookProgress, pagesForward, placeOf, readingTotals } from '../../lib/library'
 import { addPdfFiles, pickPdfs, removePdfHere, useFiles, wantCover } from '../../lib/libraryFiles'
-import { useStore } from '../../lib/store'
+import { settleBookLinks, useStore } from '../../lib/store'
 import { toast } from '../../lib/toast'
 import { uid } from '../../lib/id'
 import { AREA_COLORS, BOOK_STATUSES, type AreaColor, type Book, type BookStatus } from '../../lib/types'
 import { AreaPicker } from '../AreaPicker'
-import { AreaChip, Button, Card, cx, IconButton, Input, Label, Modal, ProgressBar, Segmented, Textarea } from '../ui'
+import { AreaChip, Button, Card, cx, IconButton, Input, Label, Modal, ProgressBar, Segmented, Select, Textarea } from '../ui'
 import { openReader } from './Reader'
 
 /**
@@ -25,6 +27,8 @@ const useBookDialogs = create<{ details: string | null; editing: Partial<Book> |
 
 export function openBook(id: string) { useBookDialogs.setState({ details: id }) }
 export function editBook(b: Partial<Book> = {}) { useBookDialogs.setState((s) => ({ editing: b, opened: s.opened + 1 })) }
+/** A PDF book opens in the reader (which offers to choose the file if this device lacks it); any other book, its details. */
+export function openBookOrReader(b: Book) { if (b.file) openReader(b.id); else openBook(b.id) }
 
 export function GlobalBookDialogs() {
   const details = useBookDialogs((s) => s.details)
@@ -253,6 +257,11 @@ function DetailsBody({ book, onClose }: { book: Book; onClose: () => void }) {
         </section>
       )}
 
+      <section>
+        <h4 className="mb-2 text-[13px] font-semibold uppercase tracking-wider text-muted">{L.links.title}</h4>
+        <LinkLines book={book} />
+      </section>
+
       {book.notes && <p className="whitespace-pre-wrap text-sm text-muted" dir="auto">{book.notes}</p>}
 
       <div className="flex flex-wrap gap-2 border-t border-border pt-4">
@@ -274,7 +283,33 @@ function Stat({ label, value }: { label: string; value: string }) {
   )
 }
 
-interface Draft { title: string; author: string; pages: string; status: BookStatus; areaId: string | null; color: AreaColor | null; notes: string }
+interface Draft {
+  title: string; author: string; pages: string; status: BookStatus; areaId: string | null; color: AreaColor | null; notes: string
+  habitId: string; habitCounts: 'pages' | 'minutes'
+  /** '' = none, NEW_TASK = make one on save */
+  taskId: string; untilPage: string
+  goalId: string; goalKind: 'milestone' | 'pages' | 'finished'; milestoneId: string; goalAmount: string
+}
+const NEW_TASK = '__new'
+
+/** The links a draft describes (ADR-047); a link to something no longer there is dropped. */
+function draftLinks(d: Draft, s: ReturnType<typeof useStore.getState>, title: string): Pick<Book, 'habit' | 'task' | 'goal'> {
+  const habit = d.habitId && s.habits.some((h) => h.id === d.habitId) ? { habitId: d.habitId, counts: d.habitCounts } : null
+  let taskId = d.taskId && (d.taskId === NEW_TASK || s.tasks.some((x) => x.id === d.taskId)) ? d.taskId : ''
+  const until = Math.round(Number(d.untilPage)) > 0 ? Math.round(Number(d.untilPage)) : null
+  if (taskId === NEW_TASK) {
+    const tt = tx()
+    taskId = s.addTask({ title: until ? tt.f(tt.m.library.links.newTaskUntil, { title, page: tt.n(until) }) : tt.f(tt.m.library.links.newTaskTitle, { title }), date: todayKey() })
+  }
+  const g = d.goalId ? s.goals.find((x) => x.id === d.goalId) : undefined
+  let goal: Book['goal'] = null
+  if (g?.kind === 'milestones') {
+    if (g.milestones.some((m) => m.id === d.milestoneId)) goal = { goalId: g.id, kind: 'milestone', milestoneId: d.milestoneId }
+  } else if (g) {
+    goal = d.goalKind === 'pages' ? { goalId: g.id, kind: 'pages' } : { goalId: g.id, kind: 'finished', amount: Number(d.goalAmount) > 0 ? Number(d.goalAmount) : 1 }
+  }
+  return { habit, task: taskId ? { taskId, untilPage: until } : null, goal }
+}
 
 function BookEditor({ value, onClose }: { value: Partial<Book> | null; onClose: () => void }) {
   const t = useI18n()
@@ -284,20 +319,26 @@ function BookEditor({ value, onClose }: { value: Partial<Book> | null; onClose: 
   const [d, setD] = useState<Draft>(() => ({
     title: value?.title ?? '', author: value?.author ?? '', pages: value?.pages ? String(value.pages) : '',
     status: value?.status ?? 'want', areaId: value?.areaId ?? null, color: value?.color ?? null, notes: value?.notes ?? '',
+    habitId: value?.habit?.habitId ?? '', habitCounts: value?.habit?.counts ?? 'pages',
+    taskId: value?.task?.taskId ?? '', untilPage: value?.task?.untilPage ? String(value.task.untilPage) : '',
+    goalId: value?.goal?.goalId ?? '', goalKind: value?.goal?.kind ?? 'finished',
+    milestoneId: value?.goal?.kind === 'milestone' ? value.goal.milestoneId : '', goalAmount: value?.goal?.kind === 'finished' ? String(value.goal.amount) : '1',
   }))
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((x) => ({ ...x, [k]: v }))
   const save = () => {
     if (!d.title.trim()) return
     const pages = existing?.file ? existing.pages : (Math.round(Number(d.pages)) > 0 ? Math.round(Number(d.pages)) : null)
-    const fields = { title: d.title.trim(), author: d.author.trim(), pages, areaId: d.areaId, color: d.color, notes: d.notes.trim() }
+    const fields = { title: d.title.trim(), author: d.author.trim(), pages, areaId: d.areaId, color: d.color, notes: d.notes.trim(), ...draftLinks(d, s, d.title.trim()) }
     if (existing) {
       s.updateBook(existing.id, fields)
       s.setBookStatus(existing.id, d.status)
+      settleBookLinks(existing.id)
       onClose()
       openBook(existing.id)
     } else {
       const id = s.addBook({ ...fields, status: 'want' })
       s.setBookStatus(id, d.status)
+      settleBookLinks(id)
       onClose()
       toast({ emoji: '📚', message: t.f(L.addedOne, { title: fields.title }) })
     }
@@ -336,6 +377,7 @@ function BookEditor({ value, onClose }: { value: Partial<Book> | null; onClose: 
           </div>
         )}
         <div><Label>{L.editor.notes}</Label><Textarea dir="auto" rows={3} value={d.notes} onChange={(e) => set('notes', e.target.value)} placeholder={L.editor.notesPlaceholder} /></div>
+        <LinksEditor d={d} set={set} />
       </div>
     </Modal>
   )
@@ -350,5 +392,119 @@ function Dot({ on, label, hex, onClick }: { on: boolean; label: string; hex?: st
     >
       {!hex && <X size={14} className="text-muted" />}
     </button>
+  )
+}
+
+/** What reading this book counts toward — each optional, chosen by the owner (ADR-047). */
+function LinksEditor({ d, set }: { d: Draft; set: <K extends keyof Draft>(k: K, v: Draft[K]) => void }) {
+  const t = useI18n()
+  const L = t.m.library.links
+  const habits = useStore((s) => s.habits)
+  const tasks = useStore((s) => s.tasks)
+  const goals = useStore((s) => s.goals)
+  const liveHabits = habits.filter((h) => !h.archived || h.id === d.habitId)
+  const openTasks = tasks.filter((x) => !x.done || x.id === d.taskId)
+  const liveGoals = goals.filter((g) => g.status === 'active' || g.id === d.goalId)
+  const goal = goals.find((g) => g.id === d.goalId)
+  const pickHabit = (id: string) => {
+    set('habitId', id)
+    const h = habits.find((x) => x.id === id)
+    if (h) set('habitCounts', countsMinutes(h) ? 'minutes' : 'pages')
+  }
+  const pickGoal = (id: string) => {
+    set('goalId', id)
+    const g = goals.find((x) => x.id === id)
+    if (g?.kind === 'milestones') set('milestoneId', g.milestones.find((m) => !m.done)?.id ?? g.milestones[0]?.id ?? '')
+  }
+  return (
+    <section className="space-y-4 rounded-2xl border border-border p-4">
+      <div>
+        <div className="text-sm font-bold">{L.title}</div>
+        <p className="text-xs text-muted">{L.hint}</p>
+      </div>
+
+      <div>
+        <Label>{L.habit}</Label>
+        <Select value={d.habitId} onChange={(e) => pickHabit(e.target.value)}>
+          <option value="">{L.noHabit}</option>
+          {liveHabits.map((h) => <option key={h.id} value={h.id}>{h.emoji} {h.name}</option>)}
+        </Select>
+        {d.habitId && (
+          <Segmented className="mt-2 w-full" value={d.habitCounts} onChange={(v: 'pages' | 'minutes') => set('habitCounts', v)}
+            options={[{ value: 'pages', label: L.countsPages }, { value: 'minutes', label: L.countsMinutes }]} />
+        )}
+      </div>
+
+      <div>
+        <Label>{L.task}</Label>
+        <Select value={d.taskId} onChange={(e) => set('taskId', e.target.value)}>
+          <option value="">{L.noTask}</option>
+          <option value={NEW_TASK}>{L.newTask}</option>
+          {openTasks.map((x) => <option key={x.id} value={x.id}>{x.title}</option>)}
+        </Select>
+        {d.taskId && (
+          <div className="mt-2 flex items-center gap-2 text-sm">
+            <span className="shrink-0 text-muted">{L.doneAtPage}</span>
+            <Input type="number" inputMode="numeric" min={1} className="w-28" value={d.untilPage} onChange={(e) => set('untilPage', e.target.value)} placeholder={L.whenFinished} />
+          </div>
+        )}
+      </div>
+
+      <div>
+        <Label>{L.goal}</Label>
+        <Select value={d.goalId} onChange={(e) => pickGoal(e.target.value)}>
+          <option value="">{L.noGoal}</option>
+          {liveGoals.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
+        </Select>
+        {goal?.kind === 'milestones' && (
+          <div className="mt-2">
+            <Label>{L.milestone}</Label>
+            <Select value={d.milestoneId} onChange={(e) => set('milestoneId', e.target.value)}>
+              {goal.milestones.map((m) => <option key={m.id} value={m.id}>{m.title}</option>)}
+            </Select>
+          </div>
+        )}
+        {goal && goal.kind === 'numeric' && (
+          <div className="mt-2 space-y-2">
+            <Segmented className="w-full" value={d.goalKind === 'pages' ? 'pages' : 'finished'} onChange={(v: 'pages' | 'finished') => set('goalKind', v)}
+              options={[{ value: 'finished', label: L.goalFinished }, { value: 'pages', label: L.goalPages }]} />
+            {d.goalKind !== 'pages' && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="shrink-0 text-muted">{L.adds}</span>
+                <Input type="number" inputMode="decimal" min={0} className="w-24" value={d.goalAmount} onChange={(e) => set('goalAmount', e.target.value)} />
+                <span className="truncate text-muted" dir="auto">{goal.unit}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+/** One line per link in the book's details: what reading it counts toward. */
+function LinkLines({ book }: { book: Book }) {
+  const t = useI18n()
+  const L = t.m.library.links
+  const habit = useStore((s) => (book.habit ? s.habits.find((h) => h.id === book.habit!.habitId) : undefined))
+  const task = useStore((s) => (book.task ? s.tasks.find((x) => x.id === book.task!.taskId) : undefined))
+  const goal = useStore((s) => (book.goal ? s.goals.find((g) => g.id === book.goal!.goalId) : undefined))
+  const lines: { key: string; icon: React.ReactNode; text: string }[] = []
+  if (habit && book.habit) lines.push({ key: 'h', icon: <Repeat size={14} />, text: t.f(book.habit.counts === 'minutes' ? L.lineHabitMinutes : L.lineHabitPages, { name: `${habit.emoji} ${habit.name}` }) })
+  if (task && book.task) lines.push({ key: 't', icon: <CheckSquare size={14} />, text: book.task.untilPage ? t.f(L.lineTaskPage, { name: task.title, page: t.n(book.task.untilPage) }) : t.f(L.lineTaskFinished, { name: task.title }) })
+  if (goal && book.goal) {
+    const ms = book.goal.kind === 'milestone' ? goal.milestones.find((m) => m.id === (book.goal as { milestoneId: string }).milestoneId) : undefined
+    lines.push({
+      key: 'g', icon: <Target size={14} />,
+      text: book.goal.kind === 'milestone' ? t.f(L.lineGoalMilestone, { name: goal.title, milestone: ms?.title ?? '' })
+        : book.goal.kind === 'pages' ? t.f(L.lineGoalPages, { name: goal.title })
+        : t.f(L.lineGoalFinished, { name: goal.title, amount: t.n(book.goal.amount), unit: goal.unit }),
+    })
+  }
+  if (!lines.length) return <p className="text-xs text-muted">{L.none}</p>
+  return (
+    <ul className="space-y-1.5">
+      {lines.map((l) => <li key={l.key} className="flex items-start gap-2 text-sm"><span className="mt-0.5 text-accent">{l.icon}</span><span dir="auto">{l.text}</span></li>)}
+    </ul>
   )
 }

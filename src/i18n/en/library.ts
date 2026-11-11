@@ -108,4 +108,40 @@ export const library = {
     zoomOut: 'Zoom out',
     fitWidth: 'Fit width',
   },
+
+  /** What reading a book counts toward (ADR-047). */
+  links: {
+    title: 'Counts toward',
+    hint: 'Optional. Reading this book can add to a habit, complete a task or move a goal. Reading with no link still shows in Insights.',
+    habit: 'Habit',
+    noHabit: 'No habit',
+    countsPages: 'Pages read',
+    countsMinutes: 'Minutes read',
+    task: 'Task',
+    noTask: 'No task',
+    newTask: '+ New task for this book',
+    /** Before a page number field; empty means the task is done when the book is finished. */
+    doneAtPage: 'Done at page',
+    whenFinished: 'when finished',
+    goal: 'Goal',
+    noGoal: 'No goal',
+    milestone: 'Ticks this milestone when finished',
+    goalFinished: 'When finished',
+    goalPages: 'Pages read',
+    /** Before an amount and the goal's unit: "Adds 1 books". */
+    adds: 'Adds',
+    newTaskTitle: 'Read “{title}”',
+    newTaskUntil: 'Read “{title}” to page {page}',
+    /** On a task row: the book and the page that completes it. */
+    taskChip: '{title} · p. {page}',
+    lineHabitPages: 'Pages read count toward {name}',
+    lineHabitMinutes: 'Minutes read count toward {name}',
+    lineTaskPage: '{name} — done at page {page}',
+    lineTaskFinished: '{name} — done when finished',
+    lineGoalMilestone: '{name}: ticks “{milestone}” when finished',
+    lineGoalPages: '{name}: adds the pages read',
+    /** {unit} is the goal's own unit, as the owner wrote it. */
+    lineGoalFinished: '{name}: adds {amount} {unit} when finished',
+    none: 'Not linked — it counts as general reading in Insights.',
+  },
 }

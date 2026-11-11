@@ -57,7 +57,7 @@ export function useData(): Data {
 
 /** What goal progress is read from (check-ins, workouts, sets), stable while none change. */
 export function useGoalSources(): GoalSources {
-  return useStore(useShallow((s) => ({ goalLogs: s.goalLogs, workouts: s.workouts, workoutSets: s.workoutSets })))
+  return useStore(useShallow((s) => ({ goalLogs: s.goalLogs, workouts: s.workouts, workoutSets: s.workoutSets, books: s.books, bookPlaces: s.bookPlaces })))
 }
 
 export function useProgress() {

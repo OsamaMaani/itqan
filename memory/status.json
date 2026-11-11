@@ -4,6 +4,7 @@
   "updated": "2026-11-11",
   "current_stage": 4,
   "next_actions": [
+    "New: link a book to a habit (pages or minutes), a task (done at page N) or a goal (a milestone, its pages, or an amount when finished). Insights has a Reading section.",
     "New: Library — add PDFs and read them in Itqan; they open on the same page on your laptop and iPhone. Bookmarks, night mode and reading time; paper books tracked by page.",
     "New: setting a habit's time is simpler — one-tap quick picks (Friday: Thursday Maghrib to Friday Maghrib), From/Until with the days named, a 'Counts on' choice of the normal day with the Islamic day marked, and a picture of the window over day and night.",
     "Fixed: the 'Your data lives only in this browser' reminder no longer shows while sync is working — a sync counts as a backup.",
@@ -549,9 +550,9 @@
         },
         {
           "id": "S3-05",
-          "title": "Library links: a book counts toward a habit (pages or minutes), a task (done at page N) or a goal (milestone, pages, amount when finished); reading in Insights",
+          "title": "Library links: a book counts toward a habit (pages or minutes), a task (done at page N) or a goal (milestone, pages, amount when finished); reading in Insights (ADR-047)",
           "module": "learning",
-          "status": "todo"
+          "status": "done"
         }
       ]
     },
@@ -753,6 +754,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-11-11",
+      "entry": "S3-05 (ADR-047), the owner's choice for S3-02: each book may count toward a habit (pages or minutes; each reading session adds to the habit's log on its day, by the difference on every save, taken back on delete; the habit is fixed per session), a task (completed at a page, or when the book is finished; '+ New task for this book'; the task row opens the book) and a goal (finishing ticks a milestone; on a numeric goal, an amount when finished or the pages read — derived in goalCurrent via booksToward, never written as check-ins). settleBookLinks only ever completes, never re-opens. Insights → Reading: time, pages, reading days, books finished, minutes per day, by book, toward habits vs general reading (readingStats). No schema change (the link fields came empty in v18). 9 new tests; checked in the browser: links editor at 375 px, a page update past 150 completed the linked task and added 35 pages to the Read habit, Insights reading at 1280 px."
+    },
     {
       "date": "2026-11-11",
       "entry": "S3-02 (ADR-046), from the owner: a PDF opened on the laptop should reopen on the same page on the iPhone. Free options weighed (Google Play Books: online-only on Linux; Zotero: 300 MB free) and the owner chose to build a Library in Itqan. Schema v18: books, bookPlaces (one per book, newest wins in sync), bookmarks and readingSessions — each its own synced collection, tested with a laptop-rename vs phone-read merge and bookmarks from two devices. PDFs stay in each device's IndexedDB keyed by SHA-256; picking the same file on the other device recognises it and opens on the synced page. pdf.js 6.5 loaded on first use, its worker inlined as a classic blob worker and JBIG2/JPEG 2000 wasm bundled, so it works from file:// (checked in headless Chrome against app/index.html) and on the hosted app (wasm precached). Reader: one scroll, pages drawn near the screen only, night mode, zoom, bookmarks with notes, go-to-page and a page slider; a page counts as read after 10 s on screen, minutes only while active. Books read elsewhere: 'I'm on page N' + minutes. Links to habits/tasks/goals and Insights next (S3-05). Checked in the browser at 1280 and 375 px."

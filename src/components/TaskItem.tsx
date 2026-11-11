@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { ArrowRight, CalendarClock, Check, Flag, FolderKanban, ListChecks, OctagonAlert, Target, Timer, Trash2 } from 'lucide-react'
+import { ArrowRight, BookOpen, CalendarClock, Check, Flag, FolderKanban, ListChecks, OctagonAlert, Target, Timer, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useI18n } from '../i18n/react'
 import { celebrate } from '../lib/celebrate'
@@ -8,6 +8,7 @@ import { addDaysKey, diffDays, prettyDay } from '../lib/date'
 import { useAreaMap, useToday } from '../lib/hooks'
 import { navigate } from '../lib/router'
 import { useStore } from '../lib/store'
+import { openBookOrReader } from './library/Books'
 import { toast } from '../lib/toast'
 import type { Task } from '../lib/types'
 import { AREA_HEX } from '../lib/colors'
@@ -47,6 +48,7 @@ export function TaskItem({ task, showDate, hideProject, onToggled }: { task: Tas
   const move = useStore((s) => s.moveTask)
   const goal = useStore((s) => (task.goalId ? s.goals.find((g) => g.id === task.goalId) : undefined))
   const project = useStore((s) => (task.projectId ? s.projects.find((p) => p.id === task.projectId) : undefined))
+  const book = useStore((s) => s.books.find((b) => b.task?.taskId === task.id))
   const startTimer = useStore((s) => s.startTimer)
   const focusMinutes = useStore((s) => s.settings.focusMinutes)
   const [editing, setEditing] = useState(false)
@@ -114,6 +116,11 @@ export function TaskItem({ task, showDate, hideProject, onToggled }: { task: Tas
               </button>
             )}
             {goal && <span className="inline-flex items-center gap-1"><Target size={11} />{goal.title}</span>}
+            {book && (
+              <button onClick={(e) => { e.stopPropagation(); openBookOrReader(book) }} className="inline-flex items-center gap-1 hover:text-accent" dir="auto">
+                <BookOpen size={11} />{book.task?.untilPage ? t.f(m.library.links.taskChip, { title: book.title, page: t.n(book.task.untilPage) }) : book.title}
+              </button>
+            )}
           </div>
         </div>
         <div className="flex shrink-0 items-center opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>

@@ -73,4 +73,5 @@ The vocabulary is fixed. Use these words in code, UI and memory alike.
 | **Bookmark** | A marked page in a PDF book, with an optional note. | `Bookmark` |
 | **Reader** | The full-screen PDF view. | `Reader` |
 | **Reading session** | One sitting with a book: active minutes and pages read. Never "focus session". | `ReadingSession` |
+| **General reading** | Reading not linked to a habit — still counted in Insights → Reading. | `ReadingStats.generalMinutes` |
 | **DateKey** | A local-time day as `yyyy-MM-dd`. Never UTC. | `DateKey` |

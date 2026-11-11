@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { activeMs, atEnd, bookProgress, continueBook, IDLE_MS, pagesForward, pagesRead, placeOf, readingTotals, titleFromFileName, visibleBooks } from '../library'
+import { booksToward, goalCurrent } from '../goals'
+import { readingStats } from '../insights'
 import { emptyData } from '../seed'
 import { useStore } from '../store'
 import { fromEntities, toEntities } from '../sync/entities'
@@ -226,5 +228,131 @@ describe('sync (ADR-016) carries the library', () => {
     const aE = toEntities(a); const bE = toEntities(b)
     const m = merge({ entities: aE, meta: stamp(baseE, aE, meta0, 2000) }, { entities: bE, meta: stamp(baseE, bE, meta0, 3000) })
     expect(fromEntities(m.entities, a).bookmarks.map((x) => x.page).sort()).toEqual([3, 9])
+  })
+})
+
+describe('links (ADR-047)', () => {
+  beforeEach(() => useStore.setState({ ...emptyData() }))
+  const habit = (unit = 'pages') => useStore.getState().addHabit({ name: 'Read', emoji: '📚', areaId: null, schedule: { type: 'daily' }, target: 10, unit })
+  const sit = (id: string, bookId: string, minutes: number, pages: number, date = '2026-11-11') =>
+    useStore.getState().saveReadingSession({ id, bookId, date, startedAt: `${date}T10:00:00.000Z`, minutes, fromPage: 1, toPage: 1 + pages, pages })
+
+  it('a sitting adds its pages to the linked habit, by the difference on every save, and deleting it takes them back', () => {
+    const h = habit()
+    const s = useStore.getState()
+    s.setHabitAmount(h, '2026-11-11', 3) // ticked by hand earlier that day
+    const b = s.addBook({ title: 'B', habit: { habitId: h, counts: 'pages' } })
+    sit('r', b, 5, 4)
+    expect(useStore.getState().habitLogs[h]['2026-11-11']).toBe(7)
+    sit('r', b, 12, 10)
+    expect(useStore.getState().habitLogs[h]['2026-11-11']).toBe(13)
+    expect(useStore.getState().readingSessions[0]).toMatchObject({ habitId: h, habitAmount: 10 })
+    useStore.getState().deleteReadingSession('r')
+    expect(useStore.getState().habitLogs[h]['2026-11-11']).toBe(3)
+  })
+
+  it('minutes count instead when the link says so; unlinked reading touches no habit', () => {
+    const h = habit('min')
+    const s = useStore.getState()
+    const linked = s.addBook({ title: 'L', habit: { habitId: h, counts: 'minutes' } })
+    const free = s.addBook({ title: 'F' })
+    sit('a', linked, 25, 8)
+    sit('b', free, 40, 20)
+    expect(useStore.getState().habitLogs[h]).toEqual({ '2026-11-11': 25 })
+    expect(useStore.getState().readingSessions.find((r) => r.id === 'b')).toMatchObject({ habitId: null, habitAmount: 0 })
+  })
+
+  it('a link changed mid-sitting applies to the next sitting; the running one keeps what it added and adds no more', () => {
+    const h1 = habit(); const h2 = habit()
+    const s = useStore.getState()
+    const b = s.addBook({ title: 'B', habit: { habitId: h1, counts: 'pages' } })
+    sit('r', b, 5, 4)
+    s.updateBook(b, { habit: { habitId: h2, counts: 'pages' } })
+    sit('r', b, 9, 6)
+    const logs = useStore.getState().habitLogs
+    expect(logs[h1]?.['2026-11-11']).toBe(4)
+    expect(logs[h2]?.['2026-11-11']).toBeUndefined()
+    sit('next', b, 3, 2)
+    expect(useStore.getState().habitLogs[h2]['2026-11-11']).toBe(2)
+  })
+
+  it('a task is completed when the book reaches its page, once; going back never re-opens it', () => {
+    const s = useStore.getState()
+    const t = s.addTask({ title: 'Read to 50' })
+    const b = s.addBook({ title: 'B', task: { taskId: t, untilPage: 50 } })
+    s.setBookPlace(b, 49)
+    expect(useStore.getState().tasks[0].done).toBe(false)
+    s.setBookPlace(b, 52)
+    expect(useStore.getState().tasks[0].done).toBe(true)
+    s.toggleTask(t) // re-opened by hand
+    s.setBookPlace(b, 30)
+    expect(useStore.getState().tasks[0].done).toBe(false)
+  })
+
+  it('a task with no page is completed when the book is finished', () => {
+    const s = useStore.getState()
+    const t = s.addTask({ title: 'Finish it' })
+    const b = s.addBook({ title: 'B', pages: 100, task: { taskId: t, untilPage: null } })
+    s.setBookPlace(b, 100)
+    expect(useStore.getState().tasks[0].done).toBe(false)
+    s.setBookStatus(b, 'finished')
+    expect(useStore.getState().tasks[0].done).toBe(true)
+  })
+
+  it('finishing ticks the linked milestone; un-finishing leaves it', () => {
+    const s = useStore.getState()
+    const g = s.addGoal({ title: 'Read the six books', why: '', areaId: null, kind: 'milestones', startValue: 0, target: 0, unit: '', startDate: '2026-11-01', deadline: null,
+      milestones: [{ id: 'm1', title: 'Book one', done: false, doneAt: null }, { id: 'm2', title: 'Book two', done: false, doneAt: null }] })
+    const b = s.addBook({ title: 'One', goal: { goalId: g, kind: 'milestone', milestoneId: 'm1' } })
+    s.setBookStatus(b, 'finished')
+    expect(useStore.getState().goals[0].milestones.map((m) => m.done)).toEqual([true, false])
+    s.setBookStatus(b, 'reading')
+    expect(useStore.getState().goals[0].milestones[0].done).toBe(true)
+  })
+
+  it('numeric goals: a finished book adds its amount, a pages book adds its page, and the goal completes when reached', () => {
+    const s = useStore.getState()
+    const g = s.addGoal({ title: 'Read 2 books', why: '', areaId: null, kind: 'numeric', startValue: 0, target: 2, unit: 'books', startDate: '2026-11-01', deadline: null, milestones: [] })
+    const a = s.addBook({ title: 'A', goal: { goalId: g, kind: 'finished', amount: 1 } })
+    const b = s.addBook({ title: 'B', goal: { goalId: g, kind: 'finished', amount: 1 } })
+    s.setBookStatus(a, 'finished')
+    expect(useStore.getState().goals[0].status).toBe('active')
+    s.setBookStatus(b, 'finished')
+    expect(useStore.getState().goals[0].status).toBe('done')
+
+    const pagesGoal = s.addGoal({ title: 'Read 500 pages', why: '', areaId: null, kind: 'numeric', startValue: 20, target: 500, unit: 'pages', startDate: '2026-11-01', deadline: null, milestones: [] })
+    const c = s.addBook({ title: 'C', pages: 300, goal: { goalId: pagesGoal, kind: 'pages' } })
+    s.setBookPlace(c, 120)
+    const st = useStore.getState()
+    expect(goalCurrent(st.goals.find((x) => x.id === pagesGoal)!, st)).toBe(140)
+    s.setBookStatus(c, 'finished')
+    const st2 = useStore.getState()
+    expect(goalCurrent(st2.goals.find((x) => x.id === pagesGoal)!, st2)).toBe(320)
+  })
+
+  it('booksToward ignores other goals and unfinished "finished" links; no book sources means nothing', () => {
+    const books = [
+      book({ id: 'x', status: 'reading', goal: { goalId: 'g', kind: 'finished', amount: 5 } }),
+      book({ id: 'y', status: 'finished', goal: { goalId: 'other', kind: 'finished', amount: 5 } }),
+      book({ id: 'z', status: 'finished', pages: 80, goal: { goalId: 'g', kind: 'pages' } }),
+    ]
+    expect(booksToward('g', books, [{ id: 'z', page: 40, at: '' }])).toBe(80)
+    expect(booksToward('g')).toBe(0)
+  })
+})
+
+describe('reading in Insights (ADR-047)', () => {
+  it('sums the range by day and by book, splits habit from general reading, counts books finished in it', () => {
+    const rs = [
+      session({ id: '1', bookId: 'a', date: '2026-11-09', minutes: 20, pages: 10, habitId: 'h', habitAmount: 10 }),
+      session({ id: '2', bookId: 'b', date: '2026-11-10', minutes: 30, pages: 12 }),
+      session({ id: '3', bookId: 'a', date: '2026-11-10', minutes: 10, pages: 4, habitId: 'h', habitAmount: 4 }),
+      session({ id: 'out', bookId: 'a', date: '2026-11-01', minutes: 99, pages: 99 }),
+    ]
+    const r = readingStats(rs, [{ id: 'a', finishedOn: '2026-11-10' }, { id: 'b', finishedOn: '2026-10-01' }], '2026-11-09', '2026-11-11')
+    expect(r).toMatchObject({ minutes: 60, pages: 26, sessions: 3, readingDays: 2, days: 3, habitMinutes: 30, generalMinutes: 30, finished: 1 })
+    expect(r.byDay['2026-11-10']).toEqual({ minutes: 40, pages: 16 })
+    expect(r.byDay['2026-11-11']).toEqual({ minutes: 0, pages: 0 })
+    expect(r.byBook.map((b) => [b.bookId, b.minutes, b.sessions])).toEqual([['a', 30, 2], ['b', 30, 1]])
   })
 })

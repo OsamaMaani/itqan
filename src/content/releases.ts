@@ -26,6 +26,23 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: 9,
+    date: '2026-11-11',
+    tasks: ['S3-05'],
+    items: [
+      {
+        emoji: '🔗',
+        text: {
+          en: 'Books can now count toward what you are working on. In a book’s settings, link it to a habit (pages or minutes read), a task that completes when you reach a page, or a goal — a milestone ticked when you finish, or pages or an amount added to a number goal. Insights has a new Reading section: time, pages, days and books finished, with reading that has no link shown as general reading.',
+          ar: 'صار بإمكان الكتب أن تُحسب لما تعمل عليه. من إعدادات الكتاب، اربطه بعادة (الصفحات أو دقائق القراءة)، أو بمهمة تكتمل عند بلوغ صفحة معيّنة، أو بهدف: مرحلة تُعلَّم عند إنهائه، أو صفحات أو كمية تُضاف إلى هدف رقمي. وفي الإحصاءات قسم جديد للقراءة: الوقت والصفحات والأيام والكتب المنتهية، وتظهر القراءة غير المرتبطة قراءةً عامة.',
+          fr: 'Tes livres peuvent maintenant compter pour ce sur quoi tu travailles. Dans les réglages d’un livre, relie-le à une habitude (pages ou minutes lues), à une tâche terminée quand tu atteins une page, ou à un objectif : une étape cochée quand tu le finis, ou des pages ou une quantité ajoutées à un objectif chiffré. Les statistiques ont une nouvelle section Lecture : temps, pages, jours et livres terminés, la lecture sans lien comptant comme lecture libre.',
+          zh: '书现在可以计入你正在做的事了。在书的设置里，可以把它关联到一个习惯（按已读页数或分钟）、一项读到某页就完成的任务，或一个目标：读完时勾选一个里程碑，或为数字目标增加页数或数量。统计中新增“阅读”部分：时间、页数、天数和读完的书，没有关联的阅读算作一般阅读。',
+          es: 'Ahora los libros pueden contar para aquello en lo que trabajas. En los ajustes de un libro, vincúlalo a un hábito (páginas o minutos leídos), a una tarea que se completa al llegar a una página, o a un objetivo: un hito que se marca al terminarlo, o páginas o una cantidad que se suman a un objetivo numérico. Estadísticas tiene una nueva sección de Lectura: tiempo, páginas, días y libros terminados, y la lectura sin vínculo aparece como lectura general.',
+        },
+      },
+    ],
+  },
+  {
     id: 8,
     date: '2026-11-11',
     tasks: ['S3-02'],

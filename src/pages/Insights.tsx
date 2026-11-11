@@ -1,4 +1,4 @@
-import { Activity, Award, BarChart3, CheckCircle2, Clock, Flame, Lock, Play, Shield, Target, Timer, Trophy, Zap } from 'lucide-react'
+import { Activity, Award, BarChart3, BookOpen, CheckCircle2, Clock, Flame, Lock, Play, Shield, Target, Timer, Trophy, Zap } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { ColumnChart, Delta, MINUTE_STEPS, ShareBar, Sparkline } from '../components/charts'
 import { Heatmap } from '../components/Heatmap'
@@ -10,7 +10,7 @@ import { addDaysKey, rangeKeys, todayKey } from '../lib/date'
 import { badges as computeBadges, xpByDay } from '../lib/gamification'
 import { completionRate, isMetOn, streak } from '../lib/habits'
 import { useData, useProgress, useToday } from '../lib/hooks'
-import { change, focusStats, focusStreak, habitAmounts, habitConsistency, previousRange, tasksDoneByDay } from '../lib/insights'
+import { change, focusStats, focusStreak, habitAmounts, habitConsistency, previousRange, readingStats, tasksDoneByDay } from '../lib/insights'
 import { navigate } from '../lib/router'
 import type { DateKey } from '../lib/types'
 
@@ -154,6 +154,17 @@ export function InsightsPage() {
       >
         <FocusSection days={days} today={today} s={s} xLabels={xLabels} />
       </Section>
+
+      {/* ---- Reading (ADR-047) ---- */}
+      {d.books.length > 0 && (
+        <Section
+          icon={<BookOpen size={15} />}
+          title={mi.reading.title}
+          right={<Button size="sm" variant="ghost" onClick={() => navigate('library')}><BookOpen size={13} /> {mi.reading.open}</Button>}
+        >
+          <ReadingSection days={days} today={today} from={from} prevFrom={prev.from} prevTo={prev.to} xLabels={xLabels} />
+        </Section>
+      )}
 
       {/* ---- Habits and areas ---- */}
       <Section icon={<Target size={15} />} title={mi.section.habits}>
@@ -461,6 +472,82 @@ function FocusSection({ days, today, s, xLabels }: { days: DateKey[]; today: Dat
 }
 
 /** About five dates under a chart of days, the last one being Today. */
+function ReadingSection({ days, today, from, prevFrom, prevTo, xLabels }: {
+  days: DateKey[]; today: DateKey; from: DateKey; prevFrom: DateKey; prevTo: DateKey; xLabels: { i: number; label: string }[]
+}) {
+  const t = useI18n()
+  const mr = t.m.insights.reading
+  const d = useData()
+  const r = useMemo(() => readingStats(d.readingSessions, d.books, from, today), [d.readingSessions, d.books, from, today])
+  const p = useMemo(() => readingStats(d.readingSessions, d.books, prevFrom, prevTo), [d.readingSessions, d.books, prevFrom, prevTo])
+  const books = useMemo(() => new Map(d.books.map((b) => [b.id, b])), [d.books])
+
+  if (r.sessions === 0) {
+    return (
+      <Card className="flex flex-col items-center gap-2 px-6 py-10 text-center">
+        <div className="font-bold">{mr.emptyTitle}</div>
+        <p className="max-w-sm text-sm text-muted">{mr.emptyBody}</p>
+      </Card>
+    )
+  }
+  const perDay = days.map((k) => r.byDay[k]?.minutes ?? 0)
+  const top = r.byBook.slice(0, 6)
+  const maxTop = Math.max(1, ...top.map((b) => b.minutes))
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-4">
+        <Metric label={mr.time} value={t.dur(r.minutes)} delta={change(r.minutes, p.minutes)} />
+        <Metric label={mr.pages} value={t.n(r.pages)} delta={change(r.pages, p.pages)} />
+        <Metric label={mr.days} value={t.pct(r.readingDays / r.days)} sub={t.p(mr.daysOf, r.days, { read: r.readingDays })}>
+          <ProgressBar value={r.readingDays / r.days} height={4} className="mt-2" />
+        </Metric>
+        <Metric label={mr.finished} value={t.n(r.finished)} delta={change(r.finished, p.finished)} />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <Card className="p-5">
+          <SectionTitle><span className="inline-flex items-center gap-1.5"><Clock size={13} /> {mr.perDay}</span></SectionTitle>
+          <ColumnChart
+            values={perDay}
+            steps={MINUTE_STEPS}
+            format={(v) => t.dur(Math.round(v))}
+            emphasis={(i) => days[i] === today}
+            tip={(i) => t.f(mr.dayTip, { date: t.d(days[i], 'weekdayShort'), time: t.dur(perDay[i]), pages: t.p(mr.pagesCount, r.byDay[days[i]]?.pages ?? 0) })}
+            xLabels={xLabels}
+            ariaLabel={`${mr.perDay}: ${t.dur(r.minutes)}`}
+          />
+          {r.minutes > 0 && (
+            <div className="mt-4 space-y-1.5">
+              <ShareBar parts={[
+                { key: 'habit', value: r.habitMinutes, color: 'var(--accent)', title: mr.forHabits },
+                { key: 'general', value: r.generalMinutes, color: 'var(--muted)', title: mr.general },
+              ]} />
+              <div className="flex flex-wrap justify-between gap-2 text-xs text-muted">
+                <span>{t.f(mr.forHabitsValue, { time: t.dur(r.habitMinutes) })}</span>
+                <span>{t.f(mr.generalValue, { time: t.dur(r.generalMinutes) })}</span>
+              </div>
+            </div>
+          )}
+        </Card>
+        <Card className="p-5">
+          <SectionTitle>{mr.byBook}</SectionTitle>
+          <div className="space-y-3">
+            {top.map((x) => (
+              <div key={x.bookId}>
+                <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
+                  <span className="truncate font-semibold" dir="auto">{books.get(x.bookId)?.title ?? mr.deletedBook}</span>
+                  <span className="shrink-0 text-xs text-muted tabular">{t.p(mr.pagesCount, x.pages)} · <span className="font-semibold text-text">{t.dur(x.minutes)}</span></span>
+                </div>
+                <ProgressBar value={x.minutes / maxTop} height={6} />
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
 function dayLabels(days: DateKey[], today: DateKey, t: ReturnType<typeof useI18n>): { i: number; label: string }[] {
   const n = days.length
   const every = n <= 7 ? 1 : n <= 14 ? 3 : n <= 30 ? 7 : 21

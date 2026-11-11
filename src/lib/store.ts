@@ -757,6 +757,7 @@ export const useStore = create<Store>()(
           finishedOn: status === 'finished' ? today : null,
         })
         if (status === 'finished' && b.pages) get().setBookPlace(id, b.pages)
+        settleBookLinks(id)
       },
       deleteBook: (id) =>
         set((s) => ({
@@ -764,12 +765,13 @@ export const useStore = create<Store>()(
           bookPlaces: s.bookPlaces.filter((p) => p.id !== id),
           bookmarks: s.bookmarks.filter((m) => m.bookId !== id),
         })),
-      setBookPlace: (bookId, page) =>
-        set((s) => {
-          const p = Math.max(1, Math.round(page))
-          if (s.bookPlaces.find((x) => x.id === bookId)?.page === p) return {}
-          return { bookPlaces: [...s.bookPlaces.filter((x) => x.id !== bookId), { id: bookId, page: p, at: now() }] }
-        }),
+      setBookPlace: (bookId, page) => {
+        const p = Math.max(1, Math.round(page))
+        const s = get()
+        if (s.bookPlaces.find((x) => x.id === bookId)?.page === p) return
+        set({ bookPlaces: [...s.bookPlaces.filter((x) => x.id !== bookId), { id: bookId, page: p, at: now() }] })
+        settleBookLinks(bookId)
+      },
       addBookmark: (bookId, page, note = '') => {
         const id = uid()
         set((s) => ({ bookmarks: [...s.bookmarks, { id, bookId, page, note, createdAt: now() }] }))
@@ -777,15 +779,36 @@ export const useStore = create<Store>()(
       },
       updateBookmark: (id, note) => set((s) => ({ bookmarks: s.bookmarks.map((m) => (m.id === id ? { ...m, note } : m)) })),
       deleteBookmark: (id) => set((s) => ({ bookmarks: s.bookmarks.filter((m) => m.id !== id) })),
-      saveReadingSession: (r) =>
-        set((s) => {
-          const old = s.readingSessions.find((x) => x.id === r.id)
-          const rest = s.readingSessions.filter((x) => x.id !== r.id)
-          if (r.minutes <= 0 && r.pages <= 0) return old ? { readingSessions: rest } : {}
-          const next: ReadingSession = { habitId: null, habitAmount: 0, ...old, ...r, date: old?.date ?? r.date }
-          return { readingSessions: old ? s.readingSessions.map((x) => (x.id === r.id ? next : x)) : [...s.readingSessions, next] }
-        }),
-      deleteReadingSession: (id) => set((s) => ({ readingSessions: s.readingSessions.filter((x) => x.id !== id) })),
+      saveReadingSession: (r) => {
+        const s = get()
+        const old = s.readingSessions.find((x) => x.id === r.id)
+        const date = old?.date ?? r.date
+        // The habit is chosen once, when the sitting is first saved, and each save moves its log by
+        // the difference (ADR-047). If the book's link changes mid-sitting, the sitting keeps what it
+        // already added and adds no more; the new link counts from the next sitting.
+        const book = s.books.find((b) => b.id === r.bookId)
+        const link = old ? null : book?.habit && s.habits.some((h) => h.id === book.habit!.habitId) ? book.habit : null
+        const habitId = old ? old.habitId : link?.habitId ?? null
+        const counts = old ? (book?.habit?.habitId === old.habitId ? book.habit.counts : null) : link?.counts ?? null
+        const empty = r.minutes <= 0 && r.pages <= 0
+        const amount = !habitId || empty ? 0 : counts === 'minutes' ? r.minutes : counts === 'pages' ? r.pages : old?.habitAmount ?? 0
+        const delta = amount - (old?.habitAmount ?? 0)
+        if (empty) {
+          if (old) set({ readingSessions: s.readingSessions.filter((x) => x.id !== r.id) })
+        } else {
+          const next: ReadingSession = { ...r, date, habitId, habitAmount: amount }
+          set({ readingSessions: old ? s.readingSessions.map((x) => (x.id === r.id ? next : x)) : [...s.readingSessions, next] })
+        }
+        if (habitId && delta !== 0) s.setHabitAmount(habitId, date, Math.max(0, (get().habitLogs[habitId]?.[date] ?? 0) + delta))
+      },
+      deleteReadingSession: (id) => {
+        const r = get().readingSessions.find((x) => x.id === id)
+        set((s) => ({ readingSessions: s.readingSessions.filter((x) => x.id !== id) }))
+        if (r?.habitId && r.habitAmount > 0) {
+          const have = get().habitLogs[r.habitId]?.[r.date] ?? 0
+          get().setHabitAmount(r.habitId, r.date, Math.max(0, have - r.habitAmount))
+        }
+      },
 
       // --- notifications (ADR-031) ----------------------------------------------
       savePushTarget: (t) => set((s) => ({ pushTargets: [...s.pushTargets.filter((x) => x.id !== t.id), t] })),
@@ -830,6 +853,29 @@ export const useStore = create<Store>()(
 // whenever they change — by a switch here, a sync from another device, or a restored backup.
 setDayRule(useStore.getState().fajrSpans)
 useStore.subscribe((s, prev) => { if (s.fajrSpans !== prev.fajrSpans) setDayRule(s.fajrSpans) })
+
+/**
+ * What a book's links do once its page or status says so (ADR-047), run after every page and status
+ * change and when links are saved: finished → tick the linked milestone and complete a task meant
+ * for the whole book; at or past the task's page → complete the task; and complete the goal if it is
+ * now reached. Only ever completes — un-finishing a book or going back a page re-opens nothing,
+ * so a tick the owner made by hand is never taken away.
+ */
+export function settleBookLinks(bookId: ID): void {
+  const s = useStore.getState()
+  const b = s.books.find((x) => x.id === bookId)
+  if (!b) return
+  const page = s.bookPlaces.find((p) => p.id === bookId)?.page ?? 0
+  const finished = b.status === 'finished'
+  const g = b.goal
+  if (finished && g?.kind === 'milestone') {
+    const ms = s.goals.find((x) => x.id === g.goalId)?.milestones.find((m) => m.id === g.milestoneId)
+    if (ms && !ms.done) s.toggleMilestone(g.goalId, g.milestoneId)
+  }
+  const task = b.task ? s.tasks.find((x) => x.id === b.task!.taskId) : undefined
+  if (task && !task.done && (b.task!.untilPage ? page >= b.task!.untilPage : finished)) s.toggleTask(task.id)
+  if (g) completeIfReached(g.goalId)
+}
 
 function completeIfReached(goalId: ID): boolean {
   const s = useStore.getState()

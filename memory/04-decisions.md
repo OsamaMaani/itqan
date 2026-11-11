@@ -1161,3 +1161,34 @@ entity per book is simpler and merges the same way); pdf.js's own viewer (`pdf_v
 built around one page element per page plus its CSS); counting pages by the furthest page reached
 (jumping to the index would "read" hundreds of pages); marking a book finished on its last page
 automatically (back matter, or a quick look at the end).
+
+## ADR-047 | 2026-11-11 | accepted | Library links: a book counts toward a habit, a task or a goal
+
+**Context:** The owner, 2026-11-11 (with ADR-046): a book can be connected to a reading habit, a study
+habit "or whatever", or a task, as he wishes; a book can move a goal by a milestone or an amount,
+"customizable, just like habits"; reading with no link is general reading in Insights. The link
+fields were added empty in schema v18, so this needs no schema change.
+**Decision:**
+- **Habit** (`Book.habit` `{ habitId, counts: pages | minutes }`, default from the habit's unit): each
+  reading session adds its pages or minutes to that habit's log on the session's day, like a focus
+  session (ADR-029). The habit is fixed when the session is first saved, and every later save moves
+  the log by the difference; deleting the session takes its amount back. A link changed mid-session
+  applies to the next one — the running session keeps what it added and adds no more.
+- **Task** (`Book.task` `{ taskId, untilPage }`): reaching `untilPage` completes the task; with no page
+  it completes when the book is finished. "+ New task for this book" makes one dated today ("Read
+  “X” to page 150"). The task row shows the book and opens it (the reader for a PDF).
+- **Goal** (`Book.goal`): on a milestone goal, finishing the book ticks the chosen milestone (stored,
+  like any tick, so XP and history are unchanged); on a numeric goal, the book adds its `amount` once
+  finished, or the page it is open at (all its pages once finished). Book amounts are derived in
+  `goalCurrent` through `booksToward()` — never written as check-ins — and only for check-in goals,
+  not Training-linked ones. `GoalSources` gains optional `books` and `bookPlaces`.
+- **All effects only ever complete** (`settleBookLinks`, run after a page or status change and when
+  links are saved): going back a page or un-finishing a book never re-opens a task, unticks a
+  milestone or reopens a goal — a tick the owner made by hand is never taken away.
+- **Insights → Reading** (`readingStats`, tested): reading time, pages, reading days, books finished,
+  minutes per day, by book, and minutes toward habits vs general reading — every session counts.
+**Rejected:** writing goal check-ins when a book finishes (they would linger after unlinking, and
+double-count with the derived amount); deriving milestone ticks from book status (every place that
+reads `milestone.done` — cards, XP, the goal maths — would need the books); unticking or re-opening
+on un-finish (would undo the owner's own ticks); several habits per book (no one asked; one link,
+chosen per book).

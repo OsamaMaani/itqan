@@ -1,9 +1,31 @@
 import { diffDays } from './date'
 import { exerciseBest } from './training'
-import type { Data, DateKey, Goal } from './types'
+import type { Book, BookPlace, Data, DateKey, Goal } from './types'
 
-/** What goal progress is read from: check-ins, or Training for a linked goal (ADR-027). */
-export type GoalSources = Pick<Data, 'goalLogs' | 'workouts' | 'workoutSets'>
+/**
+ * What goal progress is read from: check-ins, Training for a linked goal (ADR-027), and books
+ * linked to it in the Library (ADR-047). The book sources are optional so older callers stay valid.
+ */
+export type GoalSources = Pick<Data, 'goalLogs' | 'workouts' | 'workoutSets'> & Partial<Pick<Data, 'books' | 'bookPlaces'>>
+
+/**
+ * What linked books add to a numeric goal (ADR-047): a "pages" book adds the page it is open at
+ * (all its pages once finished); a "finished" book adds its amount once finished. Milestone links
+ * tick their milestone when the book is finished — stored, like any milestone tick.
+ */
+export function booksToward(goalId: string, books: Book[] = [], places: BookPlace[] = []): number {
+  let n = 0
+  for (const b of books) {
+    const l = b.goal
+    if (!l || l.goalId !== goalId) continue
+    if (l.kind === 'finished' && b.status === 'finished') n += l.amount
+    if (l.kind === 'pages') {
+      const page = places.find((p) => p.id === b.id)?.page ?? 0
+      n += b.status === 'finished' && b.pages ? Math.max(page, b.pages) : page
+    }
+  }
+  return n
+}
 
 export function goalCurrent(g: Goal, src: GoalSources): number {
   if (g.kind === 'milestones') return g.milestones.filter((m) => m.done).length
@@ -12,7 +34,7 @@ export function goalCurrent(g: Goal, src: GoalSources): number {
   if (link?.kind === 'exercise') return Math.max(g.startValue, exerciseBest(link.exerciseId, link.metric, src.workoutSets))
   // A workouts goal counts finished workouts from the goal's start day.
   if (link?.kind === 'workouts') return g.startValue + src.workouts.filter((w) => w.finishedAt && w.date >= g.startDate).length
-  return g.startValue + src.goalLogs.filter((l) => l.goalId === g.id).reduce((s, l) => s + l.amount, 0)
+  return g.startValue + src.goalLogs.filter((l) => l.goalId === g.id).reduce((s, l) => s + l.amount, 0) + booksToward(g.id, src.books, src.bookPlaces)
 }
 
 export function goalTarget(g: Goal): number {

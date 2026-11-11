@@ -32,7 +32,7 @@ Purpose-built trackers for what the owner actually studies:
 - **Quran revision map** — the 30 juz (or pages) with last-revised dates and a spaced-revision
   suggestion for what to revise today (Q4 decides the unit).
 - **Reading list** — built 2026-11-11 as the **Library** (ADR-046): PDFs read in Itqan on the same
-  page on every device, and books read elsewhere. Links to habits, tasks and goals next (S3-05).
+  page on every device, and books read elsewhere. Links to habits, tasks and goals and a Reading section in Insights built the same day (S3-05, ADR-047).
 - **Courses** — modules/lessons checklist per course; feeds goals.
 - **French** — vocabulary review and oral-presentation practice log.
 

@@ -1,6 +1,6 @@
 import { addDaysKey, dayOf, dayOfWeek, rangeKeys } from './date'
 import { amountBetween, amountTotal, completionRate, historyStart, isCounted, roundProgress, type RoundProgress } from './habits'
-import type { DateKey, FocusSession, Habit, HabitLogs, ID, Task } from './types'
+import type { Book, DateKey, FocusSession, Habit, HabitLogs, ID, ReadingSession, Task } from './types'
 
 // Insights maths (ADR-032). Every number the Insights screen shows comes from here, tested —
 // the screen only lays them out. A session belongs to the local day it started on, like
@@ -223,3 +223,53 @@ export function habitAmounts(habits: Habit[], logs: HabitLogs, from: DateKey, to
     })
 }
 
+
+// --- reading (ADR-047) --------------------------------------------------------------------
+
+export interface ReadingStats {
+  minutes: number
+  pages: number
+  sessions: number
+  /** Days with any reading */
+  readingDays: number
+  days: number
+  byDay: Record<DateKey, { minutes: number; pages: number }>
+  /** Most minutes first, then most pages */
+  byBook: { bookId: ID; minutes: number; pages: number; sessions: number }[]
+  /** Minutes counted toward a habit, and the rest — general reading */
+  habitMinutes: number
+  generalMinutes: number
+  /** Books finished in the range */
+  finished: number
+}
+
+/** Reading from `from` to `to` inclusive: every sitting counts, linked to a habit or not. */
+export function readingStats(sessions: ReadingSession[], books: Pick<Book, 'id' | 'finishedOn'>[], from: DateKey, to: DateKey): ReadingStats {
+  const keys = rangeKeys(from, to)
+  const byDay: ReadingStats['byDay'] = {}
+  for (const k of keys) byDay[k] = { minutes: 0, pages: 0 }
+  const per = new Map<ID, { bookId: ID; minutes: number; pages: number; sessions: number }>()
+  let minutes = 0, pages = 0, n = 0, habitMinutes = 0
+  for (const r of sessions) {
+    if (r.date < from || r.date > to) continue
+    n++
+    minutes += r.minutes
+    pages += r.pages
+    if (r.habitId) habitMinutes += r.minutes
+    byDay[r.date].minutes += r.minutes
+    byDay[r.date].pages += r.pages
+    const b = per.get(r.bookId) ?? { bookId: r.bookId, minutes: 0, pages: 0, sessions: 0 }
+    b.minutes += r.minutes; b.pages += r.pages; b.sessions++
+    per.set(r.bookId, b)
+  }
+  return {
+    minutes, pages, sessions: n,
+    readingDays: keys.filter((k) => byDay[k].minutes > 0 || byDay[k].pages > 0).length,
+    days: keys.length,
+    byDay,
+    byBook: [...per.values()].sort((a, b) => b.minutes - a.minutes || b.pages - a.pages),
+    habitMinutes,
+    generalMinutes: minutes - habitMinutes,
+    finished: books.filter((b) => b.finishedOn && b.finishedOn >= from && b.finishedOn <= to).length,
+  }
+}
