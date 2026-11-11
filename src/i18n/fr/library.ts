@@ -91,6 +91,8 @@ export const library: Messages['library'] = {
     zoomIn: 'Agrandir',
     zoomOut: 'Réduire',
     fitWidth: 'Ajuster à la largeur',
+    tryAgain: 'Réessayer',
+    pageFailed: 'Impossible d’afficher cette page',
   },
 
   links: {

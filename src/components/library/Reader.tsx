@@ -1,18 +1,19 @@
-import { ArrowLeft, Bookmark as BookmarkIcon, BookmarkCheck, List, Minus, Moon, Plus, Sun, Trash2 } from 'lucide-react'
-import type { PDFDocumentProxy, RenderTask } from 'pdfjs-dist'
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { ArrowLeft, Bookmark as BookmarkIcon, BookmarkCheck, List, Minus, Moon, Plus, RotateCw, Sun, Trash2 } from 'lucide-react'
+import type { PDFDocumentProxy } from 'pdfjs-dist'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import { useI18n } from '../../i18n/react'
 import { dayOf } from '../../lib/date'
 import { uid } from '../../lib/id'
 import { activeMs, atEnd, pagesRead, placeOf } from '../../lib/library'
 import { addPdfFiles, pickPdfs } from '../../lib/libraryFiles'
-import { openPdf } from '../../lib/pdf'
-import { loadPdf } from '../../lib/pdfStore'
+import { openPdfBlob } from '../../lib/pdf'
+import { loadPdfBlob } from '../../lib/pdfStore'
 import { navigate } from '../../lib/router'
 import { useStore } from '../../lib/store'
 import { toast } from '../../lib/toast'
 import type { Book } from '../../lib/types'
+import { PageRenderer } from './pageRenderer'
 import { Button, cx, IconButton, Input, Modal } from '../ui'
 
 /**
@@ -23,8 +24,6 @@ import { Button, cx, IconButton, Input, Modal } from '../ui'
 
 const GAP = 8
 const SAVE_EVERY_MS = 30_000
-/** Pixels drawn per page at most (iOS caps canvas memory) */
-const MAX_PIXELS = 5_000_000
 
 /** A page asked for from outside the reader — a bookmark tapped in the book's details. */
 let pendingPage: number | null = null
@@ -45,6 +44,8 @@ export function Reader({ book }: { book: Book }) {
   const L = t.m.library.reader
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null)
   const [state, setState] = useState<'loading' | 'missing' | 'error' | 'ready'>('loading')
+  /** Bumped to open the PDF again: after the engine stopped (iOS may stop it in the background), or on Try again */
+  const [attempt, setAttempt] = useState(0)
   const hash = book.file?.hash
 
   useEffect(() => {
@@ -52,10 +53,11 @@ export function Reader({ book }: { book: Book }) {
     let alive = true
     let opened: PDFDocumentProxy | null = null
     setState('loading')
-    loadPdf(hash)
-      .then((bytes) => {
-        if (!bytes) { if (alive) setState('missing'); return null }
-        return openPdf(bytes)
+    setDoc(null)
+    loadPdfBlob(hash)
+      .then((blob) => {
+        if (!blob) { if (alive) setState('missing'); return null }
+        return openPdfBlob(blob)
       })
       .then((d) => {
         if (!d) return
@@ -64,7 +66,7 @@ export function Reader({ book }: { book: Book }) {
       })
       .catch(() => alive && setState('error'))
     return () => { alive = false; void opened?.loadingTask.destroy() }
-  }, [hash])
+  }, [hash, attempt])
 
   // The page behind the reader stays still.
   useEffect(() => {
@@ -78,7 +80,7 @@ export function Reader({ book }: { book: Book }) {
   return createPortal(
     <div className="fixed inset-0 z-40 flex flex-col bg-bg">
       {state === 'ready' && doc
-        ? <Pages doc={doc} book={book} onClose={close} />
+        ? <Pages key={attempt} doc={doc} book={book} onClose={close} onFatal={() => setAttempt((a) => a + 1)} />
         : (
           <>
             <div className="flex items-center gap-2 border-b border-border bg-surface px-2 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
@@ -87,7 +89,12 @@ export function Reader({ book }: { book: Book }) {
             </div>
             <div className="grid flex-1 place-items-center p-6 text-center">
               {state === 'loading' && <div className="animate-pulse text-muted">{L.loading}</div>}
-              {state === 'error' && <div className="max-w-sm text-muted">{L.error}</div>}
+              {state === 'error' && (
+                <div className="max-w-sm space-y-3">
+                  <div className="text-muted">{L.error}</div>
+                  <Button onClick={() => setAttempt((a) => a + 1)}><RotateCw size={15} /> {L.tryAgain}</Button>
+                </div>
+              )}
               {state === 'missing' && (
                 <div className="max-w-sm space-y-3">
                   <div className="text-4xl">📄</div>
@@ -104,7 +111,7 @@ export function Reader({ book }: { book: Book }) {
   )
 }
 
-function Pages({ doc, book, onClose }: { doc: PDFDocumentProxy; book: Book; onClose: () => void }) {
+function Pages({ doc, book, onClose, onFatal }: { doc: PDFDocumentProxy; book: Book; onClose: () => void; onFatal: () => void }) {
   const t = useI18n()
   const L = t.m.library.reader
   const n = doc.numPages
@@ -154,6 +161,18 @@ function Pages({ doc, book, onClose }: { doc: PDFDocumentProxy; book: Book; onCl
   }, [])
 
   const pageW = Math.max(120, Math.round(Math.min(width - 16, 960) * zoom))
+
+  // One renderer per open document: draws nearest pages first, keeps a few, frees the rest (ADR-048).
+  const fatal = useRef(onFatal)
+  fatal.current = onFatal
+  const [renderer, setRenderer] = useState<PageRenderer | null>(null)
+  useEffect(() => {
+    const r = new PageRenderer(doc, (i, ratio) => measured(i, ratio), () => fatal.current())
+    setRenderer(r)
+    return () => r.destroy()
+  }, [doc, measured])
+  useEffect(() => { renderer?.setWidth(pageW) }, [renderer, pageW])
+  useEffect(() => { renderer?.setView(page, range[0], range[1]) }, [renderer, page, range])
   const heights = useMemo(() => ratios.map((r) => Math.round(pageW / r)), [ratios, pageW])
   const tops = useMemo(() => {
     const out: number[] = []
@@ -194,11 +213,21 @@ function Pages({ doc, book, onClose }: { doc: PDFDocumentProxy; book: Book; onCl
   }, [heights.length, width, tops, n, book.id])
 
   // Keep the page in view when the zoom or the window changes.
+  const focal = useRef<{ x: number; y: number; cx: number; cy: number; height: number } | null>(null)
   useLayoutEffect(() => {
     const el = scroller.current
     if (!el || !opened.current || lastTops.current === tops) return
-    const a = anchor.current
-    if (a) el.scrollTop = tops[a.page - 1] + a.frac * (heights[a.page - 1] ?? 0) - GAP
+    const f = focal.current
+    if (f) {
+      // After a pinch: keep the point under the fingers where it was.
+      const k = tops[tops.length - 1] / f.height
+      el.scrollLeft = f.x * k - f.cx
+      el.scrollTop = f.y * k - f.cy
+      focal.current = null
+    } else {
+      const a = anchor.current
+      if (a) el.scrollTop = tops[a.page - 1] + a.frac * (heights[a.page - 1] ?? 0) - GAP
+    }
     lastTops.current = tops
   }, [tops, heights])
 
@@ -214,6 +243,54 @@ function Pages({ doc, book, onClose }: { doc: PDFDocumentProxy; book: Book; onCl
     touched.current = Date.now()
   }, [heights, pageAt, tops, n])
   useEffect(() => { onScroll() }, [onScroll, viewH])
+
+  // Pinch to zoom on a phone: the pages scale under the fingers while pinching (a CSS transform,
+  // nothing redrawn), then the zoom is set and the pages are drawn sharp at the new size.
+  const content = useRef<HTMLDivElement>(null)
+  const zoomRef = useRef(zoom)
+  zoomRef.current = zoom
+  useEffect(() => {
+    const el = scroller.current
+    if (!el) return
+    let pinch: { d0: number; z0: number; ratio: number; cx: number; cy: number; x: number; y: number } | null = null
+    const dist = (e: TouchEvent) => Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY)
+    const start = (e: TouchEvent) => {
+      if (e.touches.length !== 2) return
+      const r = el.getBoundingClientRect()
+      const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - r.left
+      const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2 - r.top
+      pinch = { d0: dist(e), z0: zoomRef.current, ratio: 1, cx, cy, x: el.scrollLeft + cx, y: el.scrollTop + cy }
+    }
+    const move = (e: TouchEvent) => {
+      if (!pinch || e.touches.length !== 2) return
+      e.preventDefault()
+      const z = clampZoom(pinch.z0 * dist(e) / pinch.d0)
+      pinch.ratio = z / pinch.z0
+      const c = content.current
+      if (c) { c.style.transformOrigin = `${pinch.x - c.offsetLeft}px ${pinch.y}px`; c.style.transform = `scale(${pinch.ratio})` }
+    }
+    const end = () => {
+      if (!pinch) return
+      const p = pinch
+      pinch = null
+      const c = content.current
+      if (c) { c.style.transform = ''; c.style.transformOrigin = '' }
+      if (Math.abs(p.ratio - 1) < 0.02) return
+      focal.current = { x: p.x, y: p.y, cx: p.cx, cy: p.cy, height: c?.offsetHeight ?? 1 }
+      setZ(p.z0 * p.ratio)
+    }
+    el.addEventListener('touchstart', start, { passive: true })
+    el.addEventListener('touchmove', move, { passive: false })
+    el.addEventListener('touchend', end)
+    el.addEventListener('touchcancel', end)
+    return () => {
+      el.removeEventListener('touchstart', start)
+      el.removeEventListener('touchmove', move)
+      el.removeEventListener('touchend', end)
+      el.removeEventListener('touchcancel', end)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // --- the reading session ------------------------------------------------------------------
 
@@ -309,8 +386,8 @@ function Pages({ doc, book, onClose }: { doc: PDFDocumentProxy; book: Book; onCl
     else { s.addBookmark(book.id, current.current); toast({ emoji: '🔖', message: t.f(L.marked, { page: t.n(current.current) }) }) }
   }
 
-  const setZ = (z: number) => {
-    const v = Math.min(3, Math.max(0.5, Math.round(z * 100) / 100))
+  function setZ(z: number) {
+    const v = clampZoom(z)
     setZoom(v)
     writePref('itqan-reader-zoom', v)
   }
@@ -348,14 +425,18 @@ function Pages({ doc, book, onClose }: { doc: PDFDocumentProxy; book: Book; onCl
         onScroll={onScroll}
         dir="ltr"
         className={cx('min-h-0 flex-1 overflow-auto overscroll-contain', night ? 'bg-[#111]' : 'bg-surface-2')}
-        style={{ overflowAnchor: 'none' }}
+        style={{ overflowAnchor: 'none', touchAction: 'pan-x pan-y' }}
       >
-        <div className="relative mx-auto" style={{ width: pageW, height: tops[tops.length - 1] ?? 0 }}>
+        <div
+          ref={content}
+          className={cx('relative mx-auto', night && '[&_canvas]:[filter:invert(0.92)_hue-rotate(180deg)]')}
+          style={{ width: pageW, height: tops[tops.length - 1] ?? 0 }}
+        >
           {heights.map((h, i) => (
             <div key={i} className={cx('absolute start-0 overflow-hidden shadow-sm', night ? 'bg-[#222]' : 'bg-white')} style={{ top: tops[i], width: pageW, height: h }}>
-              {i + 1 >= range[0] && i + 1 <= range[1]
-                ? <PageCanvas doc={doc} index={i} width={pageW} height={h} night={night} onRatio={measured} />
-                : <div className="grid size-full place-items-center text-sm text-neutral-400 tabular">{i + 1}</div>}
+              {renderer && i + 1 >= range[0] && i + 1 <= range[1]
+                ? <PageView renderer={renderer} page={i + 1} night={night} />
+                : <PageNumber page={i + 1} />}
             </div>
           ))}
         </div>
@@ -391,47 +472,43 @@ function Pages({ doc, book, onClose }: { doc: PDFDocumentProxy; book: Book; onCl
   )
 }
 
-/** One page, drawn while it is near the screen and released when it leaves. */
-function PageCanvas({ doc, index, width, height, night, onRatio }: {
-  doc: PDFDocumentProxy; index: number; width: number; height: number; night: boolean; onRatio: (i: number, r: number) => void
-}) {
-  const ref = useRef<HTMLCanvasElement>(null)
+/** A page's place in the scroll: its drawing (attached by the renderer), and while there is none, why. */
+function PageView({ renderer, page, night }: { renderer: PageRenderer; page: number; night: boolean }) {
+  const t = useI18n()
+  const host = useRef<HTMLDivElement>(null)
+  const state = useSyncExternalStore(renderer.subscribe, () => renderer.stateOf(page))
   useEffect(() => {
-    let task: RenderTask | null = null
-    let alive = true
-    // Drawn after the scroll settles a little, so flicking past pages draws nothing.
-    const id = setTimeout(() => {
-      doc.getPage(index + 1).then((p) => {
-        if (!alive || !ref.current) return
-        const base = p.getViewport({ scale: 1 })
-        onRatio(index, base.width / base.height)
-        const dpr = Math.min(window.devicePixelRatio || 1, 2)
-        let scale = (width / base.width) * dpr
-        const px = base.width * base.height * scale * scale
-        if (px > MAX_PIXELS) scale *= Math.sqrt(MAX_PIXELS / px)
-        const viewport = p.getViewport({ scale })
-        const c = ref.current
-        c.width = Math.floor(viewport.width)
-        c.height = Math.floor(viewport.height)
-        task = p.render({ canvas: c, viewport })
-        task.promise.catch(() => {})
-      }).catch(() => {})
-    }, 60)
-    return () => {
-      alive = false
-      clearTimeout(id)
-      task?.cancel()
-      const c = ref.current
-      if (c) { c.width = 0; c.height = 0 }
-    }
-  }, [doc, index, width, onRatio])
+    renderer.attach(page, host.current!)
+    return () => renderer.detach(page)
+  }, [renderer, page])
   return (
-    <canvas
-      ref={ref}
-      className="block"
-      style={{ width, height, filter: night ? 'invert(0.92) hue-rotate(180deg)' : undefined }}
-    />
+    <>
+      {state !== 'done' && (
+        <div className={cx('absolute inset-0 grid place-items-center text-sm tabular', night ? 'text-neutral-500' : 'text-neutral-400')}>
+          {state === 'error'
+            ? (
+              <div className="space-y-2 text-center">
+                <div>{t.m.library.reader.pageFailed}</div>
+                <button onClick={() => renderer.retry(page)} className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-200 px-3 py-1.5 font-semibold text-neutral-800">
+                  <RotateCw size={14} /> {t.m.library.reader.tryAgain}
+                </button>
+              </div>
+            )
+            : <div className="flex flex-col items-center gap-2"><span className="size-5 animate-spin rounded-full border-2 border-current border-t-transparent" />{t.n(page)}</div>}
+        </div>
+      )}
+      <div ref={host} className="absolute inset-0" />
+    </>
   )
+}
+
+function PageNumber({ page }: { page: number }) {
+  const t = useI18n()
+  return <div className="grid size-full place-items-center text-sm text-neutral-400 tabular">{t.n(page)}</div>
+}
+
+function clampZoom(z: number): number {
+  return Math.min(3, Math.max(0.5, Math.round(z * 100) / 100))
 }
 
 function GoTo({ open, onClose, page, pages, onGo }: { open: boolean; onClose: () => void; page: number; pages: number; onGo: (p: number) => void }) {

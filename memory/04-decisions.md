@@ -1192,3 +1192,40 @@ double-count with the derived amount); deriving milestone ticks from book status
 reads `milestone.done` — cards, XP, the goal maths — would need the books); unticking or re-opening
 on un-finish (would undo the owner's own ticks); several habits per book (no one asked; one link,
 chosen per book).
+
+## ADR-048 | 2026-11-11 | accepted | The reader draws like pdf.js's own viewer on phones
+
+**Context:** The owner, 2026-11-11: on the iPhone many pages of his PDFs stayed white though they
+have content; asked for it to render well and fast, with the known best practices. Reproduced with a
+60-page scanned book (one ~2480×3508 image a page, 36 MB) on an emulated, CPU-throttled phone, and
+read pdf.js's own code: (1) for any image over 2048², pdf.js finds the canvas limit by allocating
+ever larger OffscreenCanvases in its worker unless `canvasMaxAreaInBytes` is given — its viewer
+gives limits on iOS, ADR-046 did not; WebKit draws nothing on a canvas over 16,777,216 px;
+(2) decoded page images were never freed (`page.cleanup()` was never called), ~35 MB a scanned page;
+(3) every nearby page was drawn at once, the visible one waiting behind the others and all of them
+restarted while scrolling; (4) the whole file was read into memory to open it.
+**Decision:**
+- **`PageRenderer`** (`components/library/pageRenderer.ts`, no React): one page at a time on phones
+  (two on a laptop), in order current → next → previous → next-but-one → the rest in view; a page
+  that leaves the view is cancelled. A buffer of drawn pages (6 / 12, and a pixel total) so scrolling
+  back is instant; the farthest are released (canvas zeroed). `page.cleanup()` after every page, and
+  `doc.cleanup()` after 10 s idle (never mid-drawing). A new size is drawn off-screen and swapped in,
+  so zoom never flashes white. A page that fails is retried at a quarter of the pixels, then shows
+  "Try again"; if getting pages fails twice (the engine stopped, which iOS may do in the background),
+  the reader reopens the PDF on the same page.
+- **Budgets** (`lib/pdfBudget.ts`, pure, tested), as pdf.js's viewer: on iOS/phones 5 MP a page, screen
+  density capped at 2×, and on iOS `canvasMaxAreaInBytes` = 16,777,216 × 4 so oversized images are
+  scaled down in the worker instead of probed and drawn blank.
+- **Opened by byte ranges** (`openPdfBlob`): a `PDFDataRangeTransport` reads 512 KB slices of the
+  file-backed Blob IndexedDB returns, with `disableAutoFetch` and `disableStream` — only what is drawn
+  is read, whatever the book's size.
+- **Pinch to zoom** on touch screens: the pages scale under the fingers with a CSS transform, then
+  the zoom is set and the point under the fingers stays put; `touch-action: pan-x pan-y` keeps iOS
+  from zooming the whole app. A spinner and the page number show while a page is drawn.
+- Measured on the throttled phone, same 30 pages: no blank pages; ~410 MB less renderer memory than
+  ADR-046's reader (1,655 → 1,244 MB) once read through; far jumps visible in 0.1–0.4 s.
+**Rejected:** pdf.js's `PDFViewer` (big, its own CSS and DOM, and harder to keep in the single-file
+laptop build); rendering in an OffscreenCanvas worker of our own (pdf.js already decodes in its
+worker; the drawing is not the bottleneck); a lower-resolution first pass (decoding, not resolution,
+is what costs on scanned pages); not being able to test on a real iPhone is a known gap — the
+Chrome emulation reproduces the scheduling and memory, not WebKit's exact limits.

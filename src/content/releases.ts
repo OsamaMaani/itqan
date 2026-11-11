@@ -26,6 +26,23 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: 10,
+    date: '2026-11-11',
+    tasks: ['S3-06'],
+    items: [
+      {
+        emoji: '📖',
+        text: {
+          en: 'Fixed: PDF pages on the iPhone no longer stay white. The reader now draws the page you’re on first, then the next ones, uses much less memory, and opens big scanned books quickly by reading only the pages you look at. You can also pinch to zoom.',
+          ar: 'إصلاح: لم تعد صفحات PDF تظهر بيضاء على الآيفون. صار القارئ يرسم الصفحة التي أنت عليها أولًا ثم ما بعدها، ويستهلك ذاكرة أقل بكثير، ويفتح الكتب الممسوحة الكبيرة بسرعة لأنه لا يقرأ إلا الصفحات التي تنظر إليها. ويمكنك أيضًا التكبير بإصبعين.',
+          fr: 'Corrigé : les pages PDF ne restent plus blanches sur l’iPhone. Le lecteur dessine d’abord la page où tu es, puis les suivantes, utilise beaucoup moins de mémoire, et ouvre vite les gros livres scannés en ne lisant que les pages que tu regardes. Tu peux aussi zoomer en pinçant l’écran.',
+          zh: '已修复：iPhone 上的 PDF 页面不再一片空白。阅读器现在先绘制你正在看的页，再绘制后面的页，占用的内存少得多，而且只读取你正在看的页面，因此大型扫描书也能很快打开。还可以用双指缩放。',
+          es: 'Corregido: las páginas PDF ya no se quedan en blanco en el iPhone. El lector dibuja primero la página en la que estás y luego las siguientes, usa mucha menos memoria y abre rápido los libros escaneados grandes porque solo lee las páginas que miras. También puedes pellizcar para hacer zoom.',
+        },
+      },
+    ],
+  },
+  {
     id: 9,
     date: '2026-11-11',
     tasks: ['S3-05'],

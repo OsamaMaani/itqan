@@ -2,6 +2,7 @@ import type * as PdfjsLib from 'pdfjs-dist'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import jbig2Wasm from 'pdfjs-dist/wasm/jbig2.wasm?url'
 import openjpegWasm from 'pdfjs-dist/wasm/openjpeg.wasm?url'
+import { renderBudget } from './pdfBudget'
 
 /**
  * pdf.js, loaded on first use (ADR-046) so the rest of Itqan does not pay for it.
@@ -45,16 +46,45 @@ class Assets {
   }
 }
 
+/** What every document is opened with. */
+const OPTIONS = () => ({
+  BinaryDataFactory: Assets,
+  useWorkerFetch: false,
+  // Never read: Assets ignores it. pdf.js only asks for wasm when it has a base to ask under.
+  wasmUrl: 'itqan-bundled/',
+  enableXfa: false,
+  // Scanned pages are big images; on iOS, tell pdf.js the real canvas limit instead of letting it
+  // probe by allocation, so it scales oversized images down rather than drawing blank (ADR-048).
+  canvasMaxAreaInBytes: renderBudget().canvasMaxAreaInBytes,
+})
+
 /** Opens a PDF from its bytes. The buffer is handed to the worker, so pass a copy you no longer need. */
 export async function openPdf(bytes: ArrayBuffer): Promise<PDFDocumentProxy> {
   const lib = await pdfjs()
+  return lib.getDocument({ data: new Uint8Array(bytes), ...OPTIONS() }).promise
+}
+
+/**
+ * Opens a stored PDF by reading only the parts pdf.js asks for (ADR-048) — the cross-reference table,
+ * then each page's objects as it is drawn — instead of loading the whole file into memory. A 300 MB
+ * scanned book opens as fast as a small one and costs the iPhone only the pages being read.
+ */
+export async function openPdfBlob(blob: Blob): Promise<PDFDocumentProxy> {
+  const lib = await pdfjs()
+  class BlobRange extends lib.PDFDataRangeTransport {
+    requestDataRange(begin: number, end: number) {
+      blob.slice(begin, end).arrayBuffer()
+        .then((b) => this.onDataRange(begin, new Uint8Array(b)))
+        .catch(() => this.abort())
+    }
+  }
   return lib.getDocument({
-    data: new Uint8Array(bytes),
-    BinaryDataFactory: Assets,
-    useWorkerFetch: false,
-    // Never read: Assets ignores it. pdf.js only asks for wasm when it has a base to ask under.
-    wasmUrl: 'itqan-bundled/',
-    enableXfa: false,
+    range: new BlobRange(blob.size, null),
+    rangeChunkSize: 512 * 1024,
+    // Fetch only what drawing needs; nothing streams or pre-reads the rest of the file.
+    disableAutoFetch: true,
+    disableStream: true,
+    ...OPTIONS(),
   }).promise
 }
 

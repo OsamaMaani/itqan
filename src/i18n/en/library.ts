@@ -107,6 +107,8 @@ export const library = {
     zoomIn: 'Zoom in',
     zoomOut: 'Zoom out',
     fitWidth: 'Fit width',
+    tryAgain: 'Try again',
+    pageFailed: 'This page could not be shown',
   },
 
   /** What reading a book counts toward (ADR-047). */

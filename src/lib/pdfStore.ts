@@ -48,10 +48,12 @@ export async function savePdf(hash: string, file: Blob): Promise<void> {
   await run('pdfs', 'readwrite', (s) => s.put(file, hash))
 }
 
-/** The PDF's bytes, or null when this device does not have it. */
-export async function loadPdf(hash: string): Promise<ArrayBuffer | null> {
-  const blob = await run<Blob | undefined>('pdfs', 'readonly', (s) => s.get(hash) as IDBRequest<Blob | undefined>)
-  return blob ? blob.arrayBuffer() : null
+/**
+ * The PDF as a Blob, without reading it: IndexedDB hands back a file-backed Blob, so the reader can
+ * read only the slices it needs (ADR-048). null when this device does not have it.
+ */
+export async function loadPdfBlob(hash: string): Promise<Blob | null> {
+  return (await run<Blob | undefined>('pdfs', 'readonly', (s) => s.get(hash) as IDBRequest<Blob | undefined>)) ?? null
 }
 
 /** The hashes of every PDF on this device. */

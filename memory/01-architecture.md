@@ -112,7 +112,9 @@ PDFs are not part of `Data` and never sync: each device keeps its copies in Inde
 (`lib/pdfStore.ts`, database `itqan-files`, stores `pdfs` and `covers`, keyed by SHA-256). A book
 carries only the hash; the place, bookmarks and reading sessions sync like everything else.
 `lib/pdf.ts` loads pdf.js on first use, with its worker inlined as a classic blob worker and its wasm
-decoders bundled, so the reader works from `file://` as well as the hosted app.
+decoders bundled, so the reader works from `file://` as well as the hosted app. The reader opens a
+PDF by byte ranges from the stored Blob and draws through `PageRenderer` — one page at a time,
+nearest first, a small buffer, images freed after drawing, budgets per device (ADR-048).
 
 ## The path to "others can use it" (not built)
 

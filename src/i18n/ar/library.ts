@@ -98,6 +98,8 @@ export const library: Messages['library'] = {
     zoomIn: 'تكبير',
     zoomOut: 'تصغير',
     fitWidth: 'ملاءمة العرض',
+    tryAgain: 'إعادة المحاولة',
+    pageFailed: 'تعذّر عرض هذه الصفحة',
   },
 
   links: {

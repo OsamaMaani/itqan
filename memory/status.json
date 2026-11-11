@@ -4,6 +4,7 @@
   "updated": "2026-11-11",
   "current_stage": 4,
   "next_actions": [
+    "Fixed: PDF pages on the iPhone no longer stay white — pages draw one at a time, nearest first, use far less memory, and big scanned books open fast. Pinch to zoom.",
     "New: link a book to a habit (pages or minutes), a task (done at page N) or a goal (a milestone, its pages, or an amount when finished). Insights has a Reading section.",
     "New: Library — add PDFs and read them in Itqan; they open on the same page on your laptop and iPhone. Bookmarks, night mode and reading time; paper books tracked by page.",
     "New: setting a habit's time is simpler — one-tap quick picks (Friday: Thursday Maghrib to Friday Maghrib), From/Until with the days named, a 'Counts on' choice of the normal day with the Islamic day marked, and a picture of the window over day and night.",
@@ -553,6 +554,13 @@
           "title": "Library links: a book counts toward a habit (pages or minutes), a task (done at page N) or a goal (milestone, pages, amount when finished); reading in Insights (ADR-047)",
           "module": "learning",
           "status": "done"
+        },
+        {
+          "id": "S3-06",
+          "title": "Reader on the iPhone: pages no longer stay white — drawn one at a time nearest first, memory freed, iOS canvas limits given to pdf.js, PDFs opened by byte ranges, pinch to zoom (ADR-048)",
+          "module": "learning",
+          "status": "done",
+          "critical": true
         }
       ]
     },
@@ -754,6 +762,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-11-11",
+      "entry": "S3-06 (ADR-048), reported by the owner: many PDF pages stayed white on the iPhone. Reproduced on a 60-page scanned book on an emulated, 4x-throttled phone and traced in pdf.js's code: no canvasMaxAreaInBytes on iOS (pdf.js probes by allocating huge canvases; WebKit blanks canvases over 16.7 MP), page.cleanup() never called (~35 MB of decoded image per scanned page kept), all nearby pages drawn at once, and the whole file read into memory. New PageRenderer: one page at a time nearest first (two on laptops), buffer of 6/12 drawn pages with a pixel cap, cleanup after each page and doc.cleanup when idle, off-screen redraw on zoom, retry smaller then Try again, reopen the PDF if the engine stops. lib/pdfBudget.ts (tested): 5 MP pages and 2x density on phones, iOS canvas limit passed to pdf.js. PDFs opened by 512 KB byte ranges from the IndexedDB Blob. Pinch to zoom with focal point kept (tested with synthetic touches). Measured old vs new builds over the same 30 pages: no blank pages, renderer memory 1,655 -> 1,244 MB. Not testable here on a real iPhone."
+    },
     {
       "date": "2026-11-11",
       "entry": "S3-05 (ADR-047), the owner's choice for S3-02: each book may count toward a habit (pages or minutes; each reading session adds to the habit's log on its day, by the difference on every save, taken back on delete; the habit is fixed per session), a task (completed at a page, or when the book is finished; '+ New task for this book'; the task row opens the book) and a goal (finishing ticks a milestone; on a numeric goal, an amount when finished or the pages read — derived in goalCurrent via booksToward, never written as check-ins). settleBookLinks only ever completes, never re-opens. Insights → Reading: time, pages, reading days, books finished, minutes per day, by book, toward habits vs general reading (readingStats). No schema change (the link fields came empty in v18). 9 new tests; checked in the browser: links editor at 375 px, a page update past 150 completed the linked task and added 35 pages to the Read habit, Insights reading at 1280 px."
