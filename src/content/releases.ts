@@ -26,6 +26,23 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: 13,
+    date: '2026-11-12',
+    tasks: ['S2-55'],
+    items: [
+      {
+        emoji: '🧭',
+        text: {
+          en: 'Insights now opens one section at a time, like Settings: Overview, Focus, Reading, Habits and areas, Progress. Each one shows its key number in the menu, the period you pick (7, 14, 30 or 90 days) applies to all of them and is remembered, and Previous / Next take you through them. Prefer the long page? “All on one page” is at the end of the menu.',
+          ar: 'صارت الإحصاءات تفتح قسمًا واحدًا في كل مرة، مثل الإعدادات: نظرة عامة، والتركيز، والقراءة، والعادات والمجالات، والتقدّم. يعرض كل قسم رقمه الأهم في القائمة، والفترة التي تختارها (7 أو 14 أو 30 أو 90 يومًا) تسري عليها كلها وتُحفظ، وينقلك «السابق» و«التالي» بينها. وإن فضّلت الصفحة الطويلة فـ«الكل في صفحة واحدة» في آخر القائمة.',
+          fr: 'Les statistiques s’ouvrent maintenant une section à la fois, comme les réglages : Vue d’ensemble, Concentration, Lecture, Habitudes et domaines, Progression. Chacune affiche son chiffre clé dans le menu, la période choisie (7, 14, 30 ou 90 jours) vaut pour toutes et reste mémorisée, et Précédent / Suivant te font passer de l’une à l’autre. Tu préfères la longue page ? « Tout sur une page » est en bas du menu.',
+          zh: '统计现在像设置一样一次打开一个部分：概览、专注、阅读、习惯与领域、进展。每个部分都在菜单中显示关键数字，你选择的时段（7、14、30 或 90 天）适用于所有部分并会被记住，“上一个”和“下一个”可以依次浏览。喜欢长页面？菜单末尾有“全部显示在一页”。',
+          es: 'Estadísticas ahora abre una sección a la vez, como Ajustes: Resumen, Concentración, Lectura, Hábitos y áreas, Progreso. Cada una muestra su cifra clave en el menú, el periodo que eliges (7, 14, 30 o 90 días) se aplica a todas y se recuerda, y Anterior / Siguiente te llevan de una a otra. ¿Prefieres la página larga? «Todo en una página» está al final del menú.',
+        },
+      },
+    ],
+  },
+  {
     id: 12,
     date: '2026-11-12',
     tasks: ['S3-07'],

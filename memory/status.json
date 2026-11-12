@@ -523,6 +523,12 @@
           "module": "focus",
           "status": "done",
           "critical": true
+        },
+        {
+          "id": "S2-55",
+          "title": "Insights opens one section at a time like Settings — a menu with a live figure per section, one remembered period for all, previous/next, and 'All on one page' (ADR-051)",
+          "module": "insights",
+          "status": "done"
         }
       ]
     },
@@ -776,6 +782,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-11-12",
+      "entry": "S2-55 (ADR-051), asked by the owner: Insights shaped like Settings. #/insights/<section> — Overview, Focus, Reading (once there is reading), Habits and areas, Progress, and 'All on one page' (the page as it was). Laptop: sticky side menu; phone: the list, then a section with a back link. Each menu entry shows a live figure for the chosen period. The 7/14/30/90-day period applies to every section, stays in reach on the phone, and is remembered per device. Previous/next under each section. By book now puts pages and speed under the title so long titles fit beside the menu. No data change. Checked in the browser at 1280 and 375 px: every section renders without errors, the period survives a reload, menu figures match the sections."
+    },
     {
       "date": "2026-11-12",
       "entry": "S3-07 (ADR-050), asked by the owner: reading speed in Insights → Reading — pages an hour vs the period before, pages a minute, minutes a page, pages an hour day by day around the period's pace, by time of day (morning/afternoon/evening/night by the local start hour, fastest marked) and per book; book details show the book's pace and time left (own pace after 10 timed minutes, else the usual pace). Only timed sittings (pages and minutes > 0) count; speed = total pages / total minutes. Deleting a book now asks: keep its reading in Insights (default; writes a PastBook so it keeps its title and still counts as finished) or delete its reading too (sessions removed; habit logs they added stay). Schema v20 (pastBooks, synced) with migration tests; 628 tests. Checked in the browser: speed cards at 1280 px, both delete paths, Arabic at 375 px."

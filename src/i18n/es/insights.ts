@@ -5,6 +5,12 @@ export const insights: Messages['insights'] = {
   rangeShort: { one: '{n} d', other: '{n} d' },
   rangeCaption: { one: '{from} – {to} · comparado con el día anterior', other: '{from} – {to} · comparado con los {n} días anteriores' },
   section: { overview: 'Resumen', focus: 'Concentración', habits: 'Hábitos y áreas', progress: 'Progreso' },
+  nav: {
+    all: 'Todo en una página',
+    xp: '{xp} XP',
+    consistency: '{pct} de los días de hábito hechos',
+    hint: { focus: 'Aún no hay sesiones de concentración', reading: 'Aún no hay lectura', habits: 'Aún no hay hábitos que medir', all: 'Todas las secciones, una tras otra' },
+  },
   level: 'Nivel',
   levelProgress: '{into} / {needed} XP · {total} XP en total',
   activeStreak: { one: '{n} día activo seguido', other: '{n} días activos seguidos' },

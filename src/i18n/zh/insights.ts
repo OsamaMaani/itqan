@@ -5,6 +5,12 @@ export const insights: Messages['insights'] = {
   rangeShort: { other: '{n} 天' },
   rangeCaption: { other: '{from} – {to} · 与前 {n} 天相比' },
   section: { overview: '概览', focus: '专注', habits: '习惯与领域', progress: '进展' },
+  nav: {
+    all: '全部显示在一页',
+    xp: '{xp} XP',
+    consistency: '习惯完成率 {pct}',
+    hint: { focus: '还没有专注记录', reading: '还没有阅读记录', habits: '还没有可衡量的习惯', all: '所有部分依次显示' },
+  },
   level: '等级',
   levelProgress: '{into} / {needed} XP · 累计 {total} XP',
   activeStreak: { other: '连续活跃 {n} 天' },

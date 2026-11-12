@@ -6,6 +6,15 @@ export const insights = {
   rangeCaption: { one: '{from} – {to} · compared with the day before', other: '{from} – {to} · compared with the previous {n} days' },
   /** Section headings. */
   section: { overview: 'Overview', focus: 'Focus', habits: 'Habits and areas', progress: 'Progress' },
+  /** The section menu (ADR-051): each entry shows a line about the chosen range. */
+  nav: {
+    all: 'All on one page',
+    /** {xp} is a formatted number. */
+    xp: '{xp} XP',
+    /** {pct} is a percentage. */
+    consistency: '{pct} of habit days done',
+    hint: { focus: 'No focus sessions yet', reading: 'No reading yet', habits: 'No habits to measure yet', all: 'Every section, one after another' },
+  },
   level: 'Level',
   /** {into} and {needed} XP in this level, {total} XP overall. */
   levelProgress: '{into} / {needed} XP · {total} XP total',

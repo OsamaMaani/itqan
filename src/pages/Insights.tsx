@@ -1,5 +1,5 @@
-import { Activity, Award, BarChart3, BookOpen, CheckCircle2, Clock, Flame, Gauge, Lock, Moon, Play, Shield, Sun, Sunrise, Sunset, Target, Timer, Trophy, Zap } from 'lucide-react'
-import { useMemo, useState, type ReactNode } from 'react'
+import { Activity, Award, BarChart3, BookOpen, CheckCircle2, ChevronLeft, ChevronRight, Clock, Flame, Gauge, Lock, Moon, Play, Rows3, Shield, Sun, Sunrise, Sunset, Target, Timer, Trophy, Zap } from 'lucide-react'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ColumnChart, Delta, MINUTE_STEPS, ShareBar, Sparkline } from '../components/charts'
 import { Heatmap } from '../components/Heatmap'
 import { usePageAction } from '../components/Shell'
@@ -12,11 +12,35 @@ import { completionRate, isMetOn, streak } from '../lib/habits'
 import { useData, useProgress, useToday } from '../lib/hooks'
 import { change, DAY_PARTS, focusStats, focusStreak, habitAmounts, habitConsistency, minutesPerPage, pagesPerHour, previousRange, readingSpeed, readingStats, tasksDoneByDay, type DayPart } from '../lib/insights'
 import { cycleStats, interruptionStats } from '../lib/focusCycle'
-import { navigate } from '../lib/router'
+import { navigate, useRouteParam } from '../lib/router'
 import type { DateKey } from '../lib/types'
 
 type Range = 7 | 14 | 30 | 90
 const RANGES: Range[] = [7, 14, 30, 90]
+/** The range last chosen, remembered on this device only. */
+const RANGE_KEY = 'itqan-insights-range'
+function savedRange(): Range {
+  try {
+    const n = Number(localStorage.getItem(RANGE_KEY))
+    return (RANGES as number[]).includes(n) ? (n as Range) : 30
+  } catch { return 30 }
+}
+
+/**
+ * Insights opens one section at a time, like Settings (ADR-051): #/insights/<section>. `all` is
+ * every section on one page, as Insights was before.
+ */
+export const INSIGHTS_SECTIONS = ['overview', 'focus', 'reading', 'habits', 'progress', 'all'] as const
+export type InsightsSection = (typeof INSIGHTS_SECTIONS)[number]
+
+const SECTION_ICONS: Record<InsightsSection, ReactNode> = {
+  overview: <BarChart3 size={17} />,
+  focus: <Timer size={17} />,
+  reading: <BookOpen size={17} />,
+  habits: <Target size={17} />,
+  progress: <Activity size={17} />,
+  all: <Rows3 size={17} />,
+}
 /** Names of the LENGTH_BANDS, in the same order. */
 const BANDS = ['under15', 'b15', 'b30', 'b60', 'over90'] as const
 const hh = (h: number) => `${String(h % 24).padStart(2, '0')}:00`
@@ -30,8 +54,15 @@ export function InsightsPage() {
   const today = useToday()
   const wso = d.settings.weekStartsOn
   const { events, total, level, todayXp, streak: active, day } = useProgress()
-  const [range, setRange] = useState<Range>(30)
+  const [range, setRangeState] = useState<Range>(savedRange)
+  const setRange = (r: Range) => { setRangeState(r); try { localStorage.setItem(RANGE_KEY, String(r)) } catch { /* private window: not remembered */ } }
   const [heat, setHeat] = useState<'xp' | 'focus'>('xp')
+  const param = useRouteParam()
+  const picked = INSIGHTS_SECTIONS.includes(param as InsightsSection) ? (param as InsightsSection) : null
+  // On a laptop the menu stays beside the open section (Overview when none is named); on a phone
+  // #/insights is the list of sections, and a section opens on its own.
+  const section: InsightsSection = picked ?? 'overview'
+  useEffect(() => { if (picked) window.scrollTo({ top: 0 }) }, [picked])
 
   const from = addDaysKey(today, -(range - 1))
   const prev = previousRange(from, today)
@@ -77,23 +108,12 @@ export function InsightsPage() {
   const heatFocus = useMemo(() => focusStats(d.focusSessions, addDaysKey(today, -26 * 7), today).byDay, [d.focusSessions, today])
   const xpSeries = days.map((k) => byDay[k] ?? 0)
   const xLabels = dayLabels(days, today, t)
+  const hasReading = d.books.length > 0 || d.pastBooks.length > 0 || d.readingSessions.length > 0
+  const reading = useMemo(() => readingStats(d.readingSessions, [], from, today), [d.readingSessions, from, today])
 
-  return (
-    <div className="space-y-8">
-      <PageHeader
-        title={m.nav.insights}
-        subtitle={
-          <>
-            <span className="block">{mi.subtitle}</span>
-            <span className="mt-1 block text-xs font-semibold text-muted/90">
-              {t.p(mi.rangeCaption, range, { from: t.d(from, 'short'), to: t.d(today, 'short') })}
-            </span>
-          </>
-        }
-        right={<Segmented value={range} onChange={setRange} options={RANGES.map((n) => ({ value: n, label: t.p(mi.rangeShort, n) }))} />}
-      />
-
-      {/* ---- Overview ---- */}
+  // Each section as an element, shown alone or all together (ADR-051).
+  const body: Record<Exclude<InsightsSection, 'all'>, ReactNode> = {
+    overview: (
       <Section icon={<BarChart3 size={15} />} title={mi.section.overview}>
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
           <Card className="relative flex flex-col overflow-hidden p-5">
@@ -146,8 +166,8 @@ export function InsightsPage() {
           />
         </Card>
       </Section>
-
-      {/* ---- Focus ---- */}
+    ),
+    focus: (
       <Section
         icon={<Timer size={15} />}
         title={mi.section.focus}
@@ -155,19 +175,17 @@ export function InsightsPage() {
       >
         <FocusSection days={days} today={today} s={s} xLabels={xLabels} />
       </Section>
-
-      {/* ---- Reading (ADR-047) ---- */}
-      {(d.books.length > 0 || d.pastBooks.length > 0 || d.readingSessions.length > 0) && (
-        <Section
-          icon={<BookOpen size={15} />}
-          title={mi.reading.title}
-          right={<Button size="sm" variant="ghost" onClick={() => navigate('library')}><BookOpen size={13} /> {mi.reading.open}</Button>}
-        >
-          <ReadingSection days={days} today={today} from={from} prevFrom={prev.from} prevTo={prev.to} xLabels={xLabels} />
-        </Section>
-      )}
-
-      {/* ---- Habits and areas ---- */}
+    ),
+    reading: (
+      <Section
+        icon={<BookOpen size={15} />}
+        title={mi.reading.title}
+        right={<Button size="sm" variant="ghost" onClick={() => navigate('library')}><BookOpen size={13} /> {mi.reading.open}</Button>}
+      >
+        <ReadingSection days={days} today={today} from={from} prevFrom={prev.from} prevTo={prev.to} xLabels={xLabels} />
+      </Section>
+    ),
+    habits: (
       <Section icon={<Target size={15} />} title={mi.section.habits}>
         <div className="grid gap-4 lg:grid-cols-2">
           <Card className="p-5">
@@ -241,8 +259,8 @@ export function InsightsPage() {
           )}
         </Card>
       </Section>
-
-      {/* ---- Progress ---- */}
+    ),
+    progress: (
       <Section icon={<Activity size={15} />} title={mi.section.progress}>
         <Card className="p-5">
           <SectionTitle right={<Segmented value={heat} onChange={setHeat} options={[{ value: 'xp' as const, label: mi.activityShow.xp }, { value: 'focus' as const, label: mi.activityShow.focus }]} />}>
@@ -269,6 +287,101 @@ export function InsightsPage() {
           </div>
         </div>
       </Section>
+    ),
+  }
+
+  // What each section's menu entry says about the chosen range, so the menu is itself a summary.
+  const hints: Record<InsightsSection, string> = {
+    overview: `${t.f(mi.nav.xp, { xp: t.n(s.xp) })} · ${t.p(mi.tasks, s.tasks)}`,
+    focus: s.focus.sessions ? `${t.dur(s.focus.minutes)} · ${t.p(mi.focus.sessionCount, s.focus.sessions)}` : mi.nav.hint.focus,
+    reading: reading.sessions ? `${t.dur(reading.minutes)} · ${t.p(mi.reading.pagesCount, reading.pages)}` : mi.nav.hint.reading,
+    habits: s.cons === null ? mi.nav.hint.habits : t.f(mi.nav.consistency, { pct: t.pct(s.cons) }),
+    progress: t.f(mi.badges, { unlocked, total: badges.length }),
+    all: mi.nav.hint.all,
+  }
+  const sections = INSIGHTS_SECTIONS.filter((x) => x !== 'reading' || hasReading || x === picked)
+  const steps = sections.filter((x): x is Exclude<InsightsSection, 'all'> => x !== 'all')
+  const at = (steps as InsightsSection[]).indexOf(section)
+  const before = at > 0 ? steps[at - 1] : null
+  const after = at >= 0 && at < steps.length - 1 ? steps[at + 1] : null
+  const title = (x: InsightsSection) => (x === 'reading' ? mi.reading.title : x === 'all' ? mi.nav.all : mi.section[x])
+
+  const rangePicker = <Segmented value={range} onChange={setRange} options={RANGES.map((n) => ({ value: n, label: t.p(mi.rangeShort, n) }))} />
+  const caption = t.p(mi.rangeCaption, range, { from: t.d(from, 'short'), to: t.d(today, 'short') })
+
+  return (
+    <div className="space-y-6">
+      <div className={cx(picked && 'max-lg:hidden')}>
+        <PageHeader
+          title={m.nav.insights}
+          subtitle={
+            <>
+              <span className="block">{mi.subtitle}</span>
+              <span className="mt-1 block text-xs font-semibold text-muted/90">{caption}</span>
+            </>
+          }
+          right={rangePicker}
+        />
+      </div>
+
+      <div className="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start lg:gap-6">
+        <nav aria-label={m.nav.insights} className={cx('lg:sticky lg:top-6', picked && 'max-lg:hidden')}>
+          <Card className="p-1.5">
+            {sections.map((id) => {
+              const current = id === section
+              return (
+                <div key={id}>
+                  {id === 'all' && <div className="mx-2.5 my-1.5 border-t border-border" />}
+                  <button
+                    type="button"
+                    aria-current={current ? 'page' : undefined}
+                    onClick={() => navigate('insights', id)}
+                    className={cx(
+                      'flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-start transition hover:bg-surface-2 lg:py-2',
+                      current && 'lg:bg-surface-2',
+                    )}
+                  >
+                    <span className={cx('grid size-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted lg:size-8', current && 'lg:bg-accent/15 lg:text-accent')}>{SECTION_ICONS[id]}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className={cx('block text-sm font-semibold', current ? 'lg:text-text' : 'lg:text-muted')}>{title(id)}</span>
+                      <span className="block truncate text-xs text-muted tabular">{hints[id]}</span>
+                    </span>
+                    <ChevronRight size={16} className="shrink-0 text-muted rtl:-scale-x-100 lg:hidden" />
+                  </button>
+                </div>
+              )
+            })}
+          </Card>
+        </nav>
+
+        <div className={cx('min-w-0 space-y-6', !picked && 'max-lg:hidden')}>
+          {/* On a phone the page header is hidden inside a section: the way back and the range stay here. */}
+          <div className="space-y-2 lg:hidden">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <button type="button" onClick={() => navigate('insights')} className="-ms-1 flex items-center gap-1 text-sm font-semibold text-muted hover:text-text">
+                <ChevronLeft size={18} className="rtl:-scale-x-100" /> {m.nav.insights}
+              </button>
+              {rangePicker}
+            </div>
+            <p className="text-xs font-semibold text-muted/90">{caption}</p>
+          </div>
+
+          <div key={section} className="page-enter space-y-8">
+            {section === 'all'
+              ? steps.map((x) => <Fragment key={x}>{body[x]}</Fragment>)
+              : body[section]}
+          </div>
+
+          {section !== 'all' && (before || after) && (
+            <div className="flex flex-wrap justify-between gap-2 border-t border-border pt-4">
+              {before
+                ? <Button variant="ghost" onClick={() => navigate('insights', before)}><ChevronLeft size={16} className="rtl:-scale-x-100" /> {title(before)}</Button>
+                : <span />}
+              {after && <Button variant="ghost" onClick={() => navigate('insights', after)}>{title(after)} <ChevronRight size={16} className="rtl:-scale-x-100" /></Button>}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
@@ -577,13 +690,14 @@ function ReadingSection({ days, today, from, prevFrom, prevTo, xLabels }: {
           <div className="space-y-3">
             {top.map((x) => (
               <div key={x.bookId}>
-                <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
-                  <span className="truncate font-semibold" dir="auto">{books.get(x.bookId)?.title ?? mr.deletedBook}</span>
-                  <span className="shrink-0 text-xs text-muted tabular">
-                    {t.p(mr.pagesCount, x.pages)}
-                    {speed.byBook[x.bookId] && pagesPerHour(speed.byBook[x.bookId]) !== null && <> · {t.f(mr.speed.perHourShort, { n: rate(t, pagesPerHour(speed.byBook[x.bookId])!) })}</>}
-                    {' · '}<span className="font-semibold text-text">{t.dur(x.minutes)}</span>
-                  </span>
+                {/* Title and time on one line, pages and speed under it: a long title stays readable beside the menu. */}
+                <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="min-w-0 truncate font-semibold" dir="auto">{books.get(x.bookId)?.title ?? mr.deletedBook}</span>
+                  <span className="shrink-0 text-xs font-semibold tabular">{t.dur(x.minutes)}</span>
+                </div>
+                <div className="mb-1 text-xs text-muted tabular">
+                  {t.p(mr.pagesCount, x.pages)}
+                  {speed.byBook[x.bookId] && pagesPerHour(speed.byBook[x.bookId]) !== null && <> · {t.f(mr.speed.perHourShort, { n: rate(t, pagesPerHour(speed.byBook[x.bookId])!) })}</>}
                 </div>
                 <ProgressBar value={x.minutes / maxTop} height={6} />
               </div>

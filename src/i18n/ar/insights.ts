@@ -12,6 +12,12 @@ export const insights: Messages['insights'] = {
     other: '{from} – {to} · مقارنةً بفترة {n} يوم سابقة',
   },
   section: { overview: 'نظرة عامة', focus: 'التركيز', habits: 'العادات والمجالات', progress: 'التقدّم' },
+  nav: {
+    all: 'الكل في صفحة واحدة',
+    xp: '{xp} XP',
+    consistency: 'أُنجز {pct} من أيام العادات',
+    hint: { focus: 'لا جلسات تركيز بعد', reading: 'لا قراءة بعد', habits: 'لا عادات لقياسها بعد', all: 'كل الأقسام، واحدًا بعد الآخر' },
+  },
   level: 'المستوى',
   levelProgress: '{into} / {needed} XP · المجموع {total} XP',
   activeStreak: {
