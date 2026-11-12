@@ -1283,3 +1283,36 @@ session (a discarded session would lose the interruption that caused it); asking
 dialog before pausing (a phone call should pause in one tap); a cycle-level timer separate from the
 step timer (two clocks to keep in sync, and every existing timer path — helper, push, tab title —
 already knows the one).
+
+## ADR-050 | 2026-11-12 | accepted | Reading speed, and deleting a book with or without its reading
+
+**Context:** The owner, 2026-11-12: in Insights → Reading, show reading speed — pages a minute, an
+hour "and so on" — and whether it changes across days and times. And when deleting a book, let him
+choose whether its insights stay or go. Until now deleting a book always kept its sessions, but its
+title was lost ("A deleted book") and it stopped counting as a book finished.
+**Decision:**
+- **Speed is derived, never stored** (`readingSpeed`, `bookPace`, `pagesPerHour`, `minutesPerPage`,
+  `minutesLeft` in `lib/insights.ts`, tested). Only *timed* sittings count — pages and minutes both
+  above zero — so a page update with no minutes, or a sitting under half a minute (saved as 0 min),
+  says nothing about speed. Speed is total pages over total minutes (long sittings weigh more), not
+  an average of per-sitting rates. No schema change: `ReadingSession` already has both.
+- **Insights → Reading → Reading speed:** pages an hour against the period before, pages a minute and
+  minutes a page; pages an hour day by day with the period's pace as the line; by time of day
+  (morning 05–12, afternoon 12–17, evening 17–21, night 21–05, by the local hour a sitting
+  started — the day itself stays the session's `date`, so a Fajr day start is respected) with the
+  fastest marked; and each book's pages an hour in "By book".
+- **Book details:** the book's pages an hour, and "about N left" at the book's own pace — or the usual
+  pace over every book until this one has 10 timed minutes, so one short sitting promises nothing.
+- **Delete asks** (inline, under the book's details, "keep" preselected = what deleting always did):
+  keep its reading in Insights, or delete it too. Keeping writes a **`PastBook`** (schema v20, its own
+  synced collection, `id` = the book's): title, author, pages, start/finish days — so Insights still
+  names it and still counts it as finished. Only written when there is something to keep (sittings or
+  a finish). Deleting the reading removes the book's `readingSessions`; **habit logs it added stay**
+  — the habit was done those days, and taking them back would rewrite streaks after the fact. A book
+  never read nor finished just asks to confirm.
+**Rejected:** soft-deleting the book (a `deleted` flag every reader of `books` — Library, goals,
+tasks, file matching, sync — would have to filter; one miss shows a deleted book); stamping the title
+on each session (doesn't keep "books finished", and rewrites every session); storing a speed per
+session (derivable, and would go stale if a session is edited); taking back habit amounts when the
+reading is deleted (silently breaks past streaks); per-sitting average speed (a 1-minute sitting would
+weigh as much as an hour).

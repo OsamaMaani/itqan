@@ -787,6 +787,23 @@ export interface ReadingSession {
   habitAmount: number
 }
 
+/**
+ * A book deleted from the Library whose reading was kept (ADR-050, schema v20): just enough to
+ * name it in Insights and to keep counting it as finished. `id` = the deleted book's id, which its
+ * reading sessions still point to.
+ */
+export interface PastBook {
+  id: ID
+  title: string
+  author: string
+  pages: number | null
+  startedOn: DateKey | null
+  finishedOn: DateKey | null
+  /** The book's own `createdAt` */
+  createdAt: string
+  deletedAt: string
+}
+
 /** Per-device notification choices (ADR-031). The browser's own permission is asked once, from Settings. */
 export interface NotifySettings {
   /** Master switch: nothing is announced on this device when off. */
@@ -888,6 +905,8 @@ export interface Data {
   bookPlaces: BookPlace[]
   bookmarks: Bookmark[]
   readingSessions: ReadingSession[]
+  /** Deleted books whose reading stays in Insights (ADR-050). Schema v20. */
+  pastBooks: PastBook[]
   /** Focus cycles (ADR-049). Schema v19. `cycle` is device-local; the rest sync. */
   cycle: ActiveCycle | null
   cycleTemplates: CycleTemplate[]

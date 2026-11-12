@@ -273,3 +273,89 @@ export function readingStats(sessions: ReadingSession[], books: Pick<Book, 'id' 
     finished: books.filter((b) => b.finishedOn && b.finishedOn >= from && b.finishedOn <= to).length,
   }
 }
+
+// --- reading speed (ADR-050) --------------------------------------------------------------
+
+/** Parts of the day reading speed is compared across, by the local hour a sitting started. */
+export const DAY_PARTS = ['morning', 'afternoon', 'evening', 'night'] as const
+export type DayPart = (typeof DAY_PARTS)[number]
+
+/** 05:00–11:59 morning, 12:00–16:59 afternoon, 17:00–20:59 evening, 21:00–04:59 night. */
+export function dayPart(hour: number): DayPart {
+  return hour >= 5 && hour < 12 ? 'morning' : hour >= 12 && hour < 17 ? 'afternoon' : hour >= 17 && hour < 21 ? 'evening' : 'night'
+}
+
+/** Pages and minutes of timed sittings — the material a speed is read from. */
+export interface Pace {
+  pages: number
+  minutes: number
+  sessions: number
+}
+
+const noPace = (): Pace => ({ pages: 0, minutes: 0, sessions: 0 })
+
+/**
+ * Is this sitting timed — does it say how fast? Both pages and minutes are needed: a page update
+ * with no minutes, or a sitting under half a minute (saved as 0), says nothing about speed.
+ */
+export function isTimed(r: Pick<ReadingSession, 'pages' | 'minutes'>): boolean {
+  return r.pages > 0 && r.minutes > 0
+}
+
+/** Pages an hour; null when nothing timed. Total pages over total minutes, so long sittings weigh more. */
+export function pagesPerHour(p: Pace): number | null {
+  return p.minutes > 0 && p.pages > 0 ? (p.pages * 60) / p.minutes : null
+}
+
+/** Minutes a page; null when nothing timed. */
+export function minutesPerPage(p: Pace): number | null {
+  return p.minutes > 0 && p.pages > 0 ? p.minutes / p.pages : null
+}
+
+export interface ReadingSpeed {
+  all: Pace
+  /** Every day of the range, empty where nothing timed */
+  byDay: Record<DateKey, Pace>
+  byPart: Record<DayPart, Pace>
+  byBook: Record<ID, Pace>
+}
+
+/**
+ * How fast reading went from `from` to `to` inclusive, from timed sittings only (`isTimed`). The
+ * part of day is the local hour the sitting started; its day is the sitting's own `date` (which
+ * already follows a Fajr day start, ADR-041).
+ */
+export function readingSpeed(sessions: ReadingSession[], from: DateKey, to: DateKey): ReadingSpeed {
+  const byDay: Record<DateKey, Pace> = {}
+  for (const k of rangeKeys(from, to)) byDay[k] = noPace()
+  const byPart = Object.fromEntries(DAY_PARTS.map((p) => [p, noPace()])) as Record<DayPart, Pace>
+  const byBook: Record<ID, Pace> = {}
+  const all = noPace()
+  const add = (p: Pace, r: ReadingSession) => { p.pages += r.pages; p.minutes += r.minutes; p.sessions++ }
+  for (const r of sessions) {
+    if (r.date < from || r.date > to || !isTimed(r)) continue
+    add(all, r)
+    add(byDay[r.date], r)
+    const at = new Date(r.startedAt)
+    if (!Number.isNaN(at.getTime())) add(byPart[dayPart(at.getHours())], r)
+    add((byBook[r.bookId] ??= noPace()), r)
+  }
+  return { all, byDay, byPart, byBook }
+}
+
+/** A book's own pace over all its timed sittings — or, with no `bookId`, the pace over every book. */
+export function bookPace(sessions: ReadingSession[], bookId?: ID): Pace {
+  const p = noPace()
+  for (const r of sessions) if ((!bookId || r.bookId === bookId) && isTimed(r)) { p.pages += r.pages; p.minutes += r.minutes; p.sessions++ }
+  return p
+}
+
+/**
+ * Minutes left to finish a book at a pace, rounded up; null when the pages or the pace are unknown.
+ * Read from at least 10 timed minutes, so one short sitting does not promise a time.
+ */
+export function minutesLeft(pagesLeft: number, p: Pace, minMinutes = 10): number | null {
+  const mpp = minutesPerPage(p)
+  if (mpp === null || p.minutes < minMinutes || pagesLeft <= 0) return null
+  return Math.ceil(pagesLeft * mpp)
+}

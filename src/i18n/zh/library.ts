@@ -48,9 +48,24 @@ export const library: Messages['library'] = {
   pageSaved: '已保存：第 {page} 页',
   reachedEnd: '你已读到“{title}”的结尾。',
   markFinishedAction: '标为读完',
-  stats: { time: '阅读时间', pages: '已读页数', days: '阅读天数' },
+  stats: { time: '阅读时间', pages: '已读页数', days: '阅读天数', speed: '每小时页数' },
   noBookmarks: '还没有书签。在阅读器里点书签图标即可标记一页。',
-  deleteConfirm: '删除“{title}”及其书签？你的阅读时间会保留在记录中。',
+  timeLeft: '按你读这本书的速度，还需约 {time}',
+  timeLeftUsual: '按你平时的阅读速度，还需约 {time}',
+  deleteBook: {
+    title: '删除“{title}”？',
+    body: '阅读位置和书签会一并删除。它的阅读记录要怎么处理？',
+    bodyNoReading: '阅读位置和书签会一并删除。',
+    keep: '在统计中保留它的阅读记录',
+    keepHint: '这本书的 {time} 阅读仍计入你的总计、速度和记录。',
+    keepHintFinished: '它仍算作一本读完的书。',
+    remove: '连同阅读记录一起删除',
+    removeHint: {
+      other: '它的 {n} 次阅读将从统计中移除。由此计入的习惯天数仍算完成。',
+    },
+    removeHintFinished: '它将不再算作一本读完的书。',
+    confirm: '删除这本书',
+  },
   deleted: '书已删除',
 
   editor: {

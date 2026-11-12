@@ -60,9 +60,27 @@ export const library = {
   pageSaved: 'Saved: page {page}',
   reachedEnd: 'You reached the end of “{title}”.',
   markFinishedAction: 'Mark finished',
-  stats: { time: 'Reading time', pages: 'Pages read', days: 'Days read' },
+  stats: { time: 'Reading time', pages: 'Pages read', days: 'Days read', speed: 'Pages an hour' },
   noBookmarks: 'No bookmarks yet. In the reader, tap the bookmark to mark a page.',
-  deleteConfirm: 'Delete “{title}” and its bookmarks? Your reading time stays in your history.',
+  /** {time} is a duration: "4 h 10 min". */
+  timeLeft: 'About {time} left at your pace with this book',
+  timeLeftUsual: 'About {time} left at your usual reading pace',
+  deleteBook: {
+    title: 'Delete “{title}”?',
+    body: 'Its place and bookmarks go with it. What should happen to its reading?',
+    bodyNoReading: 'Its place and bookmarks go with it.',
+    keep: 'Keep its reading in Insights',
+    /** {time} is a duration. */
+    keepHint: 'Its {time} of reading stays in your totals, speed and history.',
+    keepHintFinished: 'It still counts as a book finished.',
+    remove: 'Delete its reading too',
+    removeHint: {
+      one: 'Its {n} sitting leaves Insights. Habit days it counted stay done.',
+      other: 'Its {n} sittings leave Insights. Habit days they counted stay done.',
+    },
+    removeHintFinished: 'It no longer counts as a book finished.',
+    confirm: 'Delete book',
+  },
   deleted: 'Book deleted',
 
   editor: {

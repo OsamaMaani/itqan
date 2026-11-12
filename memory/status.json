@@ -1,7 +1,7 @@
 {
   "project": "Itqan",
   "subtitle": "إتقان — daily tasks, habits and long-term goals in one calm place",
-  "updated": "2026-11-11",
+  "updated": "2026-11-12",
   "current_stage": 4,
   "next_actions": [
     "New: focus cycles — plan several sessions with breaks; each step asks before moving on, can be extended, pauses log why, and prayer times are planned around.",
@@ -569,6 +569,12 @@
           "module": "learning",
           "status": "done",
           "critical": true
+        },
+        {
+          "id": "S3-07",
+          "title": "Reading speed in Insights (pages an hour/minute, by day and time of day, per book, time left on a book); deleting a book asks whether to keep its reading (ADR-050, schema v20)",
+          "module": "learning",
+          "status": "done"
         }
       ]
     },
@@ -770,6 +776,10 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-11-12",
+      "entry": "S3-07 (ADR-050), asked by the owner: reading speed in Insights → Reading — pages an hour vs the period before, pages a minute, minutes a page, pages an hour day by day around the period's pace, by time of day (morning/afternoon/evening/night by the local start hour, fastest marked) and per book; book details show the book's pace and time left (own pace after 10 timed minutes, else the usual pace). Only timed sittings (pages and minutes > 0) count; speed = total pages / total minutes. Deleting a book now asks: keep its reading in Insights (default; writes a PastBook so it keeps its title and still counts as finished) or delete its reading too (sessions removed; habit logs they added stay). Schema v20 (pastBooks, synced) with migration tests; 628 tests. Checked in the browser: speed cards at 1280 px, both delete paths, Arabic at 375 px."
+    },
     {
       "date": "2026-11-11",
       "entry": "S2-54 (ADR-049), asked by the owner: focus cycles. Plan sessions × focus / break with an optional long break, edit each step (length, own task or habit), presets and synced templates. Each step runs as the ordinary timer with cycleId; when one runs out it waits (never auto-advances, the owner's choice), notifies once and nudges after 5 min (helper, page and push relay), and asks: next step, +5/10/15 min (counted from the answer, so waiting is never focus), skip break, end. Shown on Focus and as a floating card on any screen. A paused break offers continue or start the next session. Every pause is logged as an interruption with an optional reason (call, someone, distraction, prayer, other) — Insights shows them. Prayer times that fall inside a session are flagged at planning and before each next session; 'Break for Asr' splits the session around a 15-min prayer break. Ended cycles keep a summary (Focus card, Insights count, badges cycle-1/cycles-10). Schema v19 with migration tests; 616 tests."

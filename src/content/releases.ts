@@ -26,6 +26,33 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    id: 12,
+    date: '2026-11-12',
+    tasks: ['S3-07'],
+    items: [
+      {
+        emoji: '⏱️',
+        text: {
+          en: 'Insights → Reading now shows your reading speed: pages an hour, pages a minute and minutes a page, compared with the period before. See how it changes day by day, which time of day you read fastest, and each book’s speed. A book’s details show how long is left at your pace.',
+          ar: 'تعرض الإحصاءات ← القراءة الآن سرعة قراءتك: الصفحات في الساعة وفي الدقيقة والدقائق لكل صفحة، مقارنةً بالفترة السابقة. شاهد كيف تتغير يومًا بيوم، وفي أي وقت من اليوم تقرأ أسرع، وسرعتك في كل كتاب. وتعرض تفاصيل الكتاب كم بقي لإتمامه بسرعتك.',
+          fr: 'Statistiques → Lecture affiche maintenant ta vitesse de lecture : pages par heure, pages par minute et minutes par page, comparées à la période précédente. Vois comment elle évolue jour après jour, à quel moment de la journée tu lis le plus vite, et la vitesse de chaque livre. Les détails d’un livre indiquent le temps qu’il te reste à ton rythme.',
+          zh: '统计 → 阅读现在会显示你的阅读速度：每小时页数、每分钟页数和每页分钟数，并与上一时段对比。看看它每天如何变化、一天中哪个时段读得最快，以及每本书的速度。书的详情里会显示按你的速度还需多久读完。',
+          es: 'Estadísticas → Lectura ahora muestra tu velocidad de lectura: páginas por hora, páginas por minuto y minutos por página, comparadas con el periodo anterior. Mira cómo cambia día a día, a qué hora del día lees más rápido y la velocidad de cada libro. Los detalles de un libro muestran cuánto te falta a tu ritmo.',
+        },
+      },
+      {
+        emoji: '🗑️',
+        text: {
+          en: 'Deleting a book now asks what to do with its reading: keep it in Insights — it keeps its title and still counts as a book finished — or delete it too. Habit days it counted stay done either way.',
+          ar: 'صار حذف الكتاب يسألك عن قراءتك فيه: أن تبقى في الإحصاءات — باسمه، ويبقى محسوبًا من الكتب المُنجزة — أو أن تُحذف معه. وتبقى أيام العادة التي احتسبها منجزة في الحالتين.',
+          fr: 'Supprimer un livre te demande maintenant que faire de ta lecture : la garder dans les statistiques — il garde son titre et compte toujours comme livre terminé — ou la supprimer aussi. Les jours d’habitude qu’elle a comptés restent faits dans les deux cas.',
+          zh: '删除一本书时，现在会询问如何处理它的阅读记录：保留在统计中——保留书名，仍算作读完的书——或一并删除。无论哪种，由它计入的习惯天数都仍算完成。',
+          es: 'Al eliminar un libro ahora se te pregunta qué hacer con tu lectura: conservarla en Estadísticas —mantiene su título y sigue contando como libro terminado— o eliminarla también. Los días de hábito que sumó siguen hechos en ambos casos.',
+        },
+      },
+    ],
+  },
+  {
     id: 11,
     date: '2026-11-11',
     tasks: ['S2-54'],

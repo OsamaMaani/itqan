@@ -48,9 +48,25 @@ export const library: Messages['library'] = {
   pageSaved: 'Guardado: página {page}',
   reachedEnd: 'Has llegado al final de «{title}».',
   markFinishedAction: 'Marcar como leído',
-  stats: { time: 'Tiempo de lectura', pages: 'Páginas leídas', days: 'Días de lectura' },
+  stats: { time: 'Tiempo de lectura', pages: 'Páginas leídas', days: 'Días de lectura', speed: 'Páginas por hora' },
   noBookmarks: 'Aún no hay marcadores. En el lector, toca el marcador para marcar una página.',
-  deleteConfirm: '¿Eliminar «{title}» y sus marcadores? Tu tiempo de lectura se queda en tu historial.',
+  timeLeft: 'Quedan unos {time} a tu ritmo con este libro',
+  timeLeftUsual: 'Quedan unos {time} a tu ritmo de lectura habitual',
+  deleteBook: {
+    title: '¿Eliminar «{title}»?',
+    body: 'Tu página y sus marcadores se van con él. ¿Qué hacemos con tu lectura?',
+    bodyNoReading: 'Tu página y sus marcadores se van con él.',
+    keep: 'Conservar su lectura en Estadísticas',
+    keepHint: 'Sus {time} de lectura siguen en tus totales, tu velocidad y tu historial.',
+    keepHintFinished: 'Sigue contando como libro terminado.',
+    remove: 'Eliminar también su lectura',
+    removeHint: {
+      one: 'Su {n} sesión sale de Estadísticas. Los días de hábito que sumó siguen hechos.',
+      other: 'Sus {n} sesiones salen de Estadísticas. Los días de hábito que sumaron siguen hechos.',
+    },
+    removeHintFinished: 'Ya no cuenta como libro terminado.',
+    confirm: 'Eliminar libro',
+  },
   deleted: 'Libro eliminado',
 
   editor: {

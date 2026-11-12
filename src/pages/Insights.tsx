@@ -1,4 +1,4 @@
-import { Activity, Award, BarChart3, BookOpen, CheckCircle2, Clock, Flame, Lock, Play, Shield, Target, Timer, Trophy, Zap } from 'lucide-react'
+import { Activity, Award, BarChart3, BookOpen, CheckCircle2, Clock, Flame, Gauge, Lock, Moon, Play, Shield, Sun, Sunrise, Sunset, Target, Timer, Trophy, Zap } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { ColumnChart, Delta, MINUTE_STEPS, ShareBar, Sparkline } from '../components/charts'
 import { Heatmap } from '../components/Heatmap'
@@ -10,7 +10,7 @@ import { addDaysKey, rangeKeys, todayKey } from '../lib/date'
 import { badges as computeBadges, xpByDay } from '../lib/gamification'
 import { completionRate, isMetOn, streak } from '../lib/habits'
 import { useData, useProgress, useToday } from '../lib/hooks'
-import { change, focusStats, focusStreak, habitAmounts, habitConsistency, previousRange, readingStats, tasksDoneByDay } from '../lib/insights'
+import { change, DAY_PARTS, focusStats, focusStreak, habitAmounts, habitConsistency, minutesPerPage, pagesPerHour, previousRange, readingSpeed, readingStats, tasksDoneByDay, type DayPart } from '../lib/insights'
 import { cycleStats, interruptionStats } from '../lib/focusCycle'
 import { navigate } from '../lib/router'
 import type { DateKey } from '../lib/types'
@@ -157,7 +157,7 @@ export function InsightsPage() {
       </Section>
 
       {/* ---- Reading (ADR-047) ---- */}
-      {d.books.length > 0 && (
+      {(d.books.length > 0 || d.pastBooks.length > 0 || d.readingSessions.length > 0) && (
         <Section
           icon={<BookOpen size={15} />}
           title={mi.reading.title}
@@ -517,9 +517,13 @@ function ReadingSection({ days, today, from, prevFrom, prevTo, xLabels }: {
   const t = useI18n()
   const mr = t.m.insights.reading
   const d = useData()
-  const r = useMemo(() => readingStats(d.readingSessions, d.books, from, today), [d.readingSessions, d.books, from, today])
-  const p = useMemo(() => readingStats(d.readingSessions, d.books, prevFrom, prevTo), [d.readingSessions, d.books, prevFrom, prevTo])
-  const books = useMemo(() => new Map(d.books.map((b) => [b.id, b])), [d.books])
+  // Books deleted with their reading kept still name their reading and count as finished (ADR-050).
+  const all = useMemo(() => [...d.books, ...d.pastBooks], [d.books, d.pastBooks])
+  const r = useMemo(() => readingStats(d.readingSessions, all, from, today), [d.readingSessions, all, from, today])
+  const p = useMemo(() => readingStats(d.readingSessions, all, prevFrom, prevTo), [d.readingSessions, all, prevFrom, prevTo])
+  const speed = useMemo(() => readingSpeed(d.readingSessions, from, today), [d.readingSessions, from, today])
+  const prevSpeed = useMemo(() => readingSpeed(d.readingSessions, prevFrom, prevTo), [d.readingSessions, prevFrom, prevTo])
+  const books = useMemo(() => new Map(all.map((b) => [b.id, b])), [all])
 
   if (r.sessions === 0) {
     return (
@@ -575,7 +579,11 @@ function ReadingSection({ days, today, from, prevFrom, prevTo, xLabels }: {
               <div key={x.bookId}>
                 <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
                   <span className="truncate font-semibold" dir="auto">{books.get(x.bookId)?.title ?? mr.deletedBook}</span>
-                  <span className="shrink-0 text-xs text-muted tabular">{t.p(mr.pagesCount, x.pages)} · <span className="font-semibold text-text">{t.dur(x.minutes)}</span></span>
+                  <span className="shrink-0 text-xs text-muted tabular">
+                    {t.p(mr.pagesCount, x.pages)}
+                    {speed.byBook[x.bookId] && pagesPerHour(speed.byBook[x.bookId]) !== null && <> · {t.f(mr.speed.perHourShort, { n: rate(t, pagesPerHour(speed.byBook[x.bookId])!) })}</>}
+                    {' · '}<span className="font-semibold text-text">{t.dur(x.minutes)}</span>
+                  </span>
                 </div>
                 <ProgressBar value={x.minutes / maxTop} height={6} />
               </div>
@@ -583,6 +591,103 @@ function ReadingSection({ days, today, from, prevFrom, prevTo, xLabels }: {
           </div>
         </Card>
       </div>
+
+      <SpeedCards speed={speed} prev={prevSpeed} days={days} today={today} xLabels={xLabels} />
+    </div>
+  )
+}
+
+/** Pages an hour (or a minute) shown to a sensible precision: 32, 7.5, 0.53. */
+function rate(t: ReturnType<typeof useI18n>, x: number): string {
+  return t.n(x, { maximumFractionDigits: x >= 10 ? 0 : x >= 1 ? 1 : 2 })
+}
+
+const PART_ICON: Record<DayPart, ReactNode> = {
+  morning: <Sunrise size={14} />, afternoon: <Sun size={14} />, evening: <Sunset size={14} />, night: <Moon size={14} />,
+}
+
+/**
+ * Reading speed (ADR-050): pages an hour over the range against the period before, day by day
+ * around the range's own pace, and by the part of the day the reading was done. Every number comes
+ * from `readingSpeed` — timed sittings only.
+ */
+function SpeedCards({ speed, prev, days, today, xLabels }: {
+  speed: ReturnType<typeof readingSpeed>; prev: ReturnType<typeof readingSpeed>; days: DateKey[]; today: DateKey; xLabels: { i: number; label: string }[]
+}) {
+  const t = useI18n()
+  const ms = t.m.insights.reading.speed
+  const pph = pagesPerHour(speed.all)
+  if (pph === null) {
+    return (
+      <Card className="p-5">
+        <SectionTitle><span className="inline-flex items-center gap-1.5"><Gauge size={13} /> {ms.title}</span></SectionTitle>
+        <p className="text-sm text-muted">{ms.empty}</p>
+      </Card>
+    )
+  }
+  const before = pagesPerHour(prev.all)
+  const perDay = days.map((k) => pagesPerHour(speed.byDay[k] ?? { pages: 0, minutes: 0, sessions: 0 }) ?? 0)
+  const parts = DAY_PARTS.map((part) => ({ part, pace: speed.byPart[part], pph: pagesPerHour(speed.byPart[part]) }))
+  const maxPart = Math.max(1, ...parts.map((x) => x.pph ?? 0))
+  const timedParts = parts.filter((x) => x.pph !== null)
+  const fastest = timedParts.length > 1 ? timedParts.reduce((a, b) => (b.pph! > a.pph! ? b : a)).part : null
+  return (
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <Card className="p-5">
+        <SectionTitle><span className="inline-flex items-center gap-1.5"><Gauge size={13} /> {ms.title}</span></SectionTitle>
+        <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+          <div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="text-2xl font-extrabold tracking-tight tabular">{t.f(ms.perHour, { n: rate(t, pph) })}</span>
+              <Delta value={before === null ? null : change(pph, before)} />
+            </div>
+            <p className="text-xs text-muted">
+              {t.f(ms.perMinute, { n: rate(t, pph / 60) })} · {t.f(ms.minutesPerPage, { n: rate(t, minutesPerPage(speed.all)!) })}
+            </p>
+          </div>
+          <p className="text-xs text-muted">
+            {t.p(ms.from, speed.all.sessions, { pages: t.p(t.m.insights.reading.pagesCount, speed.all.pages), time: t.dur(speed.all.minutes) })}
+            {before !== null && <><br />{t.f(ms.before, { n: rate(t, before) })}</>}
+          </p>
+        </div>
+        <div className="mt-4">
+          <ColumnChart
+            values={perDay}
+            format={(v) => rate(t, v)}
+            average={pph}
+            emphasis={(i) => days[i] === today}
+            tip={(i) => {
+              const pace = speed.byDay[days[i]]
+              return pace && pace.sessions > 0
+                ? t.f(ms.dayTip, { date: t.d(days[i], 'weekdayShort'), speed: t.f(ms.perHour, { n: rate(t, perDay[i]) }), pages: t.p(t.m.insights.reading.pagesCount, pace.pages), time: t.dur(pace.minutes) })
+                : t.f(ms.dayTipNone, { date: t.d(days[i], 'weekdayShort') })
+            }}
+            xLabels={xLabels}
+            ariaLabel={`${ms.byDay}: ${t.f(ms.perHour, { n: rate(t, pph) })}`}
+          />
+          <p className="mt-2 text-[11px] text-muted">{ms.byDayNote}</p>
+        </div>
+      </Card>
+      <Card className="p-5">
+        <SectionTitle>{ms.byPart}</SectionTitle>
+        <div className="space-y-3">
+          {parts.map(({ part, pace, pph: v }) => (
+            <div key={part}>
+              <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
+                <span className="inline-flex items-center gap-1.5 font-semibold">
+                  <span className="text-muted">{PART_ICON[part]}</span>{ms.parts[part]}
+                  {part === fastest && <span className="rounded-full bg-accent-soft px-1.5 py-0.5 text-[10px] font-bold text-accent">{ms.fastest}</span>}
+                </span>
+                <span className="shrink-0 text-xs text-muted tabular">
+                  {v === null ? ms.noneYet : <>{t.dur(pace.minutes)} · <span className="font-semibold text-text">{t.f(ms.perHourShort, { n: rate(t, v) })}</span></>}
+                </span>
+              </div>
+              <ProgressBar value={(v ?? 0) / maxPart} height={6} />
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-[11px] text-muted">{ms.byPartNote}</p>
+      </Card>
     </div>
   )
 }

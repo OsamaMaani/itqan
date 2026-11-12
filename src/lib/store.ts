@@ -162,7 +162,12 @@ interface Actions {
   /** Sets the status and the day it was started or finished; finishing also moves the place to the last page. */
   setBookStatus: (id: ID, status: BookStatus) => void
   /** Removes the book, its place and bookmarks. Its reading sessions stay: they are history. */
-  deleteBook: (id: ID) => void
+  /**
+   * Removes a book, its place and its bookmarks (ADR-050). `keepReading` (the default) keeps its
+   * reading sessions and a `PastBook` naming it, so Insights is unchanged; false deletes its
+   * sessions too. Habit logs its reading added stay either way — the habit was done that day.
+   */
+  deleteBook: (id: ID, keepReading?: boolean) => void
   /** Where the book is open now — the newest place wins in sync. */
   setBookPlace: (bookId: ID, page: number) => void
   addBookmark: (bookId: ID, page: number, note?: string) => ID
@@ -853,12 +858,26 @@ export const useStore = create<Store>()(
         if (status === 'finished' && b.pages) get().setBookPlace(id, b.pages)
         settleBookLinks(id)
       },
-      deleteBook: (id) =>
-        set((s) => ({
-          books: s.books.filter((b) => b.id !== id),
-          bookPlaces: s.bookPlaces.filter((p) => p.id !== id),
-          bookmarks: s.bookmarks.filter((m) => m.bookId !== id),
-        })),
+      deleteBook: (id, keepReading = true) =>
+        set((s) => {
+          const b = s.books.find((x) => x.id === id)
+          if (!b) return {}
+          const read = s.readingSessions.some((r) => r.bookId === id)
+          // Kept only when there is something for Insights to show: its sittings, or its finish.
+          const past = keepReading && (read || b.finishedOn)
+          return {
+            books: s.books.filter((x) => x.id !== id),
+            bookPlaces: s.bookPlaces.filter((p) => p.id !== id),
+            bookmarks: s.bookmarks.filter((m) => m.bookId !== id),
+            readingSessions: keepReading ? s.readingSessions : s.readingSessions.filter((r) => r.bookId !== id),
+            pastBooks: past
+              ? [...s.pastBooks.filter((p) => p.id !== id), {
+                  id, title: b.title, author: b.author, pages: b.pages, startedOn: b.startedOn, finishedOn: b.finishedOn,
+                  createdAt: b.createdAt, deletedAt: now(),
+                }]
+              : s.pastBooks,
+          }
+        }),
       setBookPlace: (bookId, page) => {
         const p = Math.max(1, Math.round(page))
         const s = get()
@@ -935,7 +954,7 @@ export const useStore = create<Store>()(
         reviews: s.reviews, memories: s.memories, ideas: s.ideas, notes: s.notes, reminders: s.reminders, projects: s.projects,
         projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
         exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets, fajrSpans: s.fajrSpans,
-        books: s.books, bookPlaces: s.bookPlaces, bookmarks: s.bookmarks, readingSessions: s.readingSessions, cycle: s.cycle, cycleTemplates: s.cycleTemplates, focusCycles: s.focusCycles, interruptions: s.interruptions,
+        books: s.books, bookPlaces: s.bookPlaces, bookmarks: s.bookmarks, readingSessions: s.readingSessions, pastBooks: s.pastBooks, cycle: s.cycle, cycleTemplates: s.cycleTemplates, focusCycles: s.focusCycles, interruptions: s.interruptions,
         settings: s.settings,
       }),
       migrate: (persisted, version) => migrate(persisted, version) as unknown as Store,
@@ -1030,7 +1049,7 @@ export function snapshot(s: Store): Data {
     reviews: s.reviews, memories: s.memories, ideas: s.ideas, notes: s.notes, reminders: s.reminders, projects: s.projects,
     projectUpdates: s.projectUpdates, contacts: s.contacts, interactions: s.interactions, achievements: s.achievements,
     exercises: s.exercises, routines: s.routines, program: s.program, workouts: s.workouts, workoutSets: s.workoutSets, pushTargets: s.pushTargets, fajrSpans: s.fajrSpans,
-        books: s.books, bookPlaces: s.bookPlaces, bookmarks: s.bookmarks, readingSessions: s.readingSessions, cycle: s.cycle, cycleTemplates: s.cycleTemplates, focusCycles: s.focusCycles, interruptions: s.interruptions,
+        books: s.books, bookPlaces: s.bookPlaces, bookmarks: s.bookmarks, readingSessions: s.readingSessions, pastBooks: s.pastBooks, cycle: s.cycle, cycleTemplates: s.cycleTemplates, focusCycles: s.focusCycles, interruptions: s.interruptions,
     settings: s.settings,
   }
 }

@@ -510,3 +510,28 @@ describe('v18 → v19 (focus cycles, ADR-049)', () => {
     expect(parseBackup(JSON.stringify(toBackup(data)))).toEqual(data)
   })
 })
+
+describe('v19 → v20 (past books, ADR-050)', () => {
+  it('adds an empty pastBooks and keeps every existing record exactly', () => {
+    const old = {
+      books: [{ id: 'b', title: 'Deep Work' }],
+      readingSessions: [{ id: 'r', bookId: 'gone', date: '2026-11-11', startedAt: '2026-11-11T09:30:00.000Z', minutes: 25, fromPage: 1, toPage: 11, pages: 10, habitId: null, habitAmount: 0 }],
+      habitLogs: { h: { '2026-11-10': 12 } }, settings: { name: 'N', language: 'fr' },
+    }
+    const d = migrate(structuredClone(old), 19)
+    expect(d.pastBooks).toEqual([])
+    expect(d.books).toEqual(old.books)
+    expect(d.readingSessions).toEqual(old.readingSessions)
+    expect(d.habitLogs).toEqual(old.habitLogs)
+    expect(d.settings.language).toBe('fr')
+  })
+  it('never overwrites past books already there; old backups come up with none', () => {
+    const pastBooks = [{ id: 'b', title: 'Deep Work', author: '', pages: 300, startedOn: null, finishedOn: '2026-11-10', createdAt: '', deletedAt: '' }]
+    expect(migrate({ pastBooks }, 19).pastBooks).toEqual(pastBooks)
+    expect(migrate({ tasks: [] }, 1).pastBooks).toEqual([])
+    const b = { app: 'itqan', schemaVersion: 19, exportedAt: '', data: { areas: [], tasks: [], habits: [], goals: [] } }
+    expect(parseBackup(JSON.stringify(b)).pastBooks).toEqual([])
+    const data = { ...emptyData(), pastBooks }
+    expect(parseBackup(JSON.stringify(toBackup(data)))).toEqual(data)
+  })
+})

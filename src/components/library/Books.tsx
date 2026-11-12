@@ -1,5 +1,5 @@
-import { BookOpen, CheckSquare, FileText, Pencil, Repeat, Target, Trash2, Upload, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { BookOpen, CheckSquare, FileText, Gauge, Pencil, Repeat, Target, Trash2, Upload, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { create } from 'zustand'
 import { tx } from '../../i18n/core'
 import { useI18n } from '../../i18n/react'
@@ -7,6 +7,7 @@ import { AREA_HEX } from '../../lib/colors'
 import { todayKey } from '../../lib/date'
 import { countsMinutes } from '../../lib/habits'
 import { useAreaMap } from '../../lib/hooks'
+import { bookPace, minutesLeft, pagesPerHour } from '../../lib/insights'
 import { bookProgress, pagesForward, placeOf, readingTotals } from '../../lib/library'
 import { addPdfFiles, pickPdfs, removePdfHere, useFiles, wantCover } from '../../lib/libraryFiles'
 import { settleBookLinks, useStore } from '../../lib/store'
@@ -149,12 +150,19 @@ function DetailsBody({ book, onClose }: { book: Book; onClose: () => void }) {
   const line = usePlaceLine(book)
   const [to, setTo] = useState('')
   const [mins, setMins] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [keepReading, setKeepReading] = useState(true)
+  // Speed (ADR-050): this book's own pace, and the time left at it — or at the usual pace over
+  // every book while this one has too little timed reading to go by.
+  const own = bookPace(s.readingSessions, book.id)
+  const speed = pagesPerHour(own)
+  const ownLeft = book.pages && book.status !== 'finished' ? minutesLeft(book.pages - page, own) : null
+  const usualLeft = ownLeft === null && book.pages && book.status !== 'finished' ? minutesLeft(book.pages - page, bookPace(s.readingSessions)) : null
 
   const read = (p?: number) => { onClose(); openReader(book.id, p) }
   const remove = () => {
-    if (!confirm(t.f(L.deleteConfirm, { title: book.title }))) return
     const hash = book.file?.hash
-    s.deleteBook(book.id)
+    s.deleteBook(book.id, keepReading)
     if (hash) void removePdfHere(hash)
     onClose()
     toast({ emoji: '🗑️', message: L.deleted })
@@ -231,11 +239,18 @@ function DetailsBody({ book, onClose }: { book: Book; onClose: () => void }) {
       )}
 
       {totals.sessions > 0 && (
-        <div className="grid grid-cols-3 gap-2 text-center">
+        <div className={cx('grid gap-2 text-center', speed === null ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-4')}>
           <Stat label={L.stats.time} value={t.dur(totals.minutes)} />
           <Stat label={L.stats.pages} value={t.n(totals.pages)} />
           <Stat label={L.stats.days} value={t.n(totals.days)} />
+          {speed !== null && <Stat label={L.stats.speed} value={t.n(speed, { maximumFractionDigits: speed < 10 ? 1 : 0 })} />}
         </div>
+      )}
+      {(ownLeft !== null || usualLeft !== null) && (
+        <p className="-mt-2 flex items-center gap-1.5 text-sm text-muted">
+          <Gauge size={14} className="shrink-0" />
+          {ownLeft !== null ? t.f(L.timeLeft, { time: t.dur(ownLeft) }) : t.f(L.timeLeftUsual, { time: t.dur(usualLeft!) })}
+        </p>
       )}
 
       {book.file && (
@@ -268,7 +283,62 @@ function DetailsBody({ book, onClose }: { book: Book; onClose: () => void }) {
         <Button size="sm" onClick={() => { onClose(); editBook(book) }}><Pencil size={14} /> {t.m.common.edit}</Button>
         {!book.file && <Button size="sm" variant="ghost" onClick={() => pickPdfs((f) => void addPdfFiles(f, book), false)}><Upload size={14} /> {L.attachPdf}</Button>}
         {book.file && here && <Button size="sm" variant="ghost" onClick={removeFile}>{L.removeFile}</Button>}
-        <Button size="sm" variant="danger" className="ms-auto" onClick={remove}><Trash2 size={14} /> {t.m.common.delete}</Button>
+        <Button size="sm" variant="danger" className="ms-auto" onClick={() => { setKeepReading(true); setDeleting(true) }} disabled={deleting}><Trash2 size={14} /> {t.m.common.delete}</Button>
+      </div>
+
+      {deleting && (
+        <DeleteChoice
+          title={book.title}
+          hasReading={totals.sessions > 0 || !!book.finishedOn}
+          sittings={totals.sessions}
+          minutes={totals.minutes}
+          keep={keepReading}
+          onKeep={setKeepReading}
+          onCancel={() => setDeleting(false)}
+          onDelete={remove}
+        />
+      )}
+    </div>
+  )
+}
+
+/**
+ * Deleting a book asks what becomes of its reading (ADR-050): kept in Insights — the default, and
+ * what deleting always did — or deleted with the book. A book never read nor finished just asks.
+ */
+function DeleteChoice({ title, hasReading, sittings, minutes, keep, onKeep, onCancel, onDelete }: {
+  title: string; hasReading: boolean; sittings: number; minutes: number; keep: boolean
+  onKeep: (v: boolean) => void; onCancel: () => void; onDelete: () => void
+}) {
+  const t = useI18n()
+  const D = t.m.library.deleteBook
+  const box = useRef<HTMLDivElement>(null)
+  // It opens under everything else in the dialog: bring it into view.
+  useEffect(() => { box.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }) }, [])
+  const option = (value: boolean, label: string, hint: string) => (
+    <label className={cx('flex cursor-pointer gap-3 rounded-xl border p-3 transition-colors', keep === value ? 'border-accent bg-accent-soft' : 'border-border hover:bg-surface-2/60')}>
+      <input type="radio" name="keep-reading" className="mt-1 accent-[var(--accent)]" checked={keep === value} onChange={() => onKeep(value)} />
+      <span className="min-w-0">
+        <span className="block text-sm font-semibold">{label}</span>
+        <span className="block text-xs text-muted">{hint}</span>
+      </span>
+    </label>
+  )
+  return (
+    <div ref={box} className="space-y-3 rounded-2xl border border-danger/40 p-4" role="group" aria-label={D.title}>
+      <div>
+        <div className="font-bold" dir="auto">{t.f(D.title, { title })}</div>
+        <p className="text-sm text-muted">{hasReading ? D.body : D.bodyNoReading}</p>
+      </div>
+      {hasReading && (
+        <div className="space-y-2">
+          {option(true, D.keep, sittings > 0 ? t.f(D.keepHint, { time: t.dur(minutes) }) : D.keepHintFinished)}
+          {option(false, D.remove, sittings > 0 ? t.p(D.removeHint, sittings) : D.removeHintFinished)}
+        </div>
+      )}
+      <div className="flex justify-end gap-2">
+        <Button size="sm" variant="ghost" onClick={onCancel}>{t.m.common.cancel}</Button>
+        <Button size="sm" variant="danger" onClick={onDelete} autoFocus><Trash2 size={14} /> {D.confirm}</Button>
       </div>
     </div>
   )

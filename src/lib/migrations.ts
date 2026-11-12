@@ -6,7 +6,7 @@ import { UI_LANGUAGES, type Data, type Settings, type UiLanguage } from './types
  * and add a step below. Losing the owner's history is the one unrecoverable failure in this
  * app (CLAUDE.md, rule 3), so a migration is never optional and always has a test.
  */
-export const SCHEMA_VERSION = 19
+export const SCHEMA_VERSION = 20
 
 type Step = (d: Record<string, unknown>) => Record<string, unknown>
 
@@ -154,6 +154,10 @@ const steps: Record<number, Step> = {
     focusCycles: d.focusCycles ?? [],
     interruptions: d.interruptions ?? [],
   }),
+  // 19 → 20 (2026-11-12): a book can be deleted with its reading kept in Insights (ADR-050). One
+  // new collection starts empty. Books deleted before this keep their sessions, as they always did,
+  // shown as "a deleted book". Nothing existing changes.
+  19: (d) => ({ ...d, pastBooks: d.pastBooks ?? [] }),
 }
 
 export function migrate(raw: unknown, fromVersion: number): Data {
@@ -200,6 +204,7 @@ export function normalize(d: Record<string, unknown>): Data {
     bookPlaces: pick('bookPlaces'),
     bookmarks: pick('bookmarks'),
     readingSessions: pick('readingSessions'),
+    pastBooks: pick('pastBooks'),
     cycle: pick('cycle'),
     cycleTemplates: pick('cycleTemplates'),
     focusCycles: pick('focusCycles'),

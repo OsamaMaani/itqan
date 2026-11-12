@@ -98,7 +98,8 @@ history never moves (ADR-041; schema v16 — read days with `dayOf()`, never `to
 between prayers or clock times, across days, with countdowns on Today (ADR-043; schema v17), and the
 Library — PDFs read in Itqan on the same page on every device (the files stay per device in IndexedDB),
 and books read elsewhere (ADR-046; schema v18), and focus cycles — planned sessions and breaks that wait
-for an answer, extend, fit around prayers, log interruptions (ADR-049; schema v19).
+for an answer, extend, fit around prayers, log interruptions (ADR-049; schema v19), and reading speed in
+Insights, with deleting a book keeping or removing its reading (ADR-050; schema v20).
 `memory/status.json` and `dashboard/index.html` are the live answer — this
 paragraph is a snapshot and will lag them.
 

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { activeMs, atEnd, bookProgress, continueBook, IDLE_MS, pagesForward, pagesRead, placeOf, readingTotals, titleFromFileName, visibleBooks } from '../library'
 import { booksToward, goalCurrent } from '../goals'
-import { readingStats } from '../insights'
+import { bookPace, dayPart, isTimed, minutesLeft, minutesPerPage, pagesPerHour, readingSpeed, readingStats } from '../insights'
 import { emptyData } from '../seed'
 import { useStore } from '../store'
 import { fromEntities, toEntities } from '../sync/entities'
@@ -167,6 +167,58 @@ describe('library actions', () => {
     expect(st.bookPlaces.map((p) => p.id)).toEqual([keep])
     expect(st.bookmarks.map((m) => m.bookId)).toEqual([keep])
     expect(st.readingSessions).toHaveLength(1)
+  })
+
+  it('deleting a book and keeping its reading leaves a past book that names it; Insights is unchanged', () => {
+    const s = useStore.getState()
+    const habit = s.addHabit({ name: 'Read', emoji: '📚', areaId: null, schedule: { type: 'daily' }, target: 10, unit: 'pages' })
+    const id = s.addBook({ title: 'Deep Work', author: 'Cal Newport' })
+    s.updateBook(id, { pages: 300, habit: { habitId: habit, counts: 'pages' } })
+    s.setBookStatus(id, 'finished')
+    s.saveReadingSession({ id: 'r', bookId: id, date: '2026-11-11', startedAt: '2026-11-11T10:00:00.000Z', minutes: 20, fromPage: 1, toPage: 13, pages: 12 })
+    const before = readingStats(useStore.getState().readingSessions, [...useStore.getState().books, ...useStore.getState().pastBooks], '2026-11-01', '2026-11-30')
+    s.deleteBook(id)
+    const st = useStore.getState()
+    expect(st.books).toEqual([])
+    expect(st.readingSessions).toHaveLength(1)
+    expect(st.pastBooks).toEqual([expect.objectContaining({ id, title: 'Deep Work', author: 'Cal Newport', pages: 300, finishedOn: st.pastBooks[0].finishedOn })])
+    expect(st.pastBooks[0].finishedOn).not.toBeNull()
+    expect(readingStats(st.readingSessions, [...st.books, ...st.pastBooks], '2026-11-01', '2026-11-30')).toEqual(before)
+    expect(st.habitLogs[habit]['2026-11-11']).toBe(12)
+  })
+
+  it('deleting a book with its reading removes its sittings but keeps the habit days they counted', () => {
+    const s = useStore.getState()
+    const habit = s.addHabit({ name: 'Read', emoji: '📚', areaId: null, schedule: { type: 'daily' }, target: 10, unit: 'pages' })
+    const id = s.addBook({ title: 'Gone' })
+    const other = s.addBook({ title: 'Other' })
+    s.updateBook(id, { habit: { habitId: habit, counts: 'pages' } })
+    s.saveReadingSession({ id: 'r1', bookId: id, date: '2026-11-11', startedAt: '2026-11-11T10:00:00.000Z', minutes: 20, fromPage: 1, toPage: 13, pages: 12 })
+    s.saveReadingSession({ id: 'r2', bookId: other, date: '2026-11-11', startedAt: '2026-11-11T11:00:00.000Z', minutes: 5, fromPage: 1, toPage: 4, pages: 3 })
+    s.deleteBook(id, false)
+    const st = useStore.getState()
+    expect(st.readingSessions.map((r) => r.id)).toEqual(['r2'])
+    expect(st.pastBooks).toEqual([])
+    expect(st.habitLogs[habit]['2026-11-11']).toBe(12)
+  })
+
+  it('keeping the reading of a book never read nor finished leaves nothing behind', () => {
+    const s = useStore.getState()
+    const id = s.addBook({ title: 'Someday' })
+    s.deleteBook(id)
+    expect(useStore.getState().pastBooks).toEqual([])
+    s.deleteBook('no-such-book')
+    expect(useStore.getState().pastBooks).toEqual([])
+  })
+
+  it('a past book syncs like any other record', () => {
+    const d = {
+      ...emptyData(),
+      pastBooks: [{ id: 'b', title: 'Deep Work', author: '', pages: 300, startedOn: '2026-11-01', finishedOn: '2026-11-10', createdAt: '2026-11-01T10:00:00.000Z', deletedAt: '2026-11-12T10:00:00.000Z' }],
+    }
+    const e = toEntities(d)
+    expect(e['pastBooks:b']).toEqual(d.pastBooks[0])
+    expect(fromEntities(e, emptyData()).pastBooks).toEqual(d.pastBooks)
   })
 
   it('deleting a habit, goal or area unlinks books without touching anything else', () => {
@@ -354,5 +406,73 @@ describe('reading in Insights (ADR-047)', () => {
     expect(r.byDay['2026-11-10']).toEqual({ minutes: 40, pages: 16 })
     expect(r.byDay['2026-11-11']).toEqual({ minutes: 0, pages: 0 })
     expect(r.byBook.map((b) => [b.bookId, b.minutes, b.sessions])).toEqual([['a', 30, 2], ['b', 30, 1]])
+  })
+})
+
+describe('reading speed (ADR-050)', () => {
+  /** An ISO instant at a local hour, so the part of day holds in any time zone. */
+  const at = (day: number, hour: number) => new Date(2026, 10, day, hour, 15).toISOString()
+
+  it('parts of the day by local hour', () => {
+    expect([4, 5, 11, 12, 16, 17, 20, 21, 0].map(dayPart)).toEqual(
+      ['night', 'morning', 'morning', 'afternoon', 'afternoon', 'evening', 'evening', 'night', 'night'])
+  })
+
+  it('only sittings with both pages and minutes say how fast', () => {
+    expect(isTimed({ pages: 10, minutes: 20 })).toBe(true)
+    expect(isTimed({ pages: 10, minutes: 0 })).toBe(false)
+    expect(isTimed({ pages: 0, minutes: 20 })).toBe(false)
+  })
+
+  it('pages an hour is total pages over total minutes, not an average of sittings', () => {
+    expect(pagesPerHour({ pages: 30, minutes: 60, sessions: 2 })).toBe(30)
+    expect(pagesPerHour({ pages: 0, minutes: 0, sessions: 0 })).toBeNull()
+    expect(minutesPerPage({ pages: 30, minutes: 60, sessions: 2 })).toBe(2)
+    expect(minutesPerPage({ pages: 0, minutes: 10, sessions: 1 })).toBeNull()
+  })
+
+  it('by day, by part of day and by book, in the range only', () => {
+    const rs = [
+      session({ id: '1', bookId: 'a', date: '2026-11-10', startedAt: at(10, 8), minutes: 30, pages: 15 }),
+      session({ id: '2', bookId: 'a', date: '2026-11-10', startedAt: at(10, 22), minutes: 30, pages: 5 }),
+      session({ id: '3', bookId: 'b', date: '2026-11-11', startedAt: at(11, 9), minutes: 10, pages: 10 }),
+      // A page update with no minutes: counts as reading, not as speed.
+      session({ id: '4', bookId: 'b', date: '2026-11-11', startedAt: at(11, 13), minutes: 0, pages: 40 }),
+      // Out of range.
+      session({ id: '5', bookId: 'a', date: '2026-11-08', startedAt: at(8, 8), minutes: 60, pages: 60 }),
+    ]
+    const r = readingSpeed(rs, '2026-11-09', '2026-11-11')
+    expect(r.all).toEqual({ pages: 30, minutes: 70, sessions: 3 })
+    expect(Object.keys(r.byDay)).toEqual(['2026-11-09', '2026-11-10', '2026-11-11'])
+    expect(r.byDay['2026-11-09']).toEqual({ pages: 0, minutes: 0, sessions: 0 })
+    expect(pagesPerHour(r.byDay['2026-11-10'])).toBe(20)
+    expect(pagesPerHour(r.byDay['2026-11-11'])).toBe(60)
+    expect(r.byPart.morning).toEqual({ pages: 25, minutes: 40, sessions: 2 })
+    expect(r.byPart.night).toEqual({ pages: 5, minutes: 30, sessions: 1 })
+    expect(r.byPart.afternoon.sessions).toBe(0)
+    expect(r.byBook).toEqual({ a: { pages: 20, minutes: 60, sessions: 2 }, b: { pages: 10, minutes: 10, sessions: 1 } })
+  })
+
+  it('a sitting is placed on its own date, even read past midnight', () => {
+    const r = readingSpeed([session({ id: '1', date: '2026-11-10', startedAt: at(11, 0), minutes: 20, pages: 10 })], '2026-11-10', '2026-11-11')
+    expect(r.byDay['2026-11-10'].pages).toBe(10)
+    expect(r.byDay['2026-11-11'].pages).toBe(0)
+    expect(r.byPart.night.pages).toBe(10)
+  })
+
+  it("a book's pace and the time left at it", () => {
+    const rs = [
+      session({ id: '1', bookId: 'a', minutes: 20, pages: 10 }),
+      session({ id: '2', bookId: 'a', minutes: 0, pages: 50 }),
+      session({ id: '3', bookId: 'b', minutes: 5, pages: 50 }),
+    ]
+    const p = bookPace(rs, 'a')
+    expect(p).toEqual({ pages: 10, minutes: 20, sessions: 1 })
+    expect(minutesLeft(100, p)).toBe(200)
+    expect(minutesLeft(3, { pages: 2, minutes: 10, sessions: 1 })).toBe(15)
+    // Too little timed reading to promise a time, nothing left, or nothing timed.
+    expect(minutesLeft(100, bookPace(rs, 'b'))).toBeNull()
+    expect(minutesLeft(0, p)).toBeNull()
+    expect(minutesLeft(100, bookPace(rs, 'c'))).toBeNull()
   })
 })
